@@ -1,0 +1,23 @@
+.main-bg-color {
+    background-color: #23272A;
+}
+
+.secondary-bg-color {
+    background-color: #2C2F33 !important;
+}
+
+.main-border-color {
+    border-color: #23272A !important;
+}
+
+.secondary-border-color {
+    border-color: #2C2F33 !important;
+}
+
+.outer-login-container {
+    min-width: 300px;
+    width: 22%;
+}
+
+
+

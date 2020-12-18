@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>ERROR</title>
+
+    <title th:replace="fragments/bootstrap :: header"></title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+
+</head>
+
+<body>
+
+<div class="container-fluid main-bg-color" style="height: 100vh">
+    <div class="d-flex flex-row justify-content-center w-100 h-100">
+        <div class="d-flex flex-column justify-content-center text-center h-100">
+
+            <h1 class="text-danger"> Something went wrong</h1>
+
+            <img src="/img/emma.jpg" class="" width="600px" alt="Emma">
+            <div class="pt-3 row justify-content-center">
+                <a class="btn btn-outline-danger btn-lg" th:href="@{/main}">Back to Mainpage</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
