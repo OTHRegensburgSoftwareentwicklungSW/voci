@@ -20,5 +20,5 @@ public interface IUserService extends UserDetailsService {
 
     void addContact(RegisteredUser user, String usernameContact) throws UsernameNotFoundException, InvalidUserException;
 
-    void removeContact(RegisteredUser user, String usernameContact);
+    RegisteredUser removeContact(RegisteredUser user, String usernameContact);
 }

@@ -13,7 +13,7 @@
 
 <body>
 <div class="container-fluid d-flex justify-content-center w-100 text-light text-center main-bg-color" style="height: 100vh">
-    <div class="d-flex flex-column justify-content-center h-100 outer-login-container">
+    <div class="d-flex flex-column justify-content-center h-100 outer-container">
         <div class="rounded secondary-bg-color">
 
             <form th:action="@{/login}" th:method="post"  class="form-signin p-5">
@@ -29,9 +29,9 @@
                 </div>
                 <p th:if="${usernameOrPwWrong}" class="text-danger">Wrong username or password</p>
                 <div class="form-group">
-                    <button class="btn btn-lg btn-outline-primary" type="submit">Sign in</button>
+                    <button class="btn btn-lg btn-outline-success" type="submit">Sign in</button>
                 </div>
-                <p>No account? <br> <a th:href="@{/register}" class="">Register here!</a></p>
+                <p>No account? <br> <a th:href="@{/register}" class="text-success">Register here!</a></p>
 
             </form>
         </div>

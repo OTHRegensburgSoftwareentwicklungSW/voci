@@ -74,12 +74,13 @@ public class UserService implements IUserService {
 
     @Override
     @Transactional
-    public void removeContact(RegisteredUser user, String usernameContact) {
+    public RegisteredUser removeContact(RegisteredUser user, String usernameContact) {
         RegisteredUser contact = (RegisteredUser) loadUserByUsername(usernameContact);
         contact.removeContact(user);
         user.removeContact(contact);
         userRepo.save(contact);
         userRepo.save(user);
+        return contact;
     }
 
     private boolean userNameAlreadyExist(String username) {

@@ -10,13 +10,13 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import javax.websocket.server.PathParam;
+import java.io.IOException;
 import java.security.Principal;
-import java.util.List;
+import java.util.*;
 
 @Controller
 public class MainController {
@@ -29,10 +29,13 @@ public class MainController {
 
     private RegisteredUser user;
 
+    private List<RegisteredUser> contactSelection = new ArrayList<>();
+
     @RequestMapping(value = "/main", method = RequestMethod.GET)
     public String prepareMainpage(Model model, Principal principal) {
         user = (RegisteredUser) userService.loadUserByUsername(principal.getName());
         model.addAttribute("user", user);
+        contactSelection.clear();
         showUpdate(model);
         return "main";
     }
@@ -48,7 +51,7 @@ public class MainController {
     public String addContact(Model model, @ModelAttribute("contactName") String contactName) {
         try {
             userService.addContact(user, contactName);
-        } catch (InvalidUserException | UsernameNotFoundException ue ) {
+        } catch (InvalidUserException | UsernameNotFoundException ue) {
             model.addAttribute("errorMsg", ue.getMessage());
         }
         showUpdate(model);
@@ -56,27 +59,40 @@ public class MainController {
     }
 
     @RequestMapping(value = "/main/deleteContact", method = RequestMethod.DELETE)
-    public String deleteContact(Model model, @PathParam("contactName") String contactName) {
-        userService.removeContact(user, contactName);
+    public String deleteContact(Model model, @PathParam("contactName") String contactName){
+        RegisteredUser contact = userService.removeContact(user, contactName);
+        contactSelection.remove(contact);
         showUpdate(model);
         return "main";
     }
 
-    private void showRoomsList(Model model) {
-        List<Room> roomsList = user.getRooms();
-        List<Room> ownedRoomsList = user.getOwnedRooms();
-        model.addAttribute("roomsList", roomsList);
-        model.addAttribute("ownedRoomsList", ownedRoomsList);
+    @RequestMapping(value = "/main/selectContact", method = RequestMethod.POST)
+    public String selectContacts(Model model, @ModelAttribute("selection") String selection) throws IOException {
+        if (!selection.equals("")) {
+            RegisteredUser contact = (RegisteredUser) userService.loadUserByUsername(selection);
+            try {
+                if(!contactSelection.contains(contact))
+                    contactSelection.add(contact);
+            } catch (UsernameNotFoundException enfe) {
+                // TODO
+            }
+        }
+        showUpdate(model);
+        return "main";
     }
 
-    private void showContactsList(Model model) {
-        List<RegisteredUser> contactsList = user.getContacts();
-        model.addAttribute("contactsList", contactsList);
+    private void prepareRoomsList(Model model) {
+        model.addAttribute("roomsList", user.getRooms());
+        model.addAttribute("ownedRoomsList", user.getOwnedRooms());
+    }
+
+    private void prepareContactsList(Model model) {
+        model.addAttribute("contactsList", user.getContacts());
     }
 
     private void showUpdate(Model model) {
-        showRoomsList(model);
-        showContactsList(model);
+        prepareRoomsList(model);
+        prepareContactsList(model);
     }
 
     @ModelAttribute("user")
@@ -84,4 +100,9 @@ public class MainController {
         return user != null ? user : new RegisteredUser();
     }
 
+    @ModelAttribute("contactSelection")
+    public List<RegisteredUser> getContactSelection() {
+        return contactSelection;
+    }
 }
+
