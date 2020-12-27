@@ -20,4 +20,16 @@ public abstract class User extends SingleIdEntity{
     public Call getActiveCall() {
         return activeCall;
     }
+
+    public void setActiveVoiceChannel(VoiceChannel activeVoiceChannel) {
+        this.activeVoiceChannel = activeVoiceChannel;
+    }
+
+    public void setActiveCall(Call activeCall) {
+        this.activeCall = activeCall;
+    }
+
+    public abstract Boolean isRegistered();
+
+    public abstract String getUserName();
 }

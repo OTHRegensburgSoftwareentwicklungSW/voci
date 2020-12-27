@@ -1,0 +1,32 @@
+<html xmlns:th="http://www.thymeleaf.org/">
+<head>
+    <meta charset="UTF-8">
+    <title>MainFragments</title>
+</head>
+<body>
+
+<!-- Header -->
+<header th:fragment="header" class="row mt-2 mb-2 justify-content-center">
+    <h1 class="display-4">VOCI</h1>
+</header>
+
+<!-- Nav Buttons -->
+<div>
+    <a th:fragment="navButtonActive(title, ref)" class="btn btn-block btn-success p-2 mb-2 mt-3"
+       th:href="@{{href}(href=${ref})}" th:text="${title}"></a>
+
+    <a th:fragment="navButtonInactive(title, ref)" class="btn btn-block btn-outline-success p-2 mb-2 mt-3"
+       th:href="@{{href}(href=${ref})}" th:text="${title}"></a>
+</div>
+
+<!-- Heading -->
+<div th:fragment="heading(title, borderCol)" class="flex-row border-bottom" th:classappend="${borderCol}">
+    <h5 th:text="${title}"></h5>
+</div>
+
+<!-- list empty warning -->
+<div th:fragment="listEmptyWarning(list, text)" class="flex-row border-bottom secondary-border mt-3 mb-3 pb-3"
+     th:if="${list.isEmpty()}" th:text="${text}"></div>
+
+</body>
+</html>

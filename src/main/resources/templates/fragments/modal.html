@@ -3,8 +3,8 @@
 <!-- Modal for adding room -->
 <div th:fragment="addRoomModal" class="modal fade text-light" id="addRoomModal" tabindex="-1" role="dialog" aria-labelledby="Add Room"
      aria-hidden="true">
-    <div class="modal-dialog " role="document">
-        <div class="modal-content main-bg-color">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content main-bg">
             <form class="" th:action="@{/main/addRoom}" th:method="post">
                 <div class="modal-header border-0">
                     <h5 class="modal-title">Create New Room</h5>
@@ -12,7 +12,7 @@
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                <div class="modal-body border-top border-bottom secondary-border-color">
+                <div class="modal-body border-top border-bottom secondary-border">
                     <label for="roomName">Room Name</label>
                     <input name="roomName" type="text" id="roomName" class="form-control"
                            placeholder="My great Room"
@@ -30,8 +30,8 @@
 <!-- Modal for adding contact -->
 <div th:fragment="addContactModal" class="modal fade text-light" id="addContactModal" tabindex="-1" role="dialog" aria-labelledby="Add Contact"
      aria-hidden="true">
-    <div class="modal-dialog " role="document">
-        <div class="modal-content main-bg-color">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content main-bg">
             <form class="" th:action="@{/main/addContact}" th:method="post">
                 <div class="modal-header border-0">
                     <h5 class="modal-title">Add Contact</h5>
@@ -39,7 +39,7 @@
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                <div class="modal-body border-top border-bottom secondary-border-color">
+                <div class="modal-body border-top border-bottom secondary-border">
                     <label for="contactName">Contacts Username</label>
                     <input name="contactName" type="text" id="contactName" class="form-control"
                            placeholder="Contact"
@@ -48,6 +48,40 @@
                 <div class="modal-footer border-0">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                     <button type="submit" class="btn btn-success">Add</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for selectiong contact for call -->
+<div th:fragment="selectContactModal" class="modal fade text-light" id="selectContactModal"
+     tabindex="-1" role="dialog" aria-labelledby="Select Contacts"
+     aria-hidden="true">
+    <div class="modal-dialog " role="document">
+        <div class="modal-content main-bg-color">
+            <form class="" th:action="@{/main/selectContact}" th:method="post">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title">Select Contact</h5>
+                    <button type="button" class="close " data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body border-top border-bottom secondary-border-color">
+
+                    <div class="flex-row d-flex justify-content-center">
+                        <!-- select contacts -->
+                        <select th:name="selection">
+                            <option selected="selected" value="">--</option>
+                            <option th:value="${contact.userName}" th:each="contact : ${contactsList}"
+                                    th:unless="${contactSelection.contains(contact.userName)}"
+                                    th:text="${contact.userName}"></option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button class="btn btn-outline-success">Submit</button>
                 </div>
             </form>
         </div>

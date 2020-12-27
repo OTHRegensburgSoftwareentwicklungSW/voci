@@ -1,23 +1,24 @@
-.main-bg-color {
-    background-color: #23272A;
+:root {
+    --main-color: #23272A;
+    --secondary-color: #2C2F33;
 }
 
-.secondary-bg-color {
-    background-color: #2C2F33 !important;
+.main-bg {
+    background-color: var(--main-color);
 }
 
-.main-border-color {
-    border-color: #23272A !important;
+.secondary-bg {
+    background-color: var(--secondary-color) !important;
 }
 
-.secondary-border-color {
-    border-color: #2C2F33 !important;
+.main-border {
+    border-color: var(--main-color) !important;
 }
 
-.outer-container {
-    min-width: 300px;
-    width: 22%;
+.secondary-border {
+    border-color: var(--secondary-color) !important;
 }
+
 
 
 

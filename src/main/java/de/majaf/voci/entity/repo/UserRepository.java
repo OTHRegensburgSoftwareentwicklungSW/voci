@@ -5,7 +5,7 @@ import org.springframework.data.repository.CrudRepository;
 
 import java.util.Optional;
 
-public interface UserRepository extends CrudRepository<RegisteredUser, Integer> {
+public interface UserRepository extends CrudRepository<RegisteredUser, Long> {
 
     Optional<RegisteredUser> findByUserName(String userName);
     Optional<RegisteredUser> findByEmail(String email);

@@ -9,11 +9,12 @@
     <link rel="stylesheet" th:href="@{/css/main.css}">
 
 </head>
-<body>
-<div class="container-fluid d-flex flex-row justify-content-center w-100 text-light text-center main-bg-color"
-     style="height: 100vh">
-    <div class="d-flex flex-column justify-content-center h-100 outer-login-container">
-        <div class="rounded secondary-bg-color">
+<!-- TODO input validation -->
+<body class="vh-100 text-light main-bg">
+<div class="container-fluid d-flex justify-content-center text-center h-100">
+    <div class="flex-row d-flex justify-content-center">
+        <div class="d-flex flex-column justify-content-center h-100">
+            <div class="rounded secondary-bg">
 
             <form th:action="@{/register}" th:object="${registeredUser}" th:method="post" class="form-signin p-5">
                 <div class="form-group">

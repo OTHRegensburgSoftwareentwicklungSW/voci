@@ -1,6 +1,7 @@
 package de.majaf.voci.boundery.contoller;
 
 import de.majaf.voci.control.service.IUserService;
+import de.majaf.voci.control.service.exceptions.InvalidUserException;
 import de.majaf.voci.control.service.exceptions.UserAlreadyExistsException;
 import de.majaf.voci.entity.RegisteredUser;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,7 +43,7 @@ public class LoginController {
             model.addAttribute("successMsg", "User " + registeredUser.getUserName() + " was created!");
             return "login";
         } catch (UserAlreadyExistsException uaee) {
-            model.addAttribute("errorMsg", uaee.getMessage());
+            model.addAttribute("errorMsg", "User already exists");
         }
         return "register";
     }

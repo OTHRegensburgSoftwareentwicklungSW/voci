@@ -7,99 +7,85 @@
     <link rel="stylesheet" th:href="@{/css/main.css}">
 </head>
 
-<body>
+<body class="vh-100 main-bg text-light">
+<div class="container-fluid h-100 row m-0 p-0">
 
-<!-- outer container -->
-<div class="container-fluid m-0 p-0 text-light main-bg-color" style="height: 100vh">
-    <div class="row p-0 m-0 h-100">
+    <!-- left column -->
+    <div class="col-md-2 col-sm-3 d-flex flex-column h-100">
+        <header th:replace="fragments/mainFragments :: header"></header>
+        <div class="border-top secondary-border flex-grow-1 overflow-auto">
+            <a th:replace="fragments/mainFragments :: navButtonActive('HOME', '/main')"></a>
+            <a th:replace="fragments/mainFragments :: navButtonInactive('CALL', '/call')"></a>
+            <a th:replace="fragments/mainFragments :: navButtonInactive('INFO', '/info')"></a>
+            <!-- TODO: th:href="@{/info}> -->
+        </div>
+        <div class="text-center">
+            <a class="btn btn-outline-danger p-2 mb-4 mt-3" th:href="@{/logout}">LOGOUT</a>
+        </div>
 
-        <!-- left column -->
-        <div th:replace="fragments/navs :: navLeft"></div>
+    </div>
 
-        <!-- right column -->
-        <div class="d-flex flex-column col-md-10 col-sm-9 h-100">
-            <div class="h-100 row secondary-bg-color">
+    <!-- mid column -->
+    <div class="col-md-7 col-sm-6 secondary-bg d-flex flex-column h-100 p-4">
+        <div th:replace="fragments/mainFragments :: heading('YOUR CHATROOMS', 'main-border')"></div>
+        <div th:replace="fragments/mainFragments :: listEmptyWarning(${roomsList}, 'You are not member of any chatroom, yet!')">
+        </div>
+        <div class="overflow-auto">
+            <div class="flex-row d-flex justify-content-between main-bg rounded mt-2 p-1 pl-3 pr-3"
+                 th:each="room : ${roomsList}">
 
-                <!-- main-container -->
-                <div class="col-lg-9 overflow-auto flex-grow-1 d-flex justify-content-center p-4 text-center width-100">
-                    <div class="d-flex flex-column justify-content-center outer-container">
-                        <div class="d-flex flex-column main-bg-color rounded p-4">
-                            <div class="d-flex flex-row justify-content-center">
-                                <h5 class="pb-2">CREATE A CALL</h5>
-                                <i class="material-icons text-light ml-5" data-toggle="toolip"
-                                   title="Choose your contacts or invite strangers! After clicking submit you can copy a generated link and send it to all your friends to join you!">info</i>
-                            </div>
-
-                            <form th:action="@{/call}" th:method="post">
-
-                                <div th:if="${contactSelection.isEmpty()}" class="pb-2" style="white-space: nowrap">You
-                                    have not selected any Contacts.
-                                </div>
-
-                                <!-- select contacts -->
-                                <div th:each="selected : ${contactSelection}"
-                                     class="flex-row d-flex btn text-light secondary-bg-color rounded p-2 m-2"
-                                     data-toggle="modal" data-target="#selectContactModal">
-                                    <div th:text="${selected.userName}" class="flex-grow-1"></div>
-                                </div>
-
-                                <a class="flex-row d-flex btn text-light secondary-bg-color rounded p-2 m-2"
-                                   data-toggle="modal" data-target="#selectContactModal">
-                                    <div class="flex-grow-1">Select <span
-                                            th:unless="${contactSelection.isEmpty()}">more </span>Contacts?
-                                    </div>
-                                    <i class="material-icons">contact_page</i>
-                                </a>
-
-                                <button class="btn btn-outline-success">Submit</button>
-                            </form>
-                        </div>
-                    </div>
+                <!-- TODO input validation -->
+                <div class="flex-column d-flex justify-content-center">
+                    <p class="m-0" th:text="${room.roomName}"></p>
                 </div>
 
-                <!-- contacts-list-->
-                <div th:replace="fragments/navs :: navRight"></div>
-
-                <!-- Modal for selecting contacts -->
-                <div th:fragment="selectContactModal" class="modal fade text-light" id="selectContactModal"
-                     tabindex="-1" role="dialog" aria-labelledby="Select Contacts"
-                     aria-hidden="true">
-                    <div class="modal-dialog " role="document">
-                        <div class="modal-content main-bg-color">
-                            <form class="" th:action="@{/main/selectContact}" th:method="post">
-                                <div class="modal-header border-0">
-                                    <h5 class="modal-title">Select Contact</h5>
-                                    <button type="button" class="close " data-dismiss="modal" aria-label="Close">
-                                        <span aria-hidden="true">&times;</span>
-                                    </button>
-                                </div>
-                                <div class="modal-body border-top border-bottom secondary-border-color">
-
-                                    <div class="flex-row d-flex justify-content-center">
-                                        <!-- select contacts -->
-                                        <select th:name="selection">
-                                            <option selected="selected" value="">--</option>
-                                            <option th:value="${contact.userName}" th:each="contact : ${contactsList}"
-                                                    th:unless="${contactSelection.contains(contact)}"
-                                                    th:text="${contact.userName}"></option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="modal-footer border-0">
-                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                                    <button class="btn btn-outline-success">Submit</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
+                <div class="justify-content-center text-light m-0 p-0" data-toggle="tooltip"
+                     title="members">
+                    <i class="material-icons mt-1">people</i><span class="badge badge-success p-1 ml-1"
+                                                                   th:text="${room.members.size()}"></span>
                 </div>
             </div>
+        </div>
+        <div class="text-center">
+            <button class="btn btn-outline-success m-2 p-2" data-toggle="modal" data-target="#addRoomModal">ADD ROOM
+            </button>
+        </div>
+    </div>
+
+    <!-- right column -->
+    <div class="col-md-3 col-sm-3 d-flex flex-column h-100 p-4">
+        <div th:replace="fragments/mainFragments :: heading('CONTACTS', 'secondary-border')"></div>
+        <div th:replace="fragments/mainFragments :: listEmptyWarning(${contactsList}, 'You do not have any contacts, yet!')">
+        </div>
+        <div class="overflow-auto">
+            <form class="flex-row d-flex justify-content-between secondary-bg rounded mt-2 p-1 pl-3 pr-2"
+                  th:each="contact : ${contactsList}"
+                  th:action="@{/main/deleteContact(contactID=${contact.getId()})}"
+                  th:method="delete">
+
+                <div class="flex-column d-flex justify-content-center">
+                    <p class="m-0" th:text="${contact.userName}"></p>
+                </div>
+                <button class="justify-content-center btn text-light m-0 p-0 mt-1" type="submit"><i
+                        class="material-icons">delete</i>
+                </button>
+            </form>
+        </div>
+        <div th:if="${errorMsg}" th:text="${errorMsg}" class="text-danger text-center mt-2 mb-2"></div>
+        <div class="text-center">
+            <button class="btn btn-outline-success m-2 p-2" data-toggle="modal" data-target="#addContactModal">ADD
+                CONTACT
+            </button>
         </div>
     </div>
 </div>
 
+<!-- Modal for adding room -->
+<div th:replace="fragments/modal :: addRoomModal"></div>
+
+<!-- Modal for adding contact -->
+<div th:replace="fragments/modal :: addContactModal"></div>
 
 </body>
-
 
 </html>

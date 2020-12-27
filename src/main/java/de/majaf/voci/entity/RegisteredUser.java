@@ -48,6 +48,7 @@ public class RegisteredUser extends User implements UserDetails {
         this.userName = userName;
     }
 
+    @Override
     public String getUserName() {
         return userName;
     }
@@ -116,11 +117,21 @@ public class RegisteredUser extends User implements UserDetails {
     }
 
     public List<Invitation> getActiveInvitations() {
-        return activeInvitations;
+        return Collections.unmodifiableList(activeInvitations);
     }
 
-    public void setActiveInvitations(List<Invitation> activeInvitations) {
-        this.activeInvitations = activeInvitations;
+    public void addActiveInvitation(Invitation invitation) {
+        if(!activeInvitations.contains(invitation))
+            activeInvitations.add(invitation);
+    }
+
+    public void removeActiveInvitation(Invitation invitation) {
+        activeInvitations.remove(invitation);
+    }
+
+    @Override
+    public Boolean isRegistered() {
+        return true;
     }
 
     @Override
