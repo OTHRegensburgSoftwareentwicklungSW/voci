@@ -68,7 +68,7 @@ public class Invitation extends SingleIdEntity{
         this.initiator = initiator;
     }
 
-    public List<User> getInvitedUsers() {
+    public List<RegisteredUser> getInvitedUsers() {
         return Collections.unmodifiableList(invitedUsers);
     }
 
@@ -83,6 +83,10 @@ public class Invitation extends SingleIdEntity{
 
     public void removeInvitedUser(RegisteredUser user) {
         invitedUsers.remove(user);
+    }
+
+    public void removeAllInvitedUsers() {
+        invitedUsers.clear();
     }
 
     public Call getCall() {

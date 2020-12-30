@@ -1,9 +1,9 @@
 package de.majaf.voci.control.service;
 
-import de.majaf.voci.control.service.exceptions.InvalidUserException;
-import de.majaf.voci.control.service.exceptions.UserAlreadyExistsException;
-import de.majaf.voci.control.service.exceptions.UserIDDoesNotExistException;
-import de.majaf.voci.control.service.exceptions.UsernameDoesNotExistException;
+import de.majaf.voci.control.service.exceptions.user.InvalidUserException;
+import de.majaf.voci.control.service.exceptions.user.UserAlreadyExistsException;
+import de.majaf.voci.control.service.exceptions.user.UserIDDoesNotExistException;
+import de.majaf.voci.control.service.exceptions.user.UsernameDoesNotExistException;
 import de.majaf.voci.entity.RegisteredUser;
 import de.majaf.voci.entity.User;
 import org.springframework.security.core.userdetails.UserDetailsService;

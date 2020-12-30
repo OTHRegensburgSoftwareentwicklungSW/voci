@@ -1,4 +1,4 @@
-package de.majaf.voci.control.service.exceptions;
+package de.majaf.voci.control.service.exceptions.user;
 
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 

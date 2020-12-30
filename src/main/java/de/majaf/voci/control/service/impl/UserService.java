@@ -2,10 +2,10 @@ package de.majaf.voci.control.service.impl;
 
 import de.majaf.voci.control.service.ICallService;
 import de.majaf.voci.control.service.IUserService;
-import de.majaf.voci.control.service.exceptions.InvalidUserException;
-import de.majaf.voci.control.service.exceptions.UserAlreadyExistsException;
-import de.majaf.voci.control.service.exceptions.UserIDDoesNotExistException;
-import de.majaf.voci.control.service.exceptions.UsernameDoesNotExistException;
+import de.majaf.voci.control.service.exceptions.user.InvalidUserException;
+import de.majaf.voci.control.service.exceptions.user.UserAlreadyExistsException;
+import de.majaf.voci.control.service.exceptions.user.UserIDDoesNotExistException;
+import de.majaf.voci.control.service.exceptions.user.UsernameDoesNotExistException;
 import de.majaf.voci.entity.RegisteredUser;
 import de.majaf.voci.entity.User;
 import de.majaf.voci.entity.repo.UserRepository;
@@ -46,13 +46,7 @@ public class UserService implements IUserService {
 
     @Override
     public User loadUserByID(long id) throws UserIDDoesNotExistException {
-        Optional<RegisteredUser> u = userRepo.findById(id);
-        User user = null;
-        if (u.isPresent())
-            user = u.get();
-        else throw new UserIDDoesNotExistException(id, "Invalid UserID");
-
-        return user;
+        return userRepo.findById(id).orElseThrow(() -> new UserIDDoesNotExistException(id, "Invalid userID"));
     }
 
     @Override

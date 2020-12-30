@@ -9,68 +9,52 @@
 <body class="vh-100 main-bg text-light">
 <div class="container-fluid h-100 row m-0 p-0">
 
-    <!-- left column / nav -->
-    <div class="col-md-2 col-sm-3 d-flex flex-column h-100">
-        <header th:replace="fragments/mainFragments :: header"></header>
-        <div class="border-top secondary-border flex-grow-1 overflow-auto">
-            <a th:replace="fragments/mainFragments :: navButtonInactive('HOME', '/main')"></a>
-            <a th:replace="fragments/mainFragments :: navButtonActive('CALL', '/call')"></a>
-            <a th:replace="fragments/mainFragments :: navButtonInactive('INFO', '/info')"></a>
-            <!-- TODO: th:href="@{/info}> -->
-        </div>
-        <div class="text-center">
-            <a class="btn btn-outline-danger p-2 mb-4 mt-3" th:href="@{/logout}">LOGOUT</a>
-        </div>
-
+    <!-- left column -->
+    <div class="col-md-9 col-sm-9 d-flex flex-column h-100 secondary-bg">
     </div>
 
-    <!-- right column / main -->
-    <div class="col-xl-8 col-md-10 col-sm-9 d-flex flex-column h-100 secondary-bg p-4">
-        <div th:replace="fragments/mainFragments :: heading('CREATE A CALL', 'main-border')"></div>
-        <p class="m-0 text-danger" th:if="${errorMsg}" th:text="${errorMsg}"></p>
-        <div class="flex-column d-flex justify-content-center overflow-auto flex-grow-1 p-0 mt-2 ">
-            <div class="main-bg rounded p-3 ">
-                <div class="d-flex row rounded m-0 overflow-auto">
-                    <div class="col-12 col-md-6 p-3">
-                        <div th:replace="fragments/mainFragments :: heading('CALL MEMBERS', 'secondary-border')"></div>
-                        <div th:replace="fragments/mainFragments :: listEmptyWarning(${invitingList}, 'You have not selected anyone! After clicking start you can only invite guests.')"></div>
-                        <form class="flex-row d-flex justify-content-between secondary-bg rounded mt-2 p-1 pl-3 pr-2"
-                              th:each="invited : ${invitingList}"
-                              th:action="@{/call/uninviteContact(invitedID=${invited.getId()})}"
-                              th:method="delete">
+    <!-- right column -->
+    <div class="col-md-3 col-sm-3 d-flex flex-column h-100 p-4">
 
-                            <div class="flex-column d-flex justify-content-center">
-                                <p class="m-0" th:text="${invited.userName}"></p>
-                            </div>
-                            <button class="justify-content-center btn text-light m-0 p-0 mt-1" type="submit"
-                                    data-toggle="tooltip" title="Remove contact from call"><i
-                                    class="material-icons">person_remove</i>
-                            </button>
-                        </form>
-                    </div>
-                    <div class="col-12 col-md-6 p-3">
-                        <div th:replace="fragments/mainFragments :: heading('YOUR CONTACTS', 'secondary-border')"></div>
-                        <div th:replace="fragments/mainFragments :: listEmptyWarning(${contactsList}, 'You do not have any contacts, yet!')"></div>
-                        <form class="flex-row d-flex justify-content-between secondary-bg rounded mt-2 p-1 pl-3 pr-2"
-                              th:each="contact : ${contactsList}"
-                              th:action="@{/call/inviteContact(contactID=${contact.getId()})}"
-                              th:method="post"
-                              th:unless="${invitingList.contains(contact)}">
+        <div th:replace="fragments/mainFragments :: heading('CALL MEMBERS', 'secondary-border')"></div>
+        <div th:replace="fragments/mainFragments :: listEmptyWarning(${invitation.call.participants}, 'No members here!')"></div>
+        <div class="overflow-auto flex-grow-1">
+            <div class="mb-4">
+                <form class="flex-row d-flex justify-content-between secondary-bg rounded mt-2 p-1 pl-3 pr-2 "
+                      th:each="participant : ${invitation.call.participants}">
 
-                            <div class="flex-column d-flex justify-content-center">
-                                <p class="m-0" th:text="${contact.userName}"></p>
-                            </div>
-                            <button class="justify-content-center btn text-light m-0 p-0 mt-1" type="submit"
-                                    data-toggle="tooltip" title="Invite contact to call">
-                                <i class="material-icons">add_ic_call</i>
-                            </button>
-                        </form>
+                    <div class="flex-column d-flex justify-content-center">
+                        <p class="m-1" th:text="${participant.userName}"></p>
                     </div>
-                </div>
-                <div class="flex-row d-flex justify-content-center mr-3 ml-3 pt-3 border-top secondary-border">
-                    <button type="submit" class="btn btn-outline-success">START CALL</button>
-                </div>
+                </form>
             </div>
+            <div class="mb-4">
+                <div th:replace="fragments/mainFragments :: heading('ALSO INVITED', 'secondary-border')"></div>
+                <div th:replace="fragments/mainFragments :: listEmptyWarning(${invitation.invitedUsers}, 'No one else is invited!')"></div>
+                <form class="flex-row d-flex justify-content-between secondary-bg rounded mt-2 p-1 pl-3 pr-2"
+                      th:each="invited : ${invitation.invitedUsers}"
+                      th:unless="${invitation.call.participants.contains(invited)}">
+
+                    <div class="flex-column d-flex justify-content-center">
+                        <p class="m-1" th:text="${invited.userName}"></p>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="flex-row d-flex justify-content-center">
+            <form class="text-center" th:action="@{/call/leave}" th:method="delete">
+                <button type="submit" class="btn btn-outline-danger m-2 p-2">
+                    LEAVE CALL
+                </button>
+            </form>
+
+            <form class="text-center" th:action="@{/call/end}" th:method="delete">
+                <button type="submit" class="btn btn-outline-danger m-2 p-2"
+                        th:if="${isInitiator}">
+                    END CALL
+                </button>
+            </form>
         </div>
     </div>
 </div>

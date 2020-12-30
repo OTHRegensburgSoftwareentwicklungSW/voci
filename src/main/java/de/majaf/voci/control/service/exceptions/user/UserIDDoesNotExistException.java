@@ -1,6 +1,4 @@
-package de.majaf.voci.control.service.exceptions;
-
-import de.majaf.voci.entity.User;
+package de.majaf.voci.control.service.exceptions.user;
 
 public class UserIDDoesNotExistException extends Exception{
 

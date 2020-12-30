@@ -26,7 +26,7 @@ public class Call extends SingleIdEntity {
     @OneToOne
     private TextChannel textChannel;
 
-    private Boolean active;
+    private Boolean active = false;
 
     public Call() {
     }
@@ -80,6 +80,10 @@ public class Call extends SingleIdEntity {
 
     public void removeParticipant(User participant) {
         participants.remove(participant);
+    }
+
+    public void removeAllParticipants() {
+        participants.clear();
     }
 
     public Boolean isActive() {

@@ -1,8 +1,7 @@
 package de.majaf.voci.boundery.contoller;
 
 import de.majaf.voci.control.service.IUserService;
-import de.majaf.voci.control.service.exceptions.InvalidUserException;
-import de.majaf.voci.control.service.exceptions.UserAlreadyExistsException;
+import de.majaf.voci.control.service.exceptions.user.UserAlreadyExistsException;
 import de.majaf.voci.entity.RegisteredUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;

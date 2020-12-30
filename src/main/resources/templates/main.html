@@ -55,12 +55,11 @@
     <!-- right column -->
     <div class="col-md-3 col-sm-3 d-flex flex-column h-100 p-4">
         <div th:replace="fragments/mainFragments :: heading('CONTACTS', 'secondary-border')"></div>
-        <div th:replace="fragments/mainFragments :: listEmptyWarning(${contactsList}, 'You do not have any contacts, yet!')">
-        </div>
+        <div th:replace="fragments/mainFragments :: listEmptyWarning(${contactsList}, 'You do not have any contacts, yet!')"></div>
         <div class="overflow-auto">
             <form class="flex-row d-flex justify-content-between secondary-bg rounded mt-2 p-1 pl-3 pr-2"
                   th:each="contact : ${contactsList}"
-                  th:action="@{/main/deleteContact(contactID=${contact.getId()})}"
+                  th:action="@{/main/deleteContact(contactID=${contact.id})}"
                   th:method="delete">
 
                 <div class="flex-column d-flex justify-content-center">
