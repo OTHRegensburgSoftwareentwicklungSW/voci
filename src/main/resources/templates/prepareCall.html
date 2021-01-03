@@ -108,6 +108,9 @@
                         th:onclick="'javascript:takeInvitation(' + ${invitation.id} + ')'"><i
                         class="material-icons">ring_volume</i>
                 </button>
+                <script th:inline="javascript">
+                    addToInvitationMap([[${invitation.id}]], [[${invitation.initiator.userName}]])
+                </script>
             </div>
         </div>
     </div>

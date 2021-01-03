@@ -1,5 +1,11 @@
 let stompClient = null;
 
+let invitation_username_map = new Map();
+
+function addToInvitationMap(invitationID, initiatorName) {
+    invitation_username_map.set(invitationID, initiatorName);
+}
+
 function connectCallSocket(invitationID, userID) {
     connectSocket(function () {
         stompClient.subscribe('/broker/' + userID + '/leftCall', function (left) {
@@ -40,17 +46,18 @@ function connectInvitationSocket(userID) {
                 subscribeToInvitationEnd(info.invitationID, info.username);
             }
         });
+        invitation_username_map.forEach((value, key, map) => subscribeToInvitationEnd(key, value));
     });
 }
 
-function subscribeToInvitationEnd(invitationID, username) { // TODO doestnt work when loading page
+function subscribeToInvitationEnd(invitationID, username) {
     stompClient.subscribe('/broker/' + invitationID + '/endedInvitation', function (ended) {
         if (ended.body)
             removeInvitation(username);
     });
 }
 
-function connectSocket(connect_function) { // TODO reference this on main
+function connectSocket(connect_function) {
     let socket = new SockJS('/chat');
     stompClient = Stomp.over(socket);
     stompClient.connect({}, connect_function);
