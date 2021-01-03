@@ -1,9 +1,6 @@
 package de.majaf.voci.entity;
 
-import javax.persistence.Entity;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -14,7 +11,7 @@ import java.util.List;
 @Table(name = "communication")
 public class Call extends SingleIdEntity {
 
-    @OneToMany(mappedBy = "activeCall")
+    @OneToMany(mappedBy = "activeCall", fetch = FetchType.LAZY)
     private List<User> participants = new ArrayList<>();
 
     @OneToOne(mappedBy = "call")

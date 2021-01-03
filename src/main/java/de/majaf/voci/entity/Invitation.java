@@ -17,12 +17,11 @@ public class Invitation extends SingleIdEntity{
     @OneToOne(cascade = CascadeType.ALL)
     private RegisteredUser initiator;
 
-    @ManyToMany(cascade = CascadeType.ALL)
+    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<RegisteredUser> invitedUsers = new ArrayList<>();
 
     @JoinColumn(unique = true, nullable = false)
     @OneToOne(cascade = CascadeType.ALL)
-//    @Transient
     private Call call;
 
 //    @OneToMany
@@ -104,5 +103,10 @@ public class Invitation extends SingleIdEntity{
     public void addGuestUser(GuestUser guestUser) {
         if(!guestUsers.contains(guestUser))
             this.guestUsers.add(guestUser);
+    }
+
+    @Override
+    public String toString() {
+        return "Invitation from " + initiator + "\nCall is active: " + call.isActive() + "\nInvited: " + invitedUsers;
     }
 }

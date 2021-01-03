@@ -7,6 +7,7 @@ import de.majaf.voci.control.service.exceptions.user.UserIDDoesNotExistException
 import de.majaf.voci.control.service.exceptions.user.UsernameDoesNotExistException;
 import de.majaf.voci.entity.RegisteredUser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;

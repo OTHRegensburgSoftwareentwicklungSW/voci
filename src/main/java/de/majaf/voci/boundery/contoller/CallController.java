@@ -9,6 +9,8 @@ import de.majaf.voci.entity.Call;
 import de.majaf.voci.entity.Invitation;
 import de.majaf.voci.entity.RegisteredUser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -27,6 +29,9 @@ public class CallController {
     @Autowired
     private MainController mainController;
 
+    @Autowired
+    private SimpMessagingTemplate simpMessagingTemplate;
+
     @RequestMapping(value = "/call", method = RequestMethod.GET)
     public String prepareCallCreationPage(Model model, Principal principal) {
         RegisteredUser user = mainController.getActiveUser(principal);
@@ -34,7 +39,7 @@ public class CallController {
 
         if (activeCall != null) { // if the user is already in a call
             model.addAttribute("invitation", activeCall.getInvitation());
-            model.addAttribute("isInitiator", activeCall.getInvitation().getInitiator());
+            model.addAttribute("user", user);
             return "call";
         } else {
             Invitation invitation = user.getOwnedInvitation();
@@ -42,15 +47,15 @@ public class CallController {
                 try {
                     callService.joinCall(user, invitation);
                     model.addAttribute("invitation", invitation);
-                    model.addAttribute("isInitiator", true);
+                    model.addAttribute("user", user);
+                    simpMessagingTemplate.convertAndSend("/broker/" + invitation.getId() + "/addedCallMember", user.getUserName());
                     return "call";
                 } catch (InvalidCallStateException | InvalidUserException e) {
                     throw new IllegalArgumentException(e);
                 }
             } else {
                 model.addAttribute("invitingList", invitation.getInvitedUsers());
-                model.addAttribute("contactsList", user.getContacts());
-                model.addAttribute("invitationList", user.getActiveInvitations());
+                model.addAttribute("user", user);
                 return "prepareCall";
             }
         }
@@ -68,9 +73,8 @@ public class CallController {
         } catch (UserIDDoesNotExistException uidnee) {
             model.addAttribute("errorMsg", "Invalid UserID: " + uidnee.getUserID());
         }
-        model.addAttribute("contactsList", user.getContacts());
         model.addAttribute("invitingList", invitation.getInvitedUsers());
-        model.addAttribute("invitationList", user.getActiveInvitations());
+        model.addAttribute("user", user);
         return "prepareCall";
     }
 
@@ -84,66 +88,9 @@ public class CallController {
         } catch (UserIDDoesNotExistException uidnee) {
             model.addAttribute("errorMsg", "Invalid UserID: " + uidnee.getUserID());
         }
-
-        model.addAttribute("contactsList", user.getContacts());
         model.addAttribute("invitingList", invitation.getInvitedUsers());
-        model.addAttribute("invitationList", user.getActiveInvitations());
+        model.addAttribute("user", user);
         return "prepareCall";
-    }
-
-    // TODO: Exceptions und so
-    @RequestMapping(value = "/call/start", method = RequestMethod.POST)
-    public String prepareCallPage(Model model, Principal principal) {
-        RegisteredUser user = mainController.getActiveUser(principal);
-        Invitation invitation = user.getOwnedInvitation();
-        callService.startCall(invitation);
-        model.addAttribute("invitation", invitation);
-        model.addAttribute("isInitiator", user == invitation.getInitiator());
-        return "call";
-    }
-
-    @RequestMapping(value = "/call/take", method = RequestMethod.POST)
-    public String joinCall(Model model, Principal principal, @PathParam("invitationID") long invitationID) {
-        RegisteredUser user = mainController.getActiveUser(principal);
-        try {
-            Invitation invitation = callService.loadInvitationByID(invitationID);
-            callService.joinCall(user, invitation);
-            model.addAttribute("invitation", invitation);
-            model.addAttribute("isInitiator", false);
-            return "call";
-        } catch (InvitationIDDoesNotExistException | InvalidUserException | InvalidCallStateException e) {
-            // TODO
-            throw new IllegalArgumentException(e);
-        }
-    }
-
-    // TODO: Exceptions und so
-    @RequestMapping(value = "/call/leave", method = RequestMethod.DELETE)
-    public String leaveCall(Model model, Principal principal) {
-        RegisteredUser user = mainController.getActiveUser(principal);
-        try {
-            callService.leaveCall(user, user.getActiveCall().getInvitation());
-        } catch (InvalidCallStateException icse) {
-            throw new IllegalArgumentException(icse);
-        }
-        mainController.showUpdate(model, principal);
-        return "main";
-    }
-
-    @RequestMapping(value = "/call/end", method = RequestMethod.DELETE)
-    public String endCall(Model model, Principal principal) {
-        RegisteredUser user = mainController.getActiveUser(principal);
-        try {
-            Call activeCall = user.getActiveCall();
-            if (activeCall != null)
-                callService.endCall(user, activeCall.getInvitation());
-        } catch (InvalidUserException iue) { // TODO: maybe was anderes
-            throw new AccessDeniedException("403 forbidden", iue);
-        } catch (InvalidCallStateException icse) {
-            throw new IllegalArgumentException(icse);
-        }
-        mainController.showUpdate(model, principal);
-        return "main";
     }
 
 

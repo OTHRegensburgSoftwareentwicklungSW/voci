@@ -27,7 +27,7 @@ public class RegisteredUser extends User implements UserDetails {
     @ManyToMany(mappedBy = "members")
     private List<Room> rooms = new ArrayList<>();
 
-    @OneToMany(mappedBy = "owner", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "owner")
     private List<Room> ownedRooms = new ArrayList<>();
 
     @OneToOne(mappedBy = "initiator")
@@ -36,7 +36,7 @@ public class RegisteredUser extends User implements UserDetails {
     @ManyToMany(mappedBy = "invitedUsers")
     private List<Invitation> activeInvitations = new ArrayList<>();
 
-    public RegisteredUser(){ };
+    public RegisteredUser(){ }
 
     public RegisteredUser(String userName, String email, String password) {
         this.userName = userName;

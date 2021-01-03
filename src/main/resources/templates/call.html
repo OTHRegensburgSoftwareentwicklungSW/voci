@@ -4,14 +4,22 @@
     <meta charset="UTF-8">
     <title>Call</title>
     <title th:replace="fragments/bootstrap :: header"></title>
+    <title th:replace="fragments/sockets :: header"></title>
     <link rel="stylesheet" th:href="@{/css/main.css}">
+    <script th:src="@{/js/call_app.js}"></script>
+
+    <script th:inline="javascript">
+        window.onload = function () {
+            connectCallSocket([[${invitation.id}]], [[${user.id}]]);
+        }
+    </script>
+
 </head>
 <body class="vh-100 main-bg text-light">
 <div class="container-fluid h-100 row m-0 p-0">
 
     <!-- left column -->
-    <div class="col-md-9 col-sm-9 d-flex flex-column h-100 secondary-bg">
-    </div>
+    <div class="col-md-9 col-sm-9 d-flex flex-column h-100 secondary-bg"></div>
 
     <!-- right column -->
     <div class="col-md-3 col-sm-3 d-flex flex-column h-100 p-4">
@@ -19,42 +27,54 @@
         <div th:replace="fragments/mainFragments :: heading('CALL MEMBERS', 'secondary-border')"></div>
         <div th:replace="fragments/mainFragments :: listEmptyWarning(${invitation.call.participants}, 'No members here!')"></div>
         <div class="overflow-auto flex-grow-1">
-            <div class="mb-4">
-                <form class="flex-row d-flex justify-content-between secondary-bg rounded mt-2 p-1 pl-3 pr-2 "
+            <div class="mb-4" id="member_container">
+                <div class="flex-row d-flex justify-content-between secondary-bg rounded mt-2 p-1 pl-3 pr-2"
                       th:each="participant : ${invitation.call.participants}">
 
                     <div class="flex-column d-flex justify-content-center">
-                        <p class="m-1" th:text="${participant.userName}"></p>
+                        <p class="m-1 member_name" th:text="${participant.userName}"></p>
                     </div>
-                </form>
+                </div>
             </div>
-            <div class="mb-4">
+            <div class="mb-4" id="invited_container">
                 <div th:replace="fragments/mainFragments :: heading('ALSO INVITED', 'secondary-border')"></div>
                 <div th:replace="fragments/mainFragments :: listEmptyWarning(${invitation.invitedUsers}, 'No one else is invited!')"></div>
-                <form class="flex-row d-flex justify-content-between secondary-bg rounded mt-2 p-1 pl-3 pr-2"
+                <div class="flex-row d-flex justify-content-between secondary-bg rounded mt-2 p-1 pl-3 pr-2"
                       th:each="invited : ${invitation.invitedUsers}"
                       th:unless="${invitation.call.participants.contains(invited)}">
 
                     <div class="flex-column d-flex justify-content-center">
-                        <p class="m-1" th:text="${invited.userName}"></p>
+                        <p class="m-1 invited_name" th:text="${invited.userName}"></p>
                     </div>
-                </form>
+                </div>
             </div>
         </div>
 
         <div class="flex-row d-flex justify-content-center">
-            <form class="text-center" th:action="@{/call/leave}" th:method="delete">
-                <button type="submit" class="btn btn-outline-danger m-2 p-2">
+            <div class="text-center">
+                <button class="btn btn-outline-danger m-2 p-2" id="leave-call-btn">
                     LEAVE CALL
                 </button>
-            </form>
+                <script th:inline="javascript">
+                    let leaveCallBtn = document.getElementById('leave-call-btn');
+                    leaveCallBtn.addEventListener("click", function () {
+                        stompClient.send('/ws/' + [[${invitation.id}]] + '/leaveCall', {});
+                    })
+                </script>
+            </div>
 
-            <form class="text-center" th:action="@{/call/end}" th:method="delete">
-                <button type="submit" class="btn btn-outline-danger m-2 p-2"
-                        th:if="${isInitiator}">
+            <div class="text-center">
+                <button class="btn btn-outline-danger m-2 p-2" id="end-call-btn"
+                        th:if="${user.equals(invitation.initiator)}">
                     END CALL
                 </button>
-            </form>
+                <script th:inline="javascript">
+                    let endCallBtn = document.getElementById('end-call-btn');
+                    endCallBtn.addEventListener("click", function () {
+                        stompClient.send('/ws/' + [[${invitation.id}]] + '/endCall', {});
+                    })
+                </script>
+            </div>
         </div>
     </div>
 </div>

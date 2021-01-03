@@ -9,6 +9,8 @@ import de.majaf.voci.entity.Invitation;
 import de.majaf.voci.entity.RegisteredUser;
 import de.majaf.voci.entity.User;
 
+import java.util.List;
+
 public interface ICallService extends IExternalCallService{
     Invitation createInvitation(RegisteredUser initiator);
     Invitation loadInvitationByID(long invitationID) throws InvitationIDDoesNotExistException;
@@ -18,8 +20,19 @@ public interface ICallService extends IExternalCallService{
     void removeInvitedUser(Invitation invitation, RegisteredUser invited);
     void removeInvitedUserByID(Invitation invitation, long invitedContactID) throws UserIDDoesNotExistException;
 
-    void startCall(Invitation invitation);
+    void startCall(long invitationID) throws InvitationIDDoesNotExistException;
+    void joinCallByInvitationID(RegisteredUser user, long InvitationID) throws InvalidUserException, InvalidCallStateException, InvitationIDDoesNotExistException;
     void joinCall(RegisteredUser user, Invitation invitation) throws InvalidUserException, InvalidCallStateException;
-    void leaveCall(RegisteredUser user, Invitation invitation) throws InvalidCallStateException;
-    void endCall(User user, Invitation invitation) throws InvalidUserException, InvalidCallStateException;
+
+    boolean isUserInvited(RegisteredUser user, Invitation invitation);
+    boolean isUserInvited(RegisteredUser user, long invitationID) throws InvitationIDDoesNotExistException;
+
+    boolean isUserInCall(User user, long invitationID) throws InvitationIDDoesNotExistException;
+
+    // returns if call is still active after leaving TODO maybe
+    boolean leaveCallByInvitationID(RegisteredUser user, long invitationID) throws InvalidCallStateException, InvitationIDDoesNotExistException;
+    boolean leaveCall(RegisteredUser user, Invitation invitation) throws InvalidCallStateException;
+
+    void endCallByInvitationID(RegisteredUser user, long invitationID) throws InvalidUserException, InvalidCallStateException, InvitationIDDoesNotExistException;
+    void endCall(Invitation invitation) throws InvalidCallStateException;
 }

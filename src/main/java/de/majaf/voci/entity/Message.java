@@ -7,7 +7,7 @@ import java.util.Date;
 public class Message extends SingleIdEntity{
 
     private Date sentAt;
-    private /*Object*/ String content;
+    private byte[] content;
 
     @Enumerated(EnumType.ORDINAL)
     private MessageType type;

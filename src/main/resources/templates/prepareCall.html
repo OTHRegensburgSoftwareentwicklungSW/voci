@@ -4,7 +4,16 @@
     <meta charset="UTF-8">
     <title>Call</title>
     <title th:replace="fragments/bootstrap :: header"></title>
+    <title th:replace="fragments/sockets :: header"></title>
     <link rel="stylesheet" th:href="@{/css/main.css}">
+    <script th:src="@{/js/call_app.js}"></script>
+
+    <script th:inline="javascript">
+        window.onload = function () {
+            connectInvitationSocket([[${user.id}]]);
+        }
+    </script>
+
 </head>
 <body class="vh-100 main-bg text-light">
 <div class="container-fluid h-100 row m-0 p-0">
@@ -50,9 +59,9 @@
                     </div>
                     <div class="col-12 col-md-6 p-3">
                         <div th:replace="fragments/mainFragments :: heading('YOUR CONTACTS', 'secondary-border')"></div>
-                        <div th:replace="fragments/mainFragments :: listEmptyWarning(${contactsList}, 'You do not have any contacts, yet!')"></div>
+                        <div th:replace="fragments/mainFragments :: listEmptyWarning(${user.contacts}, 'You do not have any contacts, yet!')"></div>
                         <form class="flex-row d-flex justify-content-between secondary-bg rounded mt-2 p-1 pl-3 pr-2"
-                              th:each="contact : ${contactsList}"
+                              th:each="contact : ${user.contacts}"
                               th:action="@{/call/inviteContact(contactID=${contact.getId()})}"
                               th:method="post"
                               th:unless="${invitingList.contains(contact)}">
@@ -67,12 +76,20 @@
                         </form>
                     </div>
                 </div>
-                <form class="flex-row d-flex justify-content-center mr-3 ml-3 pt-3 border-top secondary-border"
-                      th:action="@{/call/start}" th:method="post">
-                    <button type="submit" class="btn btn-outline-success">
+
+                <div class="flex-row d-flex justify-content-center mr-3 ml-3 pt-3 border-top secondary-border">
+
+                    <button class="btn btn-outline-success" id="start-call-btn">
                         START CALL
                     </button>
-                </form>
+                    <script>
+                        let startCallBtn = document.getElementById('start-call-btn');
+                        startCallBtn.addEventListener("click", function () {
+                            stompClient.send('/ws/startCall', {});
+                        })
+                    </script>
+                </div>
+
             </div>
         </div>
     </div>
@@ -80,20 +97,18 @@
     <!-- right column / invitations -->
     <div class="col-md-3 col-sm-3 d-flex flex-column h-100 p-4">
         <div th:replace="fragments/mainFragments :: heading('YOUR INVITATIONS', 'secondary-border')"></div>
-        <div class="overflow-auto">
-            <form class="flex-row d-flex justify-content-between secondary-bg rounded mt-2 p-1 pl-3 pr-2"
-                  th:each="invitation : ${invitationList}"
-                  th:action="@{/call/take(invitationID=${invitation.id})}"
-                  th:method="post"
-                  th:if="${invitation.call.isActive()}" >
-
+        <div id="invitation_container" class="overflow-auto">
+            <div class="flex-row d-flex justify-content-between secondary-bg rounded mt-2 p-1 pl-3 pr-2"
+                 th:each="invitation : ${user.activeInvitations}"
+                 th:if="${invitation.call.isActive()}">
                 <div class="flex-column d-flex justify-content-center">
-                    <p class="m-0" th:text="${invitation.initiator.userName}"></p>
+                    <p class="m-0 invitation_name" th:text="${invitation.initiator.userName}"></p>
                 </div>
-                <button class="justify-content-center btn text-light m-0 p-0 mt-1" type="submit"><i
+                <button class="justify-content-center btn text-light m-0 p-0 mt-1"
+                        th:onclick="'javascript:takeInvitation(' + ${invitation.id} + ')'"><i
                         class="material-icons">ring_volume</i>
                 </button>
-            </form>
+            </div>
         </div>
     </div>
 </div>

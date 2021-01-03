@@ -31,5 +31,9 @@ public abstract class User extends SingleIdEntity{
 
     public abstract Boolean isRegistered();
 
+    public boolean isInCall() {
+        return activeCall != null;
+    }
+
     public abstract String getUserName();
 }
