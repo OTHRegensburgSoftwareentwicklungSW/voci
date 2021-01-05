@@ -1,6 +1,7 @@
 package de.majaf.voci.control.service.impl;
 
 import de.majaf.voci.control.service.ICallService;
+import de.majaf.voci.control.service.IChannelService;
 import de.majaf.voci.control.service.IUserService;
 import de.majaf.voci.control.service.exceptions.call.InvalidCallStateException;
 import de.majaf.voci.control.service.exceptions.call.InvitationIDDoesNotExistException;
@@ -30,6 +31,9 @@ public class CallService extends ExternalCallService implements ICallService {
 
     @Autowired
     private IUserService userService;
+
+    @Autowired
+    private IChannelService channelService;
 
     @Override
     @Transactional
@@ -79,6 +83,7 @@ public class CallService extends ExternalCallService implements ICallService {
     public void startCall(long invitationID) throws InvitationIDDoesNotExistException {
         Invitation invitation = loadInvitationByID(invitationID);
         Call call = invitation.getCall();
+        call.setTextChannel(channelService.createTextChannel());
         call.setActive(true);
         call.addParticipant(invitation.getInitiator());
         invitation.getInitiator().setActiveCall(call);
@@ -161,6 +166,8 @@ public class CallService extends ExternalCallService implements ICallService {
 
         call.removeAllParticipants();
         call.setActive(false);
+        channelService.deleteTextChannel(call.getTextChannel());
+        call.setTextChannel(null);
 
         for (RegisteredUser invited : invitation.getInvitedUsers())
             invited.removeActiveInvitation(invitation);

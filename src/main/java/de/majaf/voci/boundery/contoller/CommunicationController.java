@@ -7,9 +7,7 @@ import de.majaf.voci.control.service.exceptions.user.InvalidUserException;
 import de.majaf.voci.entity.Call;
 import de.majaf.voci.entity.Invitation;
 import de.majaf.voci.entity.RegisteredUser;
-import de.majaf.voci.entity.wrapper.RegUserInvitationWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
@@ -47,8 +45,7 @@ public class CommunicationController {
         simpMessagingTemplate.convertAndSend("/broker/" + user.getId() + "/startedCall", true);
 
         for (RegisteredUser invited : invitation.getInvitedUsers()) {
-            simpMessagingTemplate.convertAndSend("/broker/" + invited.getId() + "/invited",
-                    new RegUserInvitationWrapper(invitation.getId(), user.getUserName()));
+            simpMessagingTemplate.convertAndSend("/broker/" + invited.getId() + "/invited", invitation);
         }
     }
 
@@ -73,7 +70,7 @@ public class CommunicationController {
         try {
             boolean callStillActive = callService.leaveCallByInvitationID(user, invitationID);
             simpMessagingTemplate.convertAndSend("/broker/" + user.getId() + "/leftCall", true);
-            if(!callStillActive)
+            if (!callStillActive)
                 simpMessagingTemplate.convertAndSend("/broker/" + invitationID + "/endedInvitation", true);
 
             return user.getUserName();

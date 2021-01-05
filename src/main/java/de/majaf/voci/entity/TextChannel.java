@@ -1,7 +1,6 @@
 package de.majaf.voci.entity;
 
-import javax.persistence.Entity;
-import javax.persistence.OneToMany;
+import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -9,19 +8,17 @@ import java.util.List;
 @Entity
 public class TextChannel extends Channel {
 
-    @OneToMany
+    @OneToMany(cascade = {CascadeType.ALL})
+    @JoinColumn(name = "text_channel_id")
     private List<Message> messages = new ArrayList<>();
 
     public List<Message> getMessages() {
+        Collections.sort(messages);
         return Collections.unmodifiableList(messages);
     }
 
-    public void setMessages(List<Message> messages) {
-        this.messages = messages;
-    }
-
     public void addMessage(Message message) {
-        if(messages.contains(message))
+        if (!messages.contains(message))
             messages.add(message);
     }
 }

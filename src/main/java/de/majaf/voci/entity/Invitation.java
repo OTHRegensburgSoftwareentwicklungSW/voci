@@ -1,5 +1,8 @@
 package de.majaf.voci.entity;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -13,18 +16,22 @@ public class Invitation extends SingleIdEntity{
     private long timeout;
     private String url;
 
+    @JsonIgnore
     @JoinColumn(unique = true, nullable = false)
     @OneToOne(cascade = CascadeType.ALL)
     private RegisteredUser initiator;
 
+    @JsonIgnore
     @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<RegisteredUser> invitedUsers = new ArrayList<>();
 
+    @JsonIgnore
     @JoinColumn(unique = true, nullable = false)
     @OneToOne(cascade = CascadeType.ALL)
     private Call call;
 
 //    @OneToMany
+    @JsonIgnore
     @Transient
     private List<GuestUser> guestUsers = new ArrayList<>();
 
@@ -61,6 +68,11 @@ public class Invitation extends SingleIdEntity{
 
     public RegisteredUser getInitiator() {
         return initiator;
+    }
+
+    @JsonGetter("initiator")
+    public String getInitiatorName() {
+        return initiator.getUserName();
     }
 
     public void setInitiator(RegisteredUser initiator) {

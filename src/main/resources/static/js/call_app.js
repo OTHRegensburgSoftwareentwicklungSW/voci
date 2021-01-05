@@ -6,11 +6,11 @@ function addToInvitationMap(invitationID, initiatorName) {
     invitation_username_map.set(invitationID, initiatorName);
 }
 
-function connectCallSocket(invitationID, userID) {
+function connectCallSocket(invitationID, userID, textChannelID) {
     connectSocket(function () {
         stompClient.subscribe('/broker/' + userID + '/leftCall', function (left) {
             if (left.body)
-                window.location.href = "/call";
+                window.location.href = "/main";
         });
         stompClient.subscribe('/broker/' + invitationID + '/addedCallMember', function (username) {
             if (username.body != null)
@@ -23,6 +23,13 @@ function connectCallSocket(invitationID, userID) {
         stompClient.subscribe('/broker/' + invitationID + '/endedCall', function (ended) {
             if (ended.body) {
                 window.location.href = "/call";
+            }
+        });
+        stompClient.subscribe('/broker/' + textChannelID + '/receivedMessage', function (msg) {
+            let message = JSON.parse(msg.body);
+            if (message) {
+                addMessage(message.senderName, message.content, message.sentAt, message.senderID === userID);
+                scrollSmoothToBottom('msg-container');
             }
         });
     });
@@ -39,14 +46,14 @@ function connectInvitationSocket(userID) {
                 window.location.href = "/call";
         });
 
-        stompClient.subscribe('/broker/' + userID + '/invited', function (invitationInfo) {
-            let info = JSON.parse(invitationInfo.body)
-            if (info) {
-                addInvitation(info.username, info.invitationID);
-                subscribeToInvitationEnd(info.invitationID, info.username);
+        stompClient.subscribe('/broker/' + userID + '/invited', function (inv) {
+            let invitation = JSON.parse(inv.body)
+            if (invitation) {
+                addInvitation(invitation.initiator, invitation.id);
+                subscribeToInvitationEnd(invitation.id, invitation.initiator);
             }
         });
-        invitation_username_map.forEach((value, key, map) => subscribeToInvitationEnd(key, value));
+        invitation_username_map.forEach((value, key) => subscribeToInvitationEnd(key, value));
     });
 }
 
@@ -68,6 +75,18 @@ function disconnect() {
         stompClient.disconnect();
     }
     console.log("Disconnected");
+}
+
+function sendMessage(textChannelID, msgInput) {
+    let msg = msgInput.value.trim();
+    if (msg !== "") {
+        console.log(msg);
+        stompClient.send('/ws/' + textChannelID + '/sendMessage', {}, msg);
+        msgInput.value = "";
+        msgInput.style.overflow = 'hidden';
+        msgInput.style.height = 0;
+        msgInput.style.height = msgInput.scrollHeight + 'px';
+    }
 }
 
 function takeInvitation(invitationID) {
@@ -151,4 +170,50 @@ function addInvitation(username, invitationID) {
 
 function removeInvitation(username) {
     removeName('invitation_container', 'invitation_name', username);
+}
+
+function addMessage(senderName, content, date, ownMessage) {
+    let msgContainer = document.getElementById('msg-container');
+
+    let msgOuterContainer = document.createElement("div");
+    if (ownMessage) {
+        msgOuterContainer.classList.add('justify-content-end', 'text-right');
+    }
+    msgOuterContainer.classList.add('flex-row', 'd-flex', 'pb-2');
+
+    msgContainer.appendChild(msgOuterContainer);
+    let msgInnerContainer = document.createElement("div");
+    msgInnerContainer.classList.add('flex-column', 'd-flex', 'rounded', 'main-bg', 'p-1', 'pl-3', 'pr-3');
+    msgInnerContainer.style.maxWidth = '75%';
+
+    msgOuterContainer.appendChild(msgInnerContainer);
+    let name_par = document.createElement("p");
+    name_par.classList.add('text-success', 'border-bottom', 'secondary-border', 'mb-1');
+    name_par.innerHTML = senderName;
+
+    msgInnerContainer.appendChild(name_par);
+    let content_par = document.createElement("p");
+    content_par.classList.add('mb-1');
+    content_par.innerHTML = content;
+    content_par.style.overflowWrap = 'break-word';
+    msgInnerContainer.appendChild(content_par);
+
+    let time_par = document.createElement("small");
+    time_par.classList.add('pb-1', 'border-top', 'secondary-border', 'text-secondary');
+    time_par.innerHTML = date;
+    msgInnerContainer.appendChild(time_par);
+}
+
+// src: https://stackoverflow.com/questions/270612/scroll-to-bottom-of-div?rq=1
+function scrollSmoothToBottom(id) {
+    var div = document.getElementById(id);
+    $('#' + id).animate({
+        scrollTop: div.scrollHeight - div.clientHeight
+    }, 50);
+}
+
+// src: https://stackoverflow.com/questions/270612/scroll-to-bottom-of-div?rq=1
+function scrollToBottom(id) {
+    var div = document.getElementById(id);
+    div.scrollTop = div.scrollHeight - div.clientHeight;
 }

@@ -39,6 +39,7 @@ public class CallController {
 
         if (activeCall != null) { // if the user is already in a call
             model.addAttribute("invitation", activeCall.getInvitation());
+            model.addAttribute("textChannel", activeCall.getTextChannel());
             model.addAttribute("user", user);
             return "call";
         } else {
@@ -47,6 +48,7 @@ public class CallController {
                 try {
                     callService.joinCall(user, invitation);
                     model.addAttribute("invitation", invitation);
+                    model.addAttribute("textChannel", invitation.getCall().getTextChannel());
                     model.addAttribute("user", user);
                     simpMessagingTemplate.convertAndSend("/broker/" + invitation.getId() + "/addedCallMember", user.getUserName());
                     return "call";
