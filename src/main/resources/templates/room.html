@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${room.roomName}"></title>
+    <title th:replace="/fragments/bootstrap :: header"></title>
+    <title th:replace="/fragments/sockets :: header"></title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <script th:src="@{/js/call_app.js}"></script>
+
+    <script th:inline="javascript">
+        window.onload = function () {
+            connectRoomSocket([[${user.id}]], [[${room.textChannels[0].id}]]);
+            scrollToBottom('msg-container');
+        }
+    </script>
+</head>
+<body class="vh-100 main-bg text-light">
+<div class="container-fluid h-100 row m-0 p-0"> <!-- TODO: responsive machen -->
+
+    <!-- left column -->
+    <div class="col-md-2 col-sm-3 d-flex flex-column h-100">
+        <header th:replace="/fragments/mainFragments :: header"></header>
+        <div class="flex-grow-1 overflow-auto text-center">
+            <p class="text-secondary border-top border-bottom secondary-border mb-2">text-channels</p>
+            <div class="pl-2 pr-2">
+                <div class="justify-content-center secondary-bg rounded p-1 mb-2"
+                     th:each="textChannel : ${room.textChannels}">
+                    <p class="m-0" th:text="${textChannel.channelName}"></p>
+                </div>
+            </div>
+            <p class="text-secondary border-top border-bottom secondary-border mb-2 mt-4">voice-channels</p>
+            <div class="pl-2 pr-2">
+                <div class="justify-content-center secondary-bg rounded p-1 mb-2"
+                     th:each="voiceChannel : ${room.voiceChannels}">
+                    <p class="m-0" th:text="${voiceChannel.channelName}"></p>
+                </div>
+            </div>
+        </div>
+        <div class="pb-4 pt-2 pl-4 pr-4 border-top secondary-border">
+            <a th:replace="/fragments/mainFragments :: navButtonInactive('HOME', '/main')"></a>
+        </div>
+    </div>
+
+    <!-- mid column / textChannel -->
+    <div class="col-md-8 col-sm-9 d-flex flex-column h-100 secondary-bg pt-4 pl-4 pr-4">
+        <div class="border-bottom main-border flex-row d-flex row justify-content-between pl-3 pr-3 mb-2">
+
+            <div class="flex-column d-flex justify-content-center pb-2">
+                <h5 class="m-0" th:text="${room.roomName.toUpperCase()}"></h5>
+            </div>
+
+            <div class="flex-row d-flex row justify-content-center text-light m-0 p-0 pb-2">
+                <p class="m-0 text-secondary mr-2 pt-1 pb-1">Text-Channel: </p>
+                <p class="main-bg rounded m-0 p-1 pl-2 pr-2" th:text="${room.textChannels[0].channelName}"></p>
+            </div>
+
+        </div>
+        <div th:replace="/fragments/textChannelFragment :: textChannel(${room.textChannels[0]})"
+    </div>
+
+    <!-- right column / members -->
+    <div class="col-md-2 col-sm-3 d-flex flex-column h-100"></div>
+</div>
+</body>
+</html>

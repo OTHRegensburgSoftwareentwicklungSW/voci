@@ -1,8 +1,24 @@
 package de.majaf.voci.entity;
 
-// @Entity
+import javax.persistence.Entity;
+
+@Entity
 public class GuestUser extends User {
     private String tempName;
+
+    public GuestUser() {}
+
+    public GuestUser(String tempName) {
+        this.tempName = tempName;
+    }
+
+    public String getTempName() {
+        return tempName;
+    }
+
+    public void setTempName(String tempName) {
+        this.tempName = tempName;
+    }
 
     @Override
     public Boolean isRegistered() {

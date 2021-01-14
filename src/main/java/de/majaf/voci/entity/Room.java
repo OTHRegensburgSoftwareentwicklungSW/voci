@@ -7,18 +7,18 @@ import java.util.LinkedList;
 import java.util.List;
 
 @Entity
-public class Room extends SingleIdEntity{
+public class Room extends SingleIdEntity {
 
     @Column(nullable = false)
     private String roomName;
 
     //@Column(nullable = false)
-    @OneToMany
+    @OneToMany(cascade = {CascadeType.ALL})
     private List<VoiceChannel> voiceChannels = new ArrayList<>();
 
     //@Column(nullable = false)
-    @OneToMany
-    private List<VoiceChannel> textChannels = new ArrayList<>();
+    @OneToMany(cascade = {CascadeType.ALL})
+    private List<TextChannel> textChannels = new ArrayList<>();
 
     @Column(nullable = false)
     @ManyToMany
@@ -27,12 +27,16 @@ public class Room extends SingleIdEntity{
     @ManyToOne
     private RegisteredUser owner;
 
-    public Room() {}
+    public Room() {
+    }
 
-    public Room(String roomName, RegisteredUser owner) {
+    public Room(String roomName, RegisteredUser owner, TextChannel textChannel, VoiceChannel voiceChannel) {
         this.roomName = roomName;
         this.owner = owner;
+        addTextChannel(textChannel);
+        addVoiceChannel(voiceChannel);
     }
+
 
     public String getRoomName() {
         return roomName;
@@ -43,19 +47,22 @@ public class Room extends SingleIdEntity{
     }
 
     public List<VoiceChannel> getVoiceChannels() {
-        return voiceChannels;
+        return Collections.unmodifiableList(voiceChannels);
     }
 
-    public void setVoiceChannels(List<VoiceChannel> voiceChannels) {
-        this.voiceChannels = voiceChannels;
+    public void addVoiceChannel(VoiceChannel voiceChannel) {
+
+        if (!voiceChannels.contains(voiceChannel))
+            voiceChannels.add(voiceChannel);
     }
 
-    public List<VoiceChannel> getTextChannels() {
-        return textChannels;
+    public List<TextChannel> getTextChannels() {
+        return Collections.unmodifiableList(textChannels);
     }
 
-    public void setTextChannels(List<VoiceChannel> textChannels) {
-        this.textChannels = textChannels;
+    public void addTextChannel(TextChannel textChannel) {
+        if (!textChannels.contains(textChannel))
+            textChannels.add(textChannel);
     }
 
     public List<RegisteredUser> getMembers() {
@@ -63,7 +70,7 @@ public class Room extends SingleIdEntity{
     }
 
     public void addMember(RegisteredUser member) {
-        if(!members.contains(member))
+        if (!members.contains(member))
             members.add(member);
     }
 

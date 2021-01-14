@@ -1,0 +1,57 @@
+<html xmlns:th="http://www.thymeleaf.org/" lang="en">
+
+<div th:fragment="textChannel(textChannel)" class="h-100 flex-column d-flex">
+    <div class="overflow-auto flex-grow-1 pr-2" id="msg-container">
+        <div class="flex-row d-flex pb-2" th:each="message : ${textChannel.messages}"
+             th:classappend="${message.sender.equals(user)} ? 'justify-content-end text-right' : 'justify-content-start'">
+            <div class="flex-column d-flex rounded main-bg p-1 pl-3 pr-3" style="max-width: 75%;">
+                <p class="border-bottom secondary-border mb-1 text-success"
+                   th:text="${message.sender.userName}"></p>
+                <p class="mb-1" th:text="${message.content}" style="overflow-wrap: break-word;"></p>
+                <small class="pb-1 border-top secondary-border text-secondary text-right"
+                       th:text="${message.getFormatDate()}"></small>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex-row d-flex p-2 pb-4 pt-3 border-top main-border">
+            <textarea class="form-control" rows="1" placeholder="Your message" id="msg-input"
+                      style="resize: none" maxlength="240"></textarea>
+        <script>
+            // for automatically adjusting text-area to text height.
+            // src: https://stackoverflow.com/questions/37629860/automatically-resizing-textarea-in-bootstrap
+            document.getElementById('msg-input').addEventListener('keyup', function () {
+                if (this.scrollHeight < 200) {
+                    this.style.overflow = 'hidden';
+                    this.style.height = 0;
+                    this.style.height = this.scrollHeight + 'px';
+                } else {
+                    this.style.overflow = 'auto';
+                    this.style.overflowX = 'none';
+                }
+            }, false);
+        </script>
+
+        <div class="d-flex flex-column justify-content-center ml-2">
+            <div class="d-flex flex-row">
+                <button class="btn btn-outline-success btn-sm pl-2 pr-2"><i class="material-icons">upload</i>
+                </button>
+                <button class="btn btn-success btn-sm ml-2 pl-4 pr-4" id="send-btn">SEND</button>
+                <script th:inline="javascript">
+                    let sendBtn = document.getElementById('send-btn');
+                    let msgInput = document.getElementById('msg-input');
+                    sendBtn.addEventListener("click", function () {
+                        sendMessage([[${textChannel.id}]], msgInput, [[${user.id}]]);
+                    });
+                    msgInput.addEventListener("keyup", function (event) {
+                        if (event.key === 'Enter')
+                            sendMessage([[${textChannel.id}]], msgInput, [[${user.id}]]);
+                    });
+                </script>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+</html>

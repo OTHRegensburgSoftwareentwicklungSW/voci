@@ -1,6 +1,6 @@
 package de.majaf.voci.control.service;
 
-import de.majaf.voci.control.service.exceptions.channel.ChannelIDDoesNotExistException;
+import de.majaf.voci.control.exceptions.channel.ChannelIDDoesNotExistException;
 import de.majaf.voci.entity.Message;
 import de.majaf.voci.entity.TextChannel;
 import de.majaf.voci.entity.User;

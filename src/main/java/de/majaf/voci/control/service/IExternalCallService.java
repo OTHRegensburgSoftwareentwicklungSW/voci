@@ -1,9 +1,10 @@
 package de.majaf.voci.control.service;
 
-import org.springframework.stereotype.Service;
+import de.majaf.voci.control.exceptions.call.InvitationIDDoesNotExistException;
+import de.majaf.voci.control.exceptions.user.UserTokenDoesNotExistException;
 
 
 public interface IExternalCallService {
-    String generateCallURL(String userToken);
+    String generateCallURL(String userToken) throws UserTokenDoesNotExistException, InvitationIDDoesNotExistException;
     void joinCall(String userToken, String callURL);
 }

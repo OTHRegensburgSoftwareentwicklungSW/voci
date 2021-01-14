@@ -2,12 +2,11 @@ package de.majaf.voci.boundery.contoller;
 
 import de.majaf.voci.control.service.IRoomService;
 import de.majaf.voci.control.service.IUserService;
-import de.majaf.voci.control.service.exceptions.user.InvalidUserException;
-import de.majaf.voci.control.service.exceptions.user.UserIDDoesNotExistException;
-import de.majaf.voci.control.service.exceptions.user.UsernameDoesNotExistException;
+import de.majaf.voci.control.exceptions.user.InvalidUserException;
+import de.majaf.voci.control.exceptions.user.UserIDDoesNotExistException;
+import de.majaf.voci.control.exceptions.user.UsernameDoesNotExistException;
 import de.majaf.voci.entity.RegisteredUser;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -62,6 +61,12 @@ public class MainController {
         }
         showUpdate(model, principal);
         return "main";
+    }
+
+    @RequestMapping(value = "/info", method = RequestMethod.GET)
+    public String prepareInfoPage(Principal principal, Model model) {
+        model.addAttribute("user", getActiveUser(principal));
+        return "info";
     }
 
     private void prepareRoomsList(Model model, RegisteredUser user) {

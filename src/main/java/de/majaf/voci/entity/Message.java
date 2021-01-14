@@ -36,7 +36,7 @@ public class Message extends SingleIdEntity implements Comparable<Message>{
         return sentAt;
     }
 
-    @JsonGetter("sentAt")
+    @JsonGetter("sentAt") // TODO: maybe do this in thymeleaf
     public String getFormatDate() {
         DateFormat df = new SimpleDateFormat("dd.MM.yyyy HH:mm");
         return df.format(sentAt);

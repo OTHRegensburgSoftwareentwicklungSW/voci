@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Voci</title>
+    <title th:replace="/fragments/bootstrap :: header"></title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+
+<body class="vh-100 main-bg text-light">
+<div class="container-fluid h-100 row m-0 p-0"> <!-- TODO: responsive machen -->
+
+    <!-- left column -->
+    <div class="col-md-2 col-sm-3 d-flex flex-column h-100">
+        <header th:replace="/fragments/mainFragments :: header"></header>
+        <div class="border-top secondary-border flex-grow-1 overflow-auto">
+            <a th:replace="/fragments/mainFragments :: navButtonInactive('HOME', '/main')"></a>
+            <a th:replace="/fragments/mainFragments :: navButtonInactive('CALL', '/call')"></a>
+            <a th:replace="/fragments/mainFragments :: navButtonActive('INFO', '/info')"></a>
+        </div>
+        <div class="text-center">
+            <a class="btn btn-outline-danger p-2 mb-4 mt-3" th:href="@{/logout}">LOGOUT</a>
+        </div>
+
+    </div>
+
+    <!-- mid column / main -->
+    <div class="col-md-10 col-sm-9 d-flex flex-column h-100 secondary-bg p-4">
+        <div th:replace="/fragments/mainFragments :: heading('INFO', 'main-border')"></div>
+        <div class="flex-column d-flex overflow-auto flex-grow-1 p-0 mt-2 ">
+            <div class="main-bg rounded p-3">
+                <div class="d-flex flex-row pl-2 m-0 overflow-auto border-bottom border-top secondary-border pt-2 pb-2">
+                    <p class="pr-4 m-0">Username: </p>
+                    <p class="m-0" th:text="${user.userName}"></p>
+                </div>
+                <div class="d-flex row pl-2 m-0 overflow-auto border-bottom secondary-border pt-2 pb-2">
+                    <p class="pr-4 m-0">Security-Token: </p>
+                    <p class="m-0" th:text="${user.securityToken}"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>

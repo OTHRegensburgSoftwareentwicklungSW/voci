@@ -25,13 +25,7 @@ function connectCallSocket(invitationID, userID, textChannelID) {
                 window.location.href = "/call";
             }
         });
-        stompClient.subscribe('/broker/' + textChannelID + '/receivedMessage', function (msg) {
-            let message = JSON.parse(msg.body);
-            if (message) {
-                addMessage(message.senderName, message.content, message.sentAt, message.senderID === userID);
-                scrollSmoothToBottom('msg-container');
-            }
-        });
+        subscribeToTextChannel(userID, textChannelID);
     });
 }
 
@@ -57,10 +51,26 @@ function connectInvitationSocket(userID) {
     });
 }
 
+function connectRoomSocket(userID, textChannelID) {
+    connectSocket(function () {
+        subscribeToTextChannel(userID, textChannelID);
+    });
+}
+
 function subscribeToInvitationEnd(invitationID, username) {
     stompClient.subscribe('/broker/' + invitationID + '/endedInvitation', function (ended) {
         if (ended.body)
             removeInvitation(username);
+    });
+}
+
+function subscribeToTextChannel(userID, textChannelID) {
+    stompClient.subscribe('/broker/' + textChannelID + '/receivedMessage', function (msg) {
+        let message = JSON.parse(msg.body);
+        if (message) {
+            addMessage(message.senderName, message.content, message.sentAt, message.senderID === userID);
+            scrollSmoothToBottom('msg-container');
+        }
     });
 }
 
@@ -77,11 +87,11 @@ function disconnect() {
     console.log("Disconnected");
 }
 
-function sendMessage(textChannelID, msgInput) {
+function sendMessage(textChannelID, msgInput, userID) {
     let msg = msgInput.value.trim();
     if (msg !== "") {
         console.log(msg);
-        stompClient.send('/ws/' + textChannelID + '/sendMessage', {}, msg);
+        stompClient.send('/ws/' + textChannelID + '/' + userID + '/sendMessage', {}, msg);
         msgInput.value = "";
         msgInput.style.overflow = 'hidden';
         msgInput.style.height = 0;
@@ -99,6 +109,10 @@ function addCallMember(username) {
 }
 
 function removeCallMember(username) {
+    let emptyMessage = document.getElementById('empty-message');
+    if(emptyMessage !== null) {
+        emptyMessage.parentNode.removeChild(emptyMessage);
+    }
     addName('invited_container', 'invited_name', username);
     removeName('member_container', 'member_name', username);
 }

@@ -6,6 +6,13 @@ import javax.persistence.MappedSuperclass;
 public abstract class Channel extends SingleIdEntity{
     private String channelName;
 
+    public Channel() {
+    }
+
+    public Channel(String channelName) {
+        this.channelName = channelName;
+    }
+
     public String getChannelName() {
         return channelName;
     }

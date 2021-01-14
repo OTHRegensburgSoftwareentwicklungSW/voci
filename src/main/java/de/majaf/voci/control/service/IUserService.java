@@ -1,9 +1,9 @@
 package de.majaf.voci.control.service;
 
-import de.majaf.voci.control.service.exceptions.user.InvalidUserException;
-import de.majaf.voci.control.service.exceptions.user.UserAlreadyExistsException;
-import de.majaf.voci.control.service.exceptions.user.UserIDDoesNotExistException;
-import de.majaf.voci.control.service.exceptions.user.UsernameDoesNotExistException;
+import de.majaf.voci.control.exceptions.call.InvitationTokenDoesNotExistException;
+import de.majaf.voci.control.exceptions.user.*;
+import de.majaf.voci.entity.GuestUser;
+import de.majaf.voci.entity.Invitation;
 import de.majaf.voci.entity.RegisteredUser;
 import de.majaf.voci.entity.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -12,9 +12,13 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 public interface IUserService extends UserDetailsService {
     void registerUser(RegisteredUser user) throws UserAlreadyExistsException;
 
+    GuestUser createGuestUser(int num);
+
+    void removeAllGuests(Invitation invitation);
+
     User loadUserByID(long id) throws UserIDDoesNotExistException;
 
-    void deleteUserByID(long id);
+    RegisteredUser loadUserBySecurityToken(String securityToken) throws UserTokenDoesNotExistException;
 
     User saveUser(User user);
 

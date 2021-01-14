@@ -1,4 +1,4 @@
-package de.majaf.voci.control.service.exceptions.call;
+package de.majaf.voci.control.exceptions.call;
 
 public class InvitationIDDoesNotExistException extends Exception{
     

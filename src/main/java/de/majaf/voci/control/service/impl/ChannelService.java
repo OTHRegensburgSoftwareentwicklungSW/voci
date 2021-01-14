@@ -1,7 +1,7 @@
 package de.majaf.voci.control.service.impl;
 
 import de.majaf.voci.control.service.IChannelService;
-import de.majaf.voci.control.service.exceptions.channel.ChannelIDDoesNotExistException;
+import de.majaf.voci.control.exceptions.channel.ChannelIDDoesNotExistException;
 import de.majaf.voci.entity.Message;
 import de.majaf.voci.entity.TextChannel;
 import de.majaf.voci.entity.User;
@@ -44,7 +44,7 @@ public class ChannelService implements IChannelService {
     @Override
     @Transactional
     public void deleteTextChannelByID(long textChannelID) throws ChannelIDDoesNotExistException {
-        TextChannel textChannel = textChannelRepo.findById(textChannelID).orElseThrow(() -> new ChannelIDDoesNotExistException(textChannelID, "Text Channel does not exist"));
+        TextChannel textChannel = textChannelRepo.findById(textChannelID).orElseThrow(() -> new ChannelIDDoesNotExistException(textChannelID, "Invalid TextChannel-ID"));
         deleteTextChannel(textChannel);
     }
 

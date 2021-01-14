@@ -7,5 +7,4 @@ import org.springframework.data.repository.CrudRepository;
 import java.util.Optional;
 
 public interface CallRepository extends CrudRepository<Call, Long> {
-    Optional<Call> findCallByInvitation(Invitation invitation);
 }

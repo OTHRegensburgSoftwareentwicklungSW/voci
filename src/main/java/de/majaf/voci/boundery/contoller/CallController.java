@@ -1,17 +1,14 @@
 package de.majaf.voci.boundery.contoller;
 
 import de.majaf.voci.control.service.ICallService;
-import de.majaf.voci.control.service.exceptions.call.InvalidCallStateException;
-import de.majaf.voci.control.service.exceptions.call.InvitationIDDoesNotExistException;
-import de.majaf.voci.control.service.exceptions.user.InvalidUserException;
-import de.majaf.voci.control.service.exceptions.user.UserIDDoesNotExistException;
+import de.majaf.voci.control.exceptions.call.InvalidCallStateException;
+import de.majaf.voci.control.exceptions.user.InvalidUserException;
+import de.majaf.voci.control.exceptions.user.UserIDDoesNotExistException;
 import de.majaf.voci.entity.Call;
 import de.majaf.voci.entity.Invitation;
 import de.majaf.voci.entity.RegisteredUser;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;

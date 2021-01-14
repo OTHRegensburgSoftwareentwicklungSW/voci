@@ -14,7 +14,9 @@ public class Invitation extends SingleIdEntity{
 
     private Date creationDate;
     private long timeout;
-    private String url;
+
+    @Column(unique = true)
+    private String accessToken;
 
     @JsonIgnore
     @JoinColumn(unique = true, nullable = false)
@@ -30,9 +32,9 @@ public class Invitation extends SingleIdEntity{
     @OneToOne(cascade = CascadeType.ALL)
     private Call call;
 
-//    @OneToMany
+    @OneToMany
     @JsonIgnore
-    @Transient
+    @JoinColumn(name = "invitation_id")
     private List<GuestUser> guestUsers = new ArrayList<>();
 
     public Invitation() {}
@@ -58,12 +60,12 @@ public class Invitation extends SingleIdEntity{
         this.timeout = timeout;
     }
 
-    public String getUrl() {
-        return url;
+    public String getAccessToken() {
+        return accessToken;
     }
 
-    public void setUrl(String url) {
-        this.url = url;
+    public void setAccessToken(String accessToken) {
+        this.accessToken = accessToken;
     }
 
     public RegisteredUser getInitiator() {

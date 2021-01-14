@@ -2,24 +2,26 @@ package de.majaf.voci.control.service.impl;
 
 import de.majaf.voci.control.service.ICallService;
 import de.majaf.voci.control.service.IUserService;
-import de.majaf.voci.control.service.exceptions.user.InvalidUserException;
-import de.majaf.voci.control.service.exceptions.user.UserAlreadyExistsException;
-import de.majaf.voci.control.service.exceptions.user.UserIDDoesNotExistException;
-import de.majaf.voci.control.service.exceptions.user.UsernameDoesNotExistException;
+import de.majaf.voci.control.exceptions.user.*;
+import de.majaf.voci.entity.GuestUser;
+import de.majaf.voci.entity.Invitation;
 import de.majaf.voci.entity.RegisteredUser;
 import de.majaf.voci.entity.User;
 import de.majaf.voci.entity.repo.UserRepository;
+import de.majaf.voci.entity.repo.RegisteredUserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class UserService implements IUserService {
+
+    @Autowired
+    private RegisteredUserRepository regUserRepo;
 
     @Autowired
     private UserRepository userRepo;
@@ -40,9 +42,24 @@ public class UserService implements IUserService {
             throw new UserAlreadyExistsException(user, "User with email " + email + " already exists");
         else {
             user.setPasswordHash(passwordEncoder.encode(user.getPasswordHash()));
-            userRepo.save(user);
+            user.setSecurityToken(UUID.randomUUID().toString());
+            regUserRepo.save(user);
             callService.createInvitation(user);
         }
+    }
+
+    @Override
+    @Transactional
+    public GuestUser createGuestUser(int num) {
+        GuestUser guestUser = new GuestUser("guest" + num);
+        userRepo.save(guestUser);
+        return guestUser;
+    }
+
+    @Override
+    public void removeAllGuests(Invitation invitation) {
+        for(GuestUser user : invitation.getGuestUsers())
+            userRepo.delete(user);
     }
 
     @Override
@@ -51,16 +68,14 @@ public class UserService implements IUserService {
     }
 
     @Override
-    public void deleteUserByID(long id) {
-
+    public RegisteredUser loadUserBySecurityToken(String securityToken) throws UserTokenDoesNotExistException {
+        return regUserRepo.findBySecurityToken(securityToken).orElseThrow(() -> new UserTokenDoesNotExistException(securityToken, "Invalid UserToken"));
     }
 
     @Override
+    @Transactional
     public User saveUser(User user) {
-        if (user.isRegistered())
-            return userRepo.save((RegisteredUser) user);
-
-        else return user;
+        return userRepo.save(user);
     }
 
     @Override
@@ -73,32 +88,32 @@ public class UserService implements IUserService {
             throw new InvalidUserException(contact, "Cannot add yourself as contact!");
         contact.addContact(user);
         user.addContact(contact);
-        userRepo.save(contact);
-        userRepo.save(user);
+        regUserRepo.save(contact);
+        regUserRepo.save(user);
     }
 
     @Override
     @Transactional
-    public void removeContact(RegisteredUser user, long contactID) throws UserIDDoesNotExistException{
+    public void removeContact(RegisteredUser user, long contactID) throws UserIDDoesNotExistException {
         RegisteredUser contact = (RegisteredUser) loadUserByID(contactID);
         contact.removeContact(user);
         user.removeContact(contact);
         callService.removeInvitedUser(user.getOwnedInvitation(), contact);
-        userRepo.save(contact);
-        userRepo.save(user);
+        regUserRepo.save(contact);
+        regUserRepo.save(user);
     }
 
     private boolean userNameAlreadyExist(String username) {
-        return userRepo.findByUserName(username).isPresent();
+        return regUserRepo.findByUserName(username).isPresent();
     }
 
     private boolean emailAlreadyExist(String email) {
-        return userRepo.findByEmail(email).isPresent();
+        return regUserRepo.findByEmail(email).isPresent();
     }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameDoesNotExistException {
-        return userRepo.findByUserName(username).orElseThrow(
+        return regUserRepo.findByUserName(username).orElseThrow(
                 () -> new UsernameDoesNotExistException(username, "User does not exist"));
     }
 

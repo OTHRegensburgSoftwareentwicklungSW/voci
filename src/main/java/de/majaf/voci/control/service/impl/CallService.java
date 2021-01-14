@@ -1,24 +1,21 @@
 package de.majaf.voci.control.service.impl;
 
+import de.majaf.voci.control.exceptions.call.InvitationTokenDoesNotExistException;
 import de.majaf.voci.control.service.ICallService;
 import de.majaf.voci.control.service.IChannelService;
 import de.majaf.voci.control.service.IUserService;
-import de.majaf.voci.control.service.exceptions.call.InvalidCallStateException;
-import de.majaf.voci.control.service.exceptions.call.InvitationIDDoesNotExistException;
-import de.majaf.voci.control.service.exceptions.user.InvalidUserException;
-import de.majaf.voci.control.service.exceptions.user.UserIDDoesNotExistException;
-import de.majaf.voci.entity.Call;
-import de.majaf.voci.entity.Invitation;
-import de.majaf.voci.entity.RegisteredUser;
-import de.majaf.voci.entity.User;
+import de.majaf.voci.control.exceptions.call.InvalidCallStateException;
+import de.majaf.voci.control.exceptions.call.InvitationIDDoesNotExistException;
+import de.majaf.voci.control.exceptions.user.InvalidUserException;
+import de.majaf.voci.control.exceptions.user.UserIDDoesNotExistException;
+import de.majaf.voci.entity.*;
 import de.majaf.voci.entity.repo.CallRepository;
 import de.majaf.voci.entity.repo.InvitationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import java.util.List;
+import java.util.UUID;
 
 @Service
 public class CallService extends ExternalCallService implements ICallService {
@@ -48,8 +45,14 @@ public class CallService extends ExternalCallService implements ICallService {
 
     @Override
     @Transactional
-    public Invitation loadInvitationByID(long invitationID) throws InvitationIDDoesNotExistException {
-        return invitationRepo.findById(invitationID).orElseThrow(() -> new InvitationIDDoesNotExistException(invitationID, "Invalid invitationID"));
+    public Invitation loadInvitationByID(long id) throws InvitationIDDoesNotExistException {
+        return invitationRepo.findById(id).orElseThrow(() -> new InvitationIDDoesNotExistException(id, "Invalid Invitation-ID"));
+    }
+
+    @Override
+    @Transactional
+    public Invitation loadInvitationByToken(String accessToken) throws InvitationTokenDoesNotExistException {
+        return invitationRepo.findByAccessToken(accessToken).orElseThrow(() -> new InvitationTokenDoesNotExistException(accessToken, "Invalid Access-Token"));
     }
 
     @Override
@@ -87,19 +90,22 @@ public class CallService extends ExternalCallService implements ICallService {
         call.setActive(true);
         call.addParticipant(invitation.getInitiator());
         invitation.getInitiator().setActiveCall(call);
+        invitation.setAccessToken(generateAccessToken(invitation));
         invitationRepo.save(invitation);
     }
 
     @Transactional
     @Override
-    public void joinCallByInvitationID(RegisteredUser user, long invitationID) throws InvalidUserException, InvalidCallStateException, InvitationIDDoesNotExistException {
+    public void joinCallByInvitationID(User user, long invitationID) throws InvalidUserException, InvalidCallStateException, InvitationIDDoesNotExistException {
         joinCall(user, loadInvitationByID(invitationID));
     }
 
     @Transactional
     @Override
-    public void joinCall(RegisteredUser user, Invitation invitation) throws InvalidUserException, InvalidCallStateException {
-        if (!invitation.getInvitedUsers().contains(user) && !user.equals(invitation.getInitiator())) throw new InvalidUserException(user, "User is not invited");
+    public void joinCall(User user, Invitation invitation) throws InvalidUserException, InvalidCallStateException {
+        if (user.isRegistered())
+            if (!invitation.getInvitedUsers().contains(user) && !user.equals(invitation.getInitiator()))
+                throw new InvalidUserException(user, "User is not invited");
         Call call = invitation.getCall();
         if (!call.isActive()) throw new InvalidCallStateException(call, "Call is not active");
         user.setActiveCall(invitation.getCall());
@@ -107,15 +113,28 @@ public class CallService extends ExternalCallService implements ICallService {
         userService.saveUser(user);
     }
 
+    @Override
+    @Transactional
+    public GuestUser createGuestUserAndJoinCall(String accessToken) throws InvitationTokenDoesNotExistException, InvalidCallStateException, InvalidUserException {
+        Invitation invitation = loadInvitationByToken(accessToken);
+        GuestUser user = userService.createGuestUser(invitation.getGuestUsers().size());
+        invitation.addGuestUser(user);
+        joinCall(user, invitation);
+        invitationRepo.save(invitation);
+        return user;
+    }
+
     @Transactional
     @Override
-    public boolean isUserInvited(RegisteredUser user, Invitation invitation) {
-        return invitation.getInvitedUsers().contains(user) || user.equals(invitation.getInitiator());
+    public boolean isUserInvited(User user, Invitation invitation) {
+        if(user.isRegistered())
+            return invitation.getInvitedUsers().contains(user) || user.equals(invitation.getInitiator());
+        else return false;
     }
 
     @Override
     @Transactional
-    public boolean isUserInvited(RegisteredUser user, long invitationID) throws InvitationIDDoesNotExistException {
+    public boolean isUserInvited(User user, long invitationID) throws InvitationIDDoesNotExistException {
         return isUserInvited(user, loadInvitationByID(invitationID));
     }
 
@@ -127,13 +146,13 @@ public class CallService extends ExternalCallService implements ICallService {
 
     @Transactional
     @Override
-    public boolean leaveCallByInvitationID(RegisteredUser user, long invitationID) throws InvitationIDDoesNotExistException, InvalidCallStateException {
+    public boolean leaveCallByInvitationID(User user, long invitationID) throws InvitationIDDoesNotExistException, InvalidCallStateException {
         return leaveCall(user, loadInvitationByID(invitationID));
     }
 
     @Transactional
     @Override
-    public boolean leaveCall(RegisteredUser user, Invitation invitation) throws InvalidCallStateException {
+    public boolean leaveCall(User user, Invitation invitation) throws InvalidCallStateException {
         Call call = invitation.getCall();
         call.removeParticipant(user);
         user.setActiveCall(null);
@@ -164,6 +183,8 @@ public class CallService extends ExternalCallService implements ICallService {
         for (User participant : call.getParticipants())
             participant.setActiveCall(null);
 
+        invitation.setAccessToken(null);
+        userService.removeAllGuests(invitation);
         call.removeAllParticipants();
         call.setActive(false);
         channelService.deleteTextChannel(call.getTextChannel());
@@ -176,6 +197,11 @@ public class CallService extends ExternalCallService implements ICallService {
 
         invitationRepo.save(invitation);
 
+    }
+
+    @Override
+    public String generateAccessToken(Invitation invitation) {
+        return UUID.randomUUID().toString();
     }
 
 

@@ -1,7 +1,9 @@
 package de.majaf.voci.boundery.contoller;
 
+import de.majaf.voci.control.exceptions.user.UserIDDoesNotExistException;
 import de.majaf.voci.control.service.IChannelService;
-import de.majaf.voci.control.service.exceptions.channel.ChannelIDDoesNotExistException;
+import de.majaf.voci.control.exceptions.channel.ChannelIDDoesNotExistException;
+import de.majaf.voci.control.service.IUserService;
 import de.majaf.voci.entity.Message;
 import de.majaf.voci.entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,17 +21,17 @@ public class TextChannelController {
     private IChannelService channelService;
 
     @Autowired
+    private IUserService userService;
+
+    @Autowired
     private MainController mainController;
 
-    @MessageMapping("/{textChannelID}/sendMessage")
+    @MessageMapping("/{textChannelID}/{userID}/sendMessage")
     @SendTo("/broker/{textChannelID}/receivedMessage")
-    public Message sendMessage(@DestinationVariable long textChannelID, String message, Principal principal) {
-        User user = mainController.getActiveUser(principal);
-        try {
-            return channelService.createTextMessage(message, textChannelID, user);
-        } catch (ChannelIDDoesNotExistException e) {
-            throw new IllegalArgumentException(e);
-        }
+    public Message sendMessage(@DestinationVariable long textChannelID, @DestinationVariable long userID, String message) throws UserIDDoesNotExistException, ChannelIDDoesNotExistException {
+        User user = userService.loadUserByID(userID);
+        return channelService.createTextMessage(message, textChannelID, user);
+
     }
 
 }

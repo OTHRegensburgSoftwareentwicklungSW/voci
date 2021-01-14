@@ -1,4 +1,4 @@
-package de.majaf.voci.control.service.exceptions.channel;
+package de.majaf.voci.control.exceptions.channel;
 
 public class ChannelIDDoesNotExistException extends Exception {
 

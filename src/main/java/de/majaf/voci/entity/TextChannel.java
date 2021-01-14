@@ -12,6 +12,13 @@ public class TextChannel extends Channel {
     @JoinColumn(name = "text_channel_id")
     private List<Message> messages = new ArrayList<>();
 
+    public TextChannel() {
+    }
+
+    public TextChannel(String channelName) {
+        super(channelName);
+    }
+
     public List<Message> getMessages() {
         Collections.sort(messages);
         return Collections.unmodifiableList(messages);

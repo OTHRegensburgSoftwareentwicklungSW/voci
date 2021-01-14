@@ -1,6 +1,5 @@
 package de.majaf.voci.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -21,6 +20,9 @@ public class RegisteredUser extends User implements UserDetails {
 
     @Column(nullable = false)
     private String passwordHash;
+
+    @Column(unique = true)
+    private String securityToken;
 
     @ManyToMany
     private List<RegisteredUser> contacts = new ArrayList<>();
@@ -45,12 +47,16 @@ public class RegisteredUser extends User implements UserDetails {
         this.passwordHash = password;
     }
 
-    public void setUserName(String userName) {
-        this.userName = userName;
-    }
-
     @Override
     public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String username) {
+        this.userName = username;
+    }
+
+    public String getUsername() {
         return userName;
     }
 
@@ -126,6 +132,14 @@ public class RegisteredUser extends User implements UserDetails {
             activeInvitations.add(invitation);
     }
 
+    public String getSecurityToken() {
+        return securityToken;
+    }
+
+    public void setSecurityToken(String securityToken) {
+        this.securityToken = securityToken;
+    }
+
     public void removeActiveInvitation(Invitation invitation) {
         activeInvitations.remove(invitation);
     }
@@ -143,11 +157,6 @@ public class RegisteredUser extends User implements UserDetails {
     @Override
     public String getPassword() {
         return passwordHash;
-    }
-
-    @Override
-    public String getUsername() {
-        return userName;
     }
 
     @Override

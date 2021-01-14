@@ -18,6 +18,10 @@ public class VoiceChannel extends Channel{
         this.activeMembers = activeMembers;
     }
 
+    public VoiceChannel(String channelName) {
+        super(channelName);
+    }
+
     public List<User> getActiveMembers() {
         return Collections.unmodifiableList(activeMembers);
     }

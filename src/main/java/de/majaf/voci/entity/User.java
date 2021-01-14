@@ -1,19 +1,17 @@
 package de.majaf.voci.entity;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import javax.persistence.*;
 
 @Entity
-@Inheritance(strategy=InheritanceType.SINGLE_TABLE)
+@Inheritance(strategy=InheritanceType.TABLE_PER_CLASS)
 public abstract class User extends SingleIdEntity{
 
-    @ManyToOne()
+    @ManyToOne
     private VoiceChannel activeVoiceChannel;
 
     @ManyToOne
-//    @Transient
     private Call activeCall;
 
     public VoiceChannel getActiveVoiceChannel() {
@@ -39,4 +37,5 @@ public abstract class User extends SingleIdEntity{
     }
 
     public abstract String getUserName();
+
 }

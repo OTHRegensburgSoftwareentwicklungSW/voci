@@ -1,15 +1,16 @@
 package de.majaf.voci.boundery.contoller;
 
 import de.majaf.voci.control.service.IUserService;
-import de.majaf.voci.control.service.exceptions.user.UserAlreadyExistsException;
+import de.majaf.voci.control.exceptions.user.UserAlreadyExistsException;
 import de.majaf.voci.entity.RegisteredUser;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+
+import java.security.Principal;
 
 @Controller
 public class LoginController {
@@ -18,7 +19,7 @@ public class LoginController {
     private IUserService userService;
 
     @RequestMapping(value = {"/", "/login"}, method = RequestMethod.GET)
-    public String prepareLoginPage(Model model) {
+    public String prepareLoginPage(Model model, Principal principal) {
         model.addAttribute("usernameOrPwWrong", false);
         return "login";
     }

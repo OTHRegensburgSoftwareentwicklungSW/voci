@@ -1,4 +1,4 @@
-package de.majaf.voci.control.service.exceptions.user;
+package de.majaf.voci.control.exceptions.user;
 
 import de.majaf.voci.entity.User;
 

@@ -1,12 +1,8 @@
 package de.majaf.voci.entity.repo;
 
-import de.majaf.voci.entity.RegisteredUser;
+import de.majaf.voci.entity.GuestUser;
+import de.majaf.voci.entity.User;
 import org.springframework.data.repository.CrudRepository;
 
-import java.util.Optional;
-
-public interface UserRepository extends CrudRepository<RegisteredUser, Long> {
-
-    Optional<RegisteredUser> findByUserName(String userName);
-    Optional<RegisteredUser> findByEmail(String email);
+public interface UserRepository extends CrudRepository<User, Long> {
 }
