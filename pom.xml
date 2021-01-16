@@ -15,7 +15,7 @@
     <description>Voice and Textchat</description>
 
     <properties>
-        <java.version>15</java.version>
+        <java.version>14</java.version>
     </properties>
 
     <dependencies>
@@ -114,6 +114,17 @@
             <version>0.9.1</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-ui</artifactId>
+            <version>1.5.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-security</artifactId>
+            <version>1.5.2</version>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -121,6 +132,17 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <mainClass>de.majaf.voci.VociApplication</mainClass>
+                    <executable>true</executable>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

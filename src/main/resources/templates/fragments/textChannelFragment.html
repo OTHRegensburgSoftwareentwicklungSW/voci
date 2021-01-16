@@ -1,8 +1,8 @@
 <html xmlns:th="http://www.thymeleaf.org/" lang="en">
 
-<div th:fragment="textChannel(textChannel)" class="h-100 flex-column d-flex">
+<div th:fragment="textChannel(textChannel)" class="flex-column d-flex flex-grow-1 overflow-auto">
     <div class="overflow-auto flex-grow-1 pr-2" id="msg-container">
-        <div class="flex-row d-flex pb-2" th:each="message : ${textChannel.messages}"
+        <div class="flex-row d-flex pt-1 pb-1" th:each="message : ${textChannel.messages}"
              th:classappend="${message.sender.equals(user)} ? 'justify-content-end text-right' : 'justify-content-start'">
             <div class="flex-column d-flex rounded main-bg p-1 pl-3 pr-3" style="max-width: 75%;">
                 <p class="border-bottom secondary-border mb-1 text-success"

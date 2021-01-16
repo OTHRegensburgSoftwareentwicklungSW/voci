@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="'Invite to ' + ${room.roomName}"></title>
+    <title th:replace="fragments/bootstrap :: header"></title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body class="vh-100 main-bg text-light">
+<div class="container-fluid h-100 row m-0 p-0">
+    <div class="col-lg-2"></div>
+    <div class="col-lg-8 col-sm-12 d-flex flex-column h-100 secondary-bg p-0 pt-4 text-center">
+        <div th:replace="fragments/mainFragments :: heading('INVITE A CONTACT TO -' + ${room.roomName.toUpperCase()} + '-', 'main-border')"></div>
+        <div class="flex-column d-flex justify-content-center overflow-auto flex-grow-1 p-0 mt-2 ">
+            <div class="d-flex flex-row m-0 p-0 overflow-auto justify-content-center">
+                <div class="p-4 main-bg rounded" style="min-width: 50% !important;">
+                    <div th:replace="fragments/mainFragments :: heading('YOUR CONTACTS', 'secondary-border')"></div>
+                    <div th:replace="fragments/mainFragments :: listEmptyWarning(${user.contacts}, 'You do not have any contacts, yet!')"></div>
+                    <div class="pb-2 secondary-border border-bottom">
+                        <form class="row d-flex justify-content-between secondary-bg rounded mt-2 ml-2 mr-2 p-1 pl-3 pr-2"
+                              th:each="contact : ${user.contacts}"
+                              th:action="@{/room/{roomID}/inviteContact(contactID=${contact.id}, roomID=${room.id})}"
+                              th:method="post"
+                              th:unless="${room.members.contains(contact)}">
+
+                            <div class="flex-column d-flex justify-content-center">
+                                <p class="m-0" th:text="${contact.username}"></p>
+                            </div>
+                            <button class="justify-content-center btn text-light m-0 p-0 mt-1" type="submit">
+                                <i class="material-icons">person_add</i>
+                            </button>
+                        </form>
+                    </div>
+                    <div class="flex-row d-flex justify-content-center mr-3 ml-3 pt-3">
+
+                        <a th:href="@{/room/{roomID}(roomID = ${room.id})}" class="btn btn-outline-success">
+                            BACK TO ROOM
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+</body>
+</html>

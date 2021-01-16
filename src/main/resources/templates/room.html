@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title th:text="${room.roomName}"></title>
-    <title th:replace="/fragments/bootstrap :: header"></title>
-    <title th:replace="/fragments/sockets :: header"></title>
+    <title th:replace="fragments/bootstrap :: header"></title>
+    <title th:replace="fragments/sockets :: header"></title>
     <link rel="stylesheet" th:href="@{/css/main.css}">
     <script th:src="@{/js/call_app.js}"></script>
 
@@ -20,7 +20,7 @@
 
     <!-- left column -->
     <div class="col-md-2 col-sm-3 d-flex flex-column h-100">
-        <header th:replace="/fragments/mainFragments :: header"></header>
+        <header th:replace="fragments/mainFragments :: header"></header>
         <div class="flex-grow-1 overflow-auto text-center">
             <p class="text-secondary border-top border-bottom secondary-border mb-2">text-channels</p>
             <div class="pl-2 pr-2">
@@ -37,14 +37,14 @@
                 </div>
             </div>
         </div>
-        <div class="pb-4 pt-2 pl-4 pr-4 border-top secondary-border">
-            <a th:replace="/fragments/mainFragments :: navButtonInactive('HOME', '/main')"></a>
+        <div class="pb-4 pt-3 pl-4 pr-4 border-top secondary-border">
+            <a class="btn btn-block btn-outline-success" th:href="@{/main}">HOME</a>
         </div>
     </div>
 
     <!-- mid column / textChannel -->
-    <div class="col-md-8 col-sm-9 d-flex flex-column h-100 secondary-bg pt-4 pl-4 pr-4">
-        <div class="border-bottom main-border flex-row d-flex row justify-content-between pl-3 pr-3 mb-2">
+    <div class="col-xl-8 col-md-7 col-sm-9 d-flex flex-column h-100 secondary-bg pt-4">
+        <div class="border-bottom main-border flex-row d-flex row justify-content-between ml-1 mr-1 pl-1 pr-1">
 
             <div class="flex-column d-flex justify-content-center pb-2">
                 <h5 class="m-0" th:text="${room.roomName.toUpperCase()}"></h5>
@@ -56,11 +56,46 @@
             </div>
 
         </div>
-        <div th:replace="/fragments/textChannelFragment :: textChannel(${room.textChannels[0]})"
+        <div th:replace="fragments/textChannelFragment :: textChannel(${room.textChannels[0]})">
+        </div>
+
     </div>
 
     <!-- right column / members -->
-    <div class="col-md-2 col-sm-3 d-flex flex-column h-100"></div>
+    <div class="col-xl-2 col-md-3 col-sm-4 d-flex flex-column h-100 pt-4">
+        <div th:replace="fragments/mainFragments :: heading('MEMBERS', 'secondary-border')"></div>
+        <div class="flex-column d-flex overflow-auto flex-grow-1">
+            <div class="overflow-auto">
+                <form class="flex-row d-flex justify-content-between secondary-bg rounded mt-2 p-1 pl-3 pr-2"
+                      th:each="member : ${room.members}"
+                      th:action="@{/room/{roomID}/removeMember(memberID=${member.id}, roomID=${room.id})}"
+                      th:method="delete">
+                    <div class="flex-column d-flex justify-content-center">
+                        <p class="m-1 member_name" th:text="${member.userName}"></p>
+                    </div>
+                    <button th:if="${user.equals(room.owner)}" th:unless="${member.equals(room.owner)}"
+                            class="justify-content-center btn text-light m-0 p-0 mt-1" type="submit"><i
+                            class="material-icons">delete</i>
+                    </button>
+                </form>
+            </div>
+            <div class="text-center pt-2 pb-2 mt-2 border-top secondary-border">
+                <a th:href="@{/room/{roomID}/invite(roomID=${room.id})}" class="btn btn-outline-success m-2 p-2">
+                    INVITE CONTACT
+                </a>
+            </div>
+        </div>
+        <form th:if="${user.equals(room.owner)}" class="text-center border-top secondary-border pb-4 pt-3"
+              th:method="delete"
+              th:action="@{/room/{roomID}/delete(roomID=${room.id})}">
+            <button type="submit" class="btn btn-outline-danger">DELETE ROOM</button>
+        </form>
+        <form th:unless="${user.equals(room.owner)}" class="text-center border-top secondary-border pb-4 pt-3"
+              th:method="delete"
+              th:action="@{/room/{roomID}/leave(roomID=${room.id})}">
+            <button type="submit" class="btn btn-outline-danger">LEAVE ROOM</button>
+        </form>
+    </div>
 </div>
 </body>
 </html>

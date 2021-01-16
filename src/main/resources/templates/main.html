@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Voci</title>
-    <title th:replace="/fragments/bootstrap :: header"></title>
+    <title th:replace="fragments/bootstrap :: header"></title>
     <link rel="stylesheet" th:href="@{/css/main.css}">
 </head>
 
@@ -12,11 +12,11 @@
 
     <!-- left column -->
     <div class="col-md-2 col-sm-3 d-flex flex-column h-100">
-        <header th:replace="/fragments/mainFragments :: header"></header>
+        <header th:replace="fragments/mainFragments :: header"></header>
         <div class="border-top secondary-border flex-grow-1 overflow-auto">
-            <a th:replace="/fragments/mainFragments :: navButtonActive('HOME', '/main')"></a>
-            <a th:replace="/fragments/mainFragments :: navButtonInactive('CALL', '/call')"></a>
-            <a th:replace="/fragments/mainFragments :: navButtonInactive('INFO', '/info')"></a>
+            <a th:replace="fragments/mainFragments :: navButtonActive('HOME', '/main')"></a>
+            <a th:replace="fragments/mainFragments :: navButtonInactive('CALL', '/call')"></a>
+            <a th:replace="fragments/mainFragments :: navButtonInactive('INFO', '/info')"></a>
         </div>
         <div class="text-center">
             <a class="btn btn-outline-danger p-2 mb-4 mt-3" th:href="@{/logout}">LOGOUT</a>
@@ -26,8 +26,8 @@
 
     <!-- mid column -->
     <div class="col-md-7 col-sm-6 secondary-bg d-flex flex-column h-100 p-4">
-        <div th:replace="/fragments/mainFragments :: heading('YOUR CHATROOMS', 'main-border')"></div>
-        <div th:replace="/fragments/mainFragments :: listEmptyWarning(${roomsList}, 'You are not member of any chatroom, yet!')">
+        <div th:replace="fragments/mainFragments :: heading('YOUR CHATROOMS', 'main-border')"></div>
+        <div th:replace="fragments/mainFragments :: listEmptyWarning(${roomsList}, 'You are not member of any chatroom, yet!')">
         </div>
         <div class="overflow-auto">
             <a class="flex-row d-flex justify-content-between main-bg rounded mt-2 p-1 pl-3 pr-3 nav-link text-light"
@@ -52,8 +52,8 @@
 
     <!-- right column -->
     <div class="col-md-3 col-sm-3 d-flex flex-column h-100 p-4">
-        <div th:replace="/fragments/mainFragments :: heading('CONTACTS', 'secondary-border')"></div>
-        <div th:replace="/fragments/mainFragments :: listEmptyWarning(${contactsList}, 'You do not have any contacts, yet!')"></div>
+        <div th:replace="fragments/mainFragments :: heading('CONTACTS', 'secondary-border')"></div>
+        <div th:replace="fragments/mainFragments :: listEmptyWarning(${contactsList}, 'You do not have any contacts, yet!')"></div>
         <div class="overflow-auto">
             <form class="flex-row d-flex justify-content-between secondary-bg rounded mt-2 p-1 pl-3 pr-2"
                   th:each="contact : ${contactsList}"
@@ -78,10 +78,10 @@
 </div>
 
 <!-- Modal for adding room -->
-<div th:replace="/fragments/modal :: addRoomModal"></div>
+<div th:replace="fragments/modal :: addRoomModal"></div>
 
 <!-- Modal for adding contact -->
-<div th:replace="/fragments/modal :: addContactModal"></div>
+<div th:replace="fragments/modal :: addContactModal"></div>
 
 </body>
 
