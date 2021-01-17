@@ -3,7 +3,7 @@ package de.majaf.voci.boundery.contoller;
 import de.majaf.voci.control.service.IRoomService;
 import de.majaf.voci.control.service.IUserService;
 import de.majaf.voci.control.exceptions.user.InvalidUserException;
-import de.majaf.voci.control.exceptions.user.UserIDDoesNotExistException;
+import de.majaf.voci.control.exceptions.user.UserDoesNotExistException;
 import de.majaf.voci.control.exceptions.user.UsernameDoesNotExistException;
 import de.majaf.voci.entity.RegisteredUser;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,7 +56,7 @@ public class MainController {
     public String deleteContact(Model model, Principal principal, @PathParam("contactID") long contactID){
         try {
             userService.removeContact(getActiveUser(principal), contactID);
-        } catch (UserIDDoesNotExistException uidnee) {
+        } catch (UserDoesNotExistException uidnee) {
             model.addAttribute("errorMsg", "Invalid UserID: " + uidnee.getUserID());
         }
         showUpdate(model, principal);

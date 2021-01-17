@@ -193,7 +193,7 @@ function addMessage(senderName, content, date, ownMessage) {
     if (ownMessage) {
         msgOuterContainer.classList.add('justify-content-end', 'text-right');
     }
-    msgOuterContainer.classList.add('flex-row', 'd-flex', 'pb-2');
+    msgOuterContainer.classList.add('flex-row', 'd-flex', 'pb-1', 'pt-1');
 
     msgContainer.appendChild(msgOuterContainer);
     let msgInnerContainer = document.createElement("div");

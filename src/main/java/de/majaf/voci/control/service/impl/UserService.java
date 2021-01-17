@@ -63,8 +63,8 @@ public class UserService implements IUserService {
     }
 
     @Override
-    public User loadUserByID(long id) throws UserIDDoesNotExistException {
-        return userRepo.findById(id).orElseThrow(() -> new UserIDDoesNotExistException(id, "Invalid userID"));
+    public User loadUserByID(long id) throws UserDoesNotExistException {
+        return userRepo.findById(id).orElseThrow(() -> new UserDoesNotExistException(id, "Invalid userID"));
     }
 
     @Override
@@ -94,7 +94,7 @@ public class UserService implements IUserService {
 
     @Override
     @Transactional
-    public void removeContact(RegisteredUser user, long contactID) throws UserIDDoesNotExistException {
+    public void removeContact(RegisteredUser user, long contactID) throws UserDoesNotExistException {
         RegisteredUser contact = (RegisteredUser) loadUserByID(contactID);
         contact.removeContact(user);
         user.removeContact(contact);

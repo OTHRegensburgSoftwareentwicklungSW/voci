@@ -36,6 +36,9 @@
                     <p class="m-0" th:text="${voiceChannel.channelName}"></p>
                 </div>
             </div>
+            <div th:if="${user.equals(room.owner)}" class="pb-4 pt-3 pl-4 pr-4 border-top secondary-border">
+                <a class="btn btn-block btn-outline-success" th:href="@{/room/{roomID}/edit(roomID=${room.id})}">EDIT</a>
+            </div>
         </div>
         <div class="pb-4 pt-3 pl-4 pr-4 border-top secondary-border">
             <a class="btn btn-block btn-outline-success" th:href="@{/main}">HOME</a>

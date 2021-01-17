@@ -1,41 +1,41 @@
 package de.majaf.voci.control.exceptions.channel;
 
-public class ChannelIDDoesNotExistException extends Exception {
+public class ChannelDoesNotExistException extends Exception {
 
     private long channelID;
 
-    public ChannelIDDoesNotExistException() {
+    public ChannelDoesNotExistException() {
         super();
     }
 
-    public ChannelIDDoesNotExistException(String message) {
+    public ChannelDoesNotExistException(String message) {
         super(message);
     }
 
-    public ChannelIDDoesNotExistException(String message, Throwable cause) {
+    public ChannelDoesNotExistException(String message, Throwable cause) {
         super(message, cause);
     }
 
-    public ChannelIDDoesNotExistException(Throwable cause) {
+    public ChannelDoesNotExistException(Throwable cause) {
         super(cause);
     }
 
-    public ChannelIDDoesNotExistException(long channelID) {
+    public ChannelDoesNotExistException(long channelID) {
         this();
         this.channelID = channelID;
     }
 
-    public ChannelIDDoesNotExistException(long channelID, String message) {
+    public ChannelDoesNotExistException(long channelID, String message) {
         this(message);
         this.channelID = channelID;
     }
 
-    public ChannelIDDoesNotExistException(long channelID, String message, Throwable cause) {
+    public ChannelDoesNotExistException(long channelID, String message, Throwable cause) {
         this(message, cause);
         this.channelID = channelID;
     }
 
-    public ChannelIDDoesNotExistException(long channelID, Throwable cause) {
+    public ChannelDoesNotExistException(long channelID, Throwable cause) {
         this(cause);
         this.channelID = channelID;
     }

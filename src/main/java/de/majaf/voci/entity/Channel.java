@@ -20,4 +20,6 @@ public abstract class Channel extends SingleIdEntity{
     public void setChannelName(String channelName) {
         this.channelName = channelName;
     }
+
+    public abstract boolean isTextChannel();
 }

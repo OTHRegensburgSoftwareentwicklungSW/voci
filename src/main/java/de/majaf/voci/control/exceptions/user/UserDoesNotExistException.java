@@ -1,41 +1,41 @@
 package de.majaf.voci.control.exceptions.user;
 
-public class UserIDDoesNotExistException extends Exception{
+public class UserDoesNotExistException extends Exception{
 
     private long userID;
 
-    public UserIDDoesNotExistException() {
+    public UserDoesNotExistException() {
         super();
     }
 
-    public UserIDDoesNotExistException(String message) {
+    public UserDoesNotExistException(String message) {
         super(message);
     }
 
-    public UserIDDoesNotExistException(String message, Throwable cause) {
+    public UserDoesNotExistException(String message, Throwable cause) {
         super(message, cause);
     }
 
-    public UserIDDoesNotExistException(Throwable cause) {
+    public UserDoesNotExistException(Throwable cause) {
         super(cause);
     }
 
-    public UserIDDoesNotExistException(long userID) {
+    public UserDoesNotExistException(long userID) {
         this();
         this.userID = userID;
     }
 
-    public UserIDDoesNotExistException(long userID, String message) {
+    public UserDoesNotExistException(long userID, String message) {
         this(message);
         this.userID = userID;
     }
 
-    public UserIDDoesNotExistException(long userID, String message, Throwable cause) {
+    public UserDoesNotExistException(long userID, String message, Throwable cause) {
         this(message, cause);
         this.userID = userID;
     }
 
-    public UserIDDoesNotExistException(long userID, Throwable cause) {
+    public UserDoesNotExistException(long userID, Throwable cause) {
         this(cause);
         this.userID = userID;
     }

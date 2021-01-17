@@ -1,9 +1,9 @@
 package de.majaf.voci.boundery.contoller;
 
-import de.majaf.voci.control.exceptions.user.UserIDDoesNotExistException;
+import de.majaf.voci.control.exceptions.user.UserDoesNotExistException;
 import de.majaf.voci.control.service.ICallService;
 import de.majaf.voci.control.exceptions.call.InvalidCallStateException;
-import de.majaf.voci.control.exceptions.call.InvitationIDDoesNotExistException;
+import de.majaf.voci.control.exceptions.call.InvitationDoesNotExistException;
 import de.majaf.voci.control.exceptions.user.InvalidUserException;
 import de.majaf.voci.control.service.IUserService;
 import de.majaf.voci.entity.*;
@@ -38,7 +38,7 @@ public class CommunicationController {
     // @SendTo("/broker/{userID}/startedCall")
     // AND
     // @SendTo("/broker/{userID}/invited")
-    public void startCall(Principal principal) throws InvitationIDDoesNotExistException {
+    public void startCall(Principal principal) throws InvitationDoesNotExistException {
         RegisteredUser user = mainController.getActiveUser(principal);
 
         System.out.println("hello");
@@ -55,7 +55,7 @@ public class CommunicationController {
 
     @MessageMapping(value = "/{invitationID}/joinCall")
     @SendTo("/broker/{invitationID}/addedCallMember")
-    public String joinCall(@DestinationVariable long invitationID, Principal principal) throws InvitationIDDoesNotExistException, InvalidUserException, InvalidCallStateException {
+    public String joinCall(@DestinationVariable long invitationID, Principal principal) throws InvitationDoesNotExistException, InvalidUserException, InvalidCallStateException {
         RegisteredUser user = mainController.getActiveUser(principal);
         callService.joinCallByInvitationID(user, invitationID);
         simpMessagingTemplate.convertAndSend("/broker/" + user.getId() + "/joinedCall", true);
@@ -65,7 +65,7 @@ public class CommunicationController {
 
     @MessageMapping(value = "/{invitationID}/leaveCall")
     @SendTo(value = "/broker/{invitationID}/removedCallMember")
-    public String leaveCall(@DestinationVariable long invitationID, long userID) throws UserIDDoesNotExistException, InvitationIDDoesNotExistException, InvalidCallStateException {
+    public String leaveCall(@DestinationVariable long invitationID, long userID) throws UserDoesNotExistException, InvitationDoesNotExistException, InvalidCallStateException {
         User user = userService.loadUserByID(userID);
         boolean callStillActive = callService.leaveCallByInvitationID(user, invitationID);
         simpMessagingTemplate.convertAndSend("/broker/" + user.getId() + "/leftCall", true);
@@ -88,7 +88,7 @@ public class CommunicationController {
             } else return null;
         } catch (InvalidUserException iue) { // TODO: maybe was anderes
             throw new AccessDeniedException("403 forbidden", iue);
-        } catch (InvalidCallStateException | InvitationIDDoesNotExistException e) {
+        } catch (InvalidCallStateException | InvitationDoesNotExistException e) {
             throw new IllegalArgumentException(e);
         }
     }

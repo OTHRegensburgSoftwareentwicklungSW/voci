@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="'Edit ' + ${room.roomName}"></title>
+    <title th:replace="fragments/bootstrap :: header"></title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body class="vh-100 secondary-bg text-light">
+<div class="container-fluid h-100 row m-0 p-0">
+    <div class="col-md-2"></div>
+
+    <div class="col-md-8 col-sm-12 d-flex flex-column h-100 secondary-bg p-0 pt-4 text-center">
+        <div th:replace="fragments/mainFragments :: heading('EDIT -' + ${room.roomName.toUpperCase()} + '-', 'main-border')"></div>
+        <div class="flex-column d-flex justify-content-center overflow-auto flex-grow-1 p-0 mt-2 ">
+            <div class="main-bg rounded p-3 ">
+                <div class="d-flex row m-0 overflow-auto">
+                    <div class="col-12 col-md-6 p-3">
+                        <div th:replace="fragments/mainFragments :: heading('TEXT-CHANNELS', 'secondary-border')"></div>
+                        <div class="flex-row d-flex justify-content-between secondary-bg rounded mt-2 p-1 pl-3 pr-2"
+                             th:each="textChannel : ${room.textChannels}">
+
+                            <div class="flex-column d-flex justify-content-center">
+                                <p class="m-0" th:text="${textChannel.channelName}"></p>
+                            </div>
+                            <div class="flex-row d-flex">
+                                <a th:href="@{/room/{roomID}/edit/rename(roomID=${room.id}, channelID=${textChannel.id}, isTC = ${true})}"
+                                   class="justify-content-center btn text-light m-0 p-0 mt-1" type="submit"
+                                   data-toggle="tooltip" title="Rename Channel"><i
+                                        class="material-icons">create</i>
+                                </a>
+                                <form th:action="@{/room/{roomID}/edit/deleteChannel(roomID=${room.id}, channelID=${textChannel.id}, isTC = ${true})}"
+                                      th:method="delete">
+                                    <button th:if="${room.textChannels.size()>1}"
+                                            class="justify-content-center btn text-light m-0 p-0 mt-1" type="submit"
+                                            data-toggle="tooltip" title="Delete Channel"><i
+                                            class="material-icons">delete</i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        <button class="btn btn-sm btn-success mt-3" data-toggle="modal" data-target="#addTextChannelModal">ADD TEXT-CHANNEL</button>
+                    </div>
+                    <div class="col-12 col-md-6 p-3">
+                        <div th:replace="fragments/mainFragments :: heading('VOICE-CHANNELS', 'secondary-border')"></div>
+                        <div class="flex-row d-flex justify-content-between secondary-bg rounded mt-2 p-1 pl-3 pr-2"
+                             th:each="voiceChannel : ${room.voiceChannels}">
+
+                            <div class="flex-column d-flex justify-content-center">
+                                <p class="m-0" th:text="${voiceChannel.channelName}"></p>
+                            </div>
+                            <div class="flex-row d-flex">
+                                <a th:href="@{/room/{roomID}/edit/rename(roomID=${room.id}, channelID=${voiceChannel.id}, isTC = ${false})}"
+                                   class="justify-content-center btn text-light m-0 p-0 mt-1" type="submit"
+                                   data-toggle="tooltip" title="Rename Channel"><i
+                                        class="material-icons">create</i>
+                                </a>
+                                <form th:action="@{/room/{roomID}/edit/deleteChannel(roomID=${room.id}, channelID=${voiceChannel.id}, isTC = ${false})}"
+                                      th:method="delete">
+                                    <button th:if="${room.voiceChannels.size()>1}"
+                                            class="justify-content-center btn text-light m-0 p-0 mt-1" type="submit"
+                                            data-toggle="tooltip" title="Delete Channel"><i
+                                            class="material-icons">delete</i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        <button class="btn btn-sm btn-success mt-3" data-toggle="modal" data-target="#addVoiceChannelModal">ADD VOICE-CHANNEL</button>
+                    </div>
+                </div>
+                <div class="flex-row d-flex justify-content-center mr-3 ml-3 pt-3">
+
+                    <a th:href="@{/room/{roomID}(roomID = ${room.id})}" class="btn btn-outline-success">
+                        BACK TO ROOM
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for adding text-channel -->
+<div th:replace="fragments/modal :: addTextChannelModal"></div>
+
+<!-- Modal for adding voice-channel -->
+<div th:replace="fragments/modal :: addVoiceChannelModal"></div>
+
+</body>
+</html>

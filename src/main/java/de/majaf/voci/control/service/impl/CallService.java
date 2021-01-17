@@ -5,13 +5,14 @@ import de.majaf.voci.control.service.ICallService;
 import de.majaf.voci.control.service.IChannelService;
 import de.majaf.voci.control.service.IUserService;
 import de.majaf.voci.control.exceptions.call.InvalidCallStateException;
-import de.majaf.voci.control.exceptions.call.InvitationIDDoesNotExistException;
+import de.majaf.voci.control.exceptions.call.InvitationDoesNotExistException;
 import de.majaf.voci.control.exceptions.user.InvalidUserException;
-import de.majaf.voci.control.exceptions.user.UserIDDoesNotExistException;
+import de.majaf.voci.control.exceptions.user.UserDoesNotExistException;
 import de.majaf.voci.entity.*;
 import de.majaf.voci.entity.repo.CallRepository;
 import de.majaf.voci.entity.repo.InvitationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -29,7 +30,7 @@ public class CallService extends ExternalCallService implements ICallService {
     @Autowired
     private IUserService userService;
 
-    @Autowired
+    @Autowired @Qualifier("textChannelService")
     private IChannelService channelService;
 
     @Override
@@ -45,8 +46,8 @@ public class CallService extends ExternalCallService implements ICallService {
 
     @Override
     @Transactional
-    public Invitation loadInvitationByID(long id) throws InvitationIDDoesNotExistException {
-        return invitationRepo.findById(id).orElseThrow(() -> new InvitationIDDoesNotExistException(id, "Invalid Invitation-ID"));
+    public Invitation loadInvitationByID(long id) throws InvitationDoesNotExistException {
+        return invitationRepo.findById(id).orElseThrow(() -> new InvitationDoesNotExistException(id, "Invalid Invitation-ID"));
     }
 
     @Override
@@ -57,7 +58,7 @@ public class CallService extends ExternalCallService implements ICallService {
 
     @Override
     @Transactional
-    public void inviteToCall(Invitation invitation, long invitedContactID) throws InvalidUserException, UserIDDoesNotExistException {
+    public void inviteToCall(Invitation invitation, long invitedContactID) throws InvalidUserException, UserDoesNotExistException {
         RegisteredUser invited = (RegisteredUser) userService.loadUserByID(invitedContactID);
         if (!invitation.getInitiator().getContacts().contains(invited))
             throw new InvalidUserException(invited, "User not in contacts.");
@@ -68,7 +69,7 @@ public class CallService extends ExternalCallService implements ICallService {
     }
 
     @Override
-    public void removeInvitedUserByID(Invitation invitation, long invitedContactID) throws UserIDDoesNotExistException {
+    public void removeInvitedUserByID(Invitation invitation, long invitedContactID) throws UserDoesNotExistException {
         RegisteredUser invited = (RegisteredUser) userService.loadUserByID(invitedContactID);
         removeInvitedUser(invitation, invited);
     }
@@ -83,10 +84,10 @@ public class CallService extends ExternalCallService implements ICallService {
 
     @Override
     @Transactional
-    public void startCall(long invitationID) throws InvitationIDDoesNotExistException {
+    public void startCall(long invitationID) throws InvitationDoesNotExistException {
         Invitation invitation = loadInvitationByID(invitationID);
         Call call = invitation.getCall();
-        call.setTextChannel(channelService.createTextChannel());
+        call.setTextChannel((TextChannel) channelService.createChannel());
         call.setActive(true);
         call.addParticipant(invitation.getInitiator());
         invitation.getInitiator().setActiveCall(call);
@@ -96,7 +97,7 @@ public class CallService extends ExternalCallService implements ICallService {
 
     @Transactional
     @Override
-    public void joinCallByInvitationID(User user, long invitationID) throws InvalidUserException, InvalidCallStateException, InvitationIDDoesNotExistException {
+    public void joinCallByInvitationID(User user, long invitationID) throws InvalidUserException, InvalidCallStateException, InvitationDoesNotExistException {
         joinCall(user, loadInvitationByID(invitationID));
     }
 
@@ -134,19 +135,19 @@ public class CallService extends ExternalCallService implements ICallService {
 
     @Override
     @Transactional
-    public boolean isUserInvited(User user, long invitationID) throws InvitationIDDoesNotExistException {
+    public boolean isUserInvited(User user, long invitationID) throws InvitationDoesNotExistException {
         return isUserInvited(user, loadInvitationByID(invitationID));
     }
 
     @Override
     @Transactional
-    public boolean isUserInCall(User user, long invitationID) throws InvitationIDDoesNotExistException {
+    public boolean isUserInCall(User user, long invitationID) throws InvitationDoesNotExistException {
         return loadInvitationByID(invitationID).getCall().getParticipants().contains(user);
     }
 
     @Transactional
     @Override
-    public boolean leaveCallByInvitationID(User user, long invitationID) throws InvitationIDDoesNotExistException, InvalidCallStateException {
+    public boolean leaveCallByInvitationID(User user, long invitationID) throws InvitationDoesNotExistException, InvalidCallStateException {
         return leaveCall(user, loadInvitationByID(invitationID));
     }
 
@@ -166,7 +167,7 @@ public class CallService extends ExternalCallService implements ICallService {
 
     @Override
     @Transactional
-    public void endCallByInvitationID(RegisteredUser user, long invitationID) throws InvalidUserException, InvalidCallStateException, InvitationIDDoesNotExistException {
+    public void endCallByInvitationID(RegisteredUser user, long invitationID) throws InvalidUserException, InvalidCallStateException, InvitationDoesNotExistException {
         Invitation invitation = loadInvitationByID(invitationID);
         if (!user.equals(invitation.getInitiator()))
             throw new InvalidUserException(user, "User must not end call. No Initiator");
@@ -187,7 +188,7 @@ public class CallService extends ExternalCallService implements ICallService {
         userService.removeAllGuests(invitation);
         call.removeAllParticipants();
         call.setActive(false);
-        channelService.deleteTextChannel(call.getTextChannel());
+        channelService.deleteChannel(call.getTextChannel());
         call.setTextChannel(null);
 
         for (RegisteredUser invited : invitation.getInvitedUsers())

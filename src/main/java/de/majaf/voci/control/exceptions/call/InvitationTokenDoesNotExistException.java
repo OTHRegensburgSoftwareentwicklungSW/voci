@@ -17,7 +17,7 @@ public class InvitationTokenDoesNotExistException extends Exception{
     }
 
     public InvitationTokenDoesNotExistException(String accessToken, String message) {
-        this(message);
+        super(message);
         this.accessToken = accessToken;
     }
 

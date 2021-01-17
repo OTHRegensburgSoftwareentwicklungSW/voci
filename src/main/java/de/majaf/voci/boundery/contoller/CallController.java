@@ -3,7 +3,7 @@ package de.majaf.voci.boundery.contoller;
 import de.majaf.voci.control.service.ICallService;
 import de.majaf.voci.control.exceptions.call.InvalidCallStateException;
 import de.majaf.voci.control.exceptions.user.InvalidUserException;
-import de.majaf.voci.control.exceptions.user.UserIDDoesNotExistException;
+import de.majaf.voci.control.exceptions.user.UserDoesNotExistException;
 import de.majaf.voci.entity.Call;
 import de.majaf.voci.entity.Invitation;
 import de.majaf.voci.entity.RegisteredUser;
@@ -69,7 +69,7 @@ public class CallController {
             callService.inviteToCall(invitation, contactID);
         } catch (InvalidUserException iue) {
             model.addAttribute("errorMsg", "Can not invite " + iue.getUser().getUserName() + " to call!");
-        } catch (UserIDDoesNotExistException uidnee) {
+        } catch (UserDoesNotExistException uidnee) {
             model.addAttribute("errorMsg", "Invalid UserID: " + uidnee.getUserID());
         }
         model.addAttribute("invitingList", invitation.getInvitedUsers());
@@ -84,7 +84,7 @@ public class CallController {
 
         try {
             callService.removeInvitedUserByID(invitation, invitedID);
-        } catch (UserIDDoesNotExistException uidnee) {
+        } catch (UserDoesNotExistException uidnee) {
             model.addAttribute("errorMsg", "Invalid UserID: " + uidnee.getUserID());
         }
         model.addAttribute("invitingList", invitation.getInvitedUsers());

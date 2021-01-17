@@ -17,12 +17,12 @@ public class UserTokenDoesNotExistException extends Exception{
     }
 
     public UserTokenDoesNotExistException(String userID, String message) {
-        this(message);
+        super(message);
         this.userToken = userID;
     }
 
     public UserTokenDoesNotExistException(String userID, String message, Throwable cause) {
-        this(message, cause);
+        super(message, cause);
         this.userToken = userID;
     }
 

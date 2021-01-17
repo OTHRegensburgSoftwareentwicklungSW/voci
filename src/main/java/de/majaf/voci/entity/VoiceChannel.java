@@ -34,4 +34,9 @@ public class VoiceChannel extends Channel{
         if(!activeMembers.contains(member))
             activeMembers.add(member);
     }
+
+    @Override
+    public boolean isTextChannel() {
+        return false;
+    }
 }

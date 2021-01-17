@@ -1,7 +1,7 @@
 package de.majaf.voci.control.service.impl;
 
 import de.majaf.voci.control.exceptions.user.InvalidUserException;
-import de.majaf.voci.control.exceptions.user.UserIDDoesNotExistException;
+import de.majaf.voci.control.exceptions.user.UserDoesNotExistException;
 import de.majaf.voci.control.service.IRoomService;
 import de.majaf.voci.control.service.IUserService;
 import de.majaf.voci.control.exceptions.room.RoomIDDoesNotExistException;
@@ -16,10 +16,10 @@ import javax.transaction.Transactional;
 public class RoomService implements IRoomService {
 
     @Autowired
-    IUserService userService;
+    private IUserService userService;
 
     @Autowired
-    RoomRepository roomRepo;
+    private RoomRepository roomRepo;
 
     @Override
     @Transactional
@@ -29,7 +29,7 @@ public class RoomService implements IRoomService {
 
     @Override
     @Transactional
-    public void createRoom(String roomName, RegisteredUser owner) {
+    public void createRoom(String roomName, RegisteredUser owner) { // TODO: Input validation
         TextChannel textChannel = new TextChannel("general");
         VoiceChannel voiceChannel = new VoiceChannel("general");
         Room room = new Room(roomName, owner, textChannel, voiceChannel);
@@ -41,13 +41,18 @@ public class RoomService implements IRoomService {
     }
 
     @Override
+    public Room saveRoom(Room room) {
+        return roomRepo.save(room);
+    }
+
+    @Override
     public boolean roomHasAsMember(Room room, RegisteredUser user) {
         return room.getMembers().contains(user);
     }
 
     @Override
     @Transactional
-    public void addMemberToRoom(Room room, long memberID, RegisteredUser initiator) throws InvalidUserException, UserIDDoesNotExistException {
+    public void addMemberToRoom(Room room, long memberID, RegisteredUser initiator) throws InvalidUserException, UserDoesNotExistException {
         if (roomHasAsMember(room, initiator)) {
             RegisteredUser member = (RegisteredUser) userService.loadUserByID(memberID);
             if (initiator.getContacts().contains(member)) {
@@ -60,7 +65,7 @@ public class RoomService implements IRoomService {
 
     @Override
     @Transactional
-    public void removeMemberFromRoom(Room room, long memberID, RegisteredUser initiator) throws InvalidUserException, UserIDDoesNotExistException {
+    public void removeMemberFromRoom(Room room, long memberID, RegisteredUser initiator) throws InvalidUserException, UserDoesNotExistException {
         if (roomHasAsMember(room, initiator)) {
             RegisteredUser member = (RegisteredUser) userService.loadUserByID(memberID);
             member.removeRoom(room);
@@ -88,5 +93,4 @@ public class RoomService implements IRoomService {
             roomRepo.save(room);
         } else throw new InvalidUserException(member, "User cannot leave. He is owner.");
     }
-
 }

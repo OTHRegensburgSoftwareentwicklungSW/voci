@@ -1,8 +1,7 @@
 package de.majaf.voci.boundery.contoller;
 
-import de.majaf.voci.control.exceptions.call.InvitationIDDoesNotExistException;
+import de.majaf.voci.control.exceptions.call.InvitationDoesNotExistException;
 import de.majaf.voci.control.exceptions.user.UserTokenDoesNotExistException;
-import de.majaf.voci.control.service.ICallService;
 import de.majaf.voci.control.service.IExternalCallService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -17,7 +16,7 @@ public class CallRestController {
     IExternalCallService callService;
 
     @RequestMapping(value = "/restapi/call/start", method = RequestMethod.POST)
-    public String startCall(@RequestBody String userToken) throws UserTokenDoesNotExistException, InvitationIDDoesNotExistException {
+    public String startCall(@RequestBody String userToken) throws UserTokenDoesNotExistException, InvitationDoesNotExistException {
         return callService.generateCallURL(userToken);
     }
 }

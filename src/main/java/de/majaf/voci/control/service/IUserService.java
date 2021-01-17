@@ -1,6 +1,5 @@
 package de.majaf.voci.control.service;
 
-import de.majaf.voci.control.exceptions.call.InvitationTokenDoesNotExistException;
 import de.majaf.voci.control.exceptions.user.*;
 import de.majaf.voci.entity.GuestUser;
 import de.majaf.voci.entity.Invitation;
@@ -16,7 +15,7 @@ public interface IUserService extends UserDetailsService {
 
     void removeAllGuests(Invitation invitation);
 
-    User loadUserByID(long id) throws UserIDDoesNotExistException;
+    User loadUserByID(long id) throws UserDoesNotExistException;
 
     RegisteredUser loadUserBySecurityToken(String securityToken) throws UserTokenDoesNotExistException;
 
@@ -24,5 +23,5 @@ public interface IUserService extends UserDetailsService {
 
     void addContact(RegisteredUser user, String usernameContact) throws UsernameDoesNotExistException, InvalidUserException;
 
-    void removeContact(RegisteredUser user, long contactID) throws UserIDDoesNotExistException;
+    void removeContact(RegisteredUser user, long contactID) throws UserDoesNotExistException;
 }

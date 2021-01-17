@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="'Rename ' + ${channel.channelName}"></title>
+    <title th:replace="fragments/bootstrap :: header"></title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body class="vh-100 main-bg text-light">
+<div class="container-fluid h-100 row m-0 p-0">
+    <div class="col-lg-2"></div>
+
+    <div class="col-lg-8 col-md-12 d-flex flex-column h-100 secondary-bg p-0 pt-4 text-center">
+        <div th:replace="fragments/mainFragments :: heading('RENAME -' + ${channel.channelName.toUpperCase()} + '-', 'main-border')"></div>
+        <div class="flex-column d-flex justify-content-center overflow-auto flex-grow-1 p-0 mt-2 ">
+            <div class="d-flex flex-row m-0 p-0 overflow-auto justify-content-center">
+                <div class="p-4 main-bg rounded" style="min-width: 50% !important;">
+                    <div th:replace="fragments/mainFragments :: heading('RENAME CHANNEL', 'secondary-border')"></div>
+                    <form class="border-bottom secondary-border" th:action="@{/room/{roomID}/edit/rename(roomID=${room.id}, channelID=${channel.id}, isTC = ${channel.isTextChannel()})}" th:method="post">
+
+                    <div class="modal-body border-top border-bottom secondary-border">
+                            <input name="channelName" type="text" class="form-control" id="channelName"
+                                   th:placeholder="${channel.channelName}"
+                                   required maxlength="20">
+                        </div>
+                        <div class="modal-footer border-0">
+                            <a th:href="@{/room/{roomID}/edit(roomID = ${room.id})}" class="btn btn-outline-success">
+                                CLOSE
+                            </a>
+                            <button type="submit" class="btn btn-success">Done</button>
+                        </div>
+                    </form>
+                    <div class="flex-row d-flex justify-content-center mr-3 ml-3 pt-3">
+
+                        <a th:href="@{/room/{roomID}(roomID = ${room.id})}" class="btn btn-outline-success">
+                            BACK TO ROOM
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+
+</div>
+</body>
+</html>

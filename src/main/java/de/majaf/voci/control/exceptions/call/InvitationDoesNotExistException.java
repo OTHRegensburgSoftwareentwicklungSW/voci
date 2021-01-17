@@ -1,41 +1,41 @@
 package de.majaf.voci.control.exceptions.call;
 
-public class InvitationIDDoesNotExistException extends Exception{
+public class InvitationDoesNotExistException extends Exception{
     
     private long invitationID;
 
-    public InvitationIDDoesNotExistException() {
+    public InvitationDoesNotExistException() {
         super();
     }
 
-    public InvitationIDDoesNotExistException(String message) {
+    public InvitationDoesNotExistException(String message) {
         super(message);
     }
 
-    public InvitationIDDoesNotExistException(String message, Throwable cause) {
+    public InvitationDoesNotExistException(String message, Throwable cause) {
         super(message, cause);
     }
 
-    public InvitationIDDoesNotExistException(Throwable cause) {
+    public InvitationDoesNotExistException(Throwable cause) {
         super(cause);
     }
 
-    public InvitationIDDoesNotExistException(long invitationID) {
+    public InvitationDoesNotExistException(long invitationID) {
         this();
         this.invitationID = invitationID;
     }
 
-    public InvitationIDDoesNotExistException(long invitationID, String message) {
+    public InvitationDoesNotExistException(long invitationID, String message) {
         this(message);
         this.invitationID = invitationID;
     }
 
-    public InvitationIDDoesNotExistException(long invitationID, String message, Throwable cause) {
+    public InvitationDoesNotExistException(long invitationID, String message, Throwable cause) {
         this(message, cause);
         this.invitationID = invitationID;
     }
 
-    public InvitationIDDoesNotExistException(long invitationID, Throwable cause) {
+    public InvitationDoesNotExistException(long invitationID, Throwable cause) {
         this(cause);
         this.invitationID = invitationID;
     }

@@ -28,4 +28,9 @@ public class TextChannel extends Channel {
         if (!messages.contains(message))
             messages.add(message);
     }
+
+    @Override
+    public boolean isTextChannel() {
+        return true;
+    }
 }

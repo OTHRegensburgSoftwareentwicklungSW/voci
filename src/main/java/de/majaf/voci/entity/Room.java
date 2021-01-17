@@ -56,6 +56,10 @@ public class Room extends SingleIdEntity {
             voiceChannels.add(voiceChannel);
     }
 
+    public void removeVoiceChannel(VoiceChannel voiceChannel) {
+        voiceChannels.remove(voiceChannel);
+    }
+
     public List<TextChannel> getTextChannels() {
         return Collections.unmodifiableList(textChannels);
     }
@@ -63,6 +67,10 @@ public class Room extends SingleIdEntity {
     public void addTextChannel(TextChannel textChannel) {
         if (!textChannels.contains(textChannel))
             textChannels.add(textChannel);
+    }
+
+    public void removeTextChannel(TextChannel textChannel) {
+        textChannels.remove(textChannel);
     }
 
     public List<RegisteredUser> getMembers() {
