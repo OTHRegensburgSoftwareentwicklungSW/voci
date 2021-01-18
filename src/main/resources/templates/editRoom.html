@@ -13,8 +13,8 @@
     <div class="col-md-8 col-sm-12 d-flex flex-column h-100 secondary-bg p-0 pt-4 text-center">
         <div th:replace="fragments/mainFragments :: heading('EDIT -' + ${room.roomName.toUpperCase()} + '-', 'main-border')"></div>
         <div class="flex-column d-flex justify-content-center overflow-auto flex-grow-1 p-0 mt-2 ">
-            <div class="main-bg rounded p-3 ">
-                <div class="d-flex row m-0 overflow-auto">
+            <div class="main-bg rounded p-3 overflow-auto">
+                <div class="d-flex row m-0">
                     <div class="col-12 col-md-6 p-3">
                         <div th:replace="fragments/mainFragments :: heading('TEXT-CHANNELS', 'secondary-border')"></div>
                         <div class="flex-row d-flex justify-content-between secondary-bg rounded mt-2 p-1 pl-3 pr-2"

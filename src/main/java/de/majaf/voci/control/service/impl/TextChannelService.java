@@ -35,13 +35,11 @@ public class TextChannelService implements IChannelService {
     }
 
     @Override
-    public TextChannel loadChannelByIDInRoom(long channelID, Room room, RegisteredUser initiator) throws InvalidUserException, ChannelDoesNotExistException, InvalidChannelException {
-        if (initiator.equals(room.getOwner())) {
-            TextChannel channel = loadChannelByID(channelID);
-            if (room.getTextChannels().contains(channel)) {
-                return channel;
-            } else throw new InvalidChannelException(channel, "Channel is not in room.");
-        } else throw new InvalidUserException(initiator, "User is not Owner");
+    public TextChannel loadChannelByIDInRoom(long channelID, Room room) throws ChannelDoesNotExistException, InvalidChannelException {
+        TextChannel channel = loadChannelByID(channelID);
+        if (room.getTextChannels().contains(channel)) {
+            return channel;
+        } else throw new InvalidChannelException(channel, "Channel is not in room.");
     }
 
     @Override

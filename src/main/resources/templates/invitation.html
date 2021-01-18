@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Join a call</title>
+    <title th:replace="fragments/bootstrap :: header"></title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body class="vh-100 main-bg text-light">
+<div class="container-fluid h-100 row m-0 p-0">
+    <div class="col-lg-2"></div>
+    <div class="col-lg-8 col-md-12 d-flex flex-column h-100 secondary-bg p-0 pt-4 text-center">
+        <div th:replace="fragments/mainFragments :: heading('HAVE YOU BEEN INVITED? JOIN A CALL HERE.', 'main-border')"></div>
+        <div class="flex-column d-flex justify-content-center overflow-auto flex-grow-1 p-0 mt-2 ">
+            <div class="d-flex flex-row m-0 p-0 overflow-auto justify-content-center">
+                <div class="p-4 main-bg rounded text-left" style="min-width: 50% !important;">
+                    <div th:replace="fragments/mainFragments :: heading('ENTER ACCESS-TOKEN', 'secondary-border')"></div>
+
+                    <form th:action="@{/invitation}"
+                          th:method="post"
+                          class="flex-row d-flex pt-2 pb-2 border-top border-bottom secondary-border">
+                        <input name="accessToken" type="text" class="form-control" id="accessToken"
+                               placeholder="XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
+                               required pattern="[a-z A-Z 0-9]{8}(-[a-z A-Z 0-9]{4}){3}-[a-z A-Z 0-9]{12}">
+
+                        <div class="flex-column d-flex pl-2">
+                            <button type="submit" class="btn btn-success">JOIN</button>
+                        </div>
+
+                    </form>
+                    <div class="flex-row d-flex pt-3">
+                        <p>Not what you're looking for? <br> <a th:href="@{/login}" class="text-success">Login here!</a></p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

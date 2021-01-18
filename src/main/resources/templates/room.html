@@ -10,7 +10,7 @@
 
     <script th:inline="javascript">
         window.onload = function () {
-            connectRoomSocket([[${user.id}]], [[${room.textChannels[0].id}]]);
+            connectRoomSocket([[${user.id}]], [[${textChannel.id}]]);
             scrollToBottom('msg-container');
         }
     </script>
@@ -24,24 +24,28 @@
         <div class="flex-grow-1 overflow-auto text-center">
             <p class="text-secondary border-top border-bottom secondary-border mb-2">text-channels</p>
             <div class="pl-2 pr-2">
-                <div class="justify-content-center secondary-bg rounded p-1 mb-2"
-                     th:each="textChannel : ${room.textChannels}">
-                    <p class="m-0" th:text="${textChannel.channelName}"></p>
-                </div>
+                <a class="btn btn-block text-light justify-content-center rounded p-1 mb-2"
+                   th:each="channel : ${room.textChannels}"
+                   th:classappend="${channel.equals(textChannel) ? 'bg-success' : 'secondary-bg'}"
+                   th:href="@{/room/{roomID}(roomID=${roomID}, textChannelID=${channel.id})}"
+                   onclick="disconnect()">
+                    <p class="m-0" th:text="${channel.channelName}"></p>
+                </a>
             </div>
             <p class="text-secondary border-top border-bottom secondary-border mb-2 mt-4">voice-channels</p>
             <div class="pl-2 pr-2">
-                <div class="justify-content-center secondary-bg rounded p-1 mb-2"
-                     th:each="voiceChannel : ${room.voiceChannels}">
-                    <p class="m-0" th:text="${voiceChannel.channelName}"></p>
-                </div>
+                <a class="btn btn-block text-light justify-content-center secondary-bg rounded p-1 mb-2"
+                   th:each="channel : ${room.voiceChannels}">
+                    <p class="m-0" th:text="${channel.channelName}"></p>
+                </a>
             </div>
-            <div th:if="${user.equals(room.owner)}" class="pb-4 pt-3 pl-4 pr-4 border-top secondary-border">
-                <a class="btn btn-block btn-outline-success" th:href="@{/room/{roomID}/edit(roomID=${room.id})}">EDIT</a>
+            <div th:if="${user.equals(room.owner)}" class="pb-4 pt-3 pl-4 pr-4">
+                <a class="btn btn-block btn-outline-success"
+                   th:href="@{/room/{roomID}/edit(roomID=${room.id})}" onclick="disconnect()">EDIT</a>
             </div>
         </div>
         <div class="pb-4 pt-3 pl-4 pr-4 border-top secondary-border">
-            <a class="btn btn-block btn-outline-success" th:href="@{/main}">HOME</a>
+            <a class="btn btn-block btn-outline-success" th:href="@{/main}" onclick="disconnect()">HOME</a>
         </div>
     </div>
 
@@ -55,11 +59,11 @@
 
             <div class="flex-row d-flex row justify-content-center text-light m-0 p-0 pb-2">
                 <p class="m-0 text-secondary mr-2 pt-1 pb-1">Text-Channel: </p>
-                <p class="main-bg rounded m-0 p-1 pl-2 pr-2" th:text="${room.textChannels[0].channelName}"></p>
+                <p class="main-bg rounded m-0 p-1 pl-2 pr-2" th:text="${textChannel.channelName}"></p>
             </div>
 
         </div>
-        <div th:replace="fragments/textChannelFragment :: textChannel(${room.textChannels[0]})">
+        <div th:replace="fragments/textChannelFragment :: textChannel(${textChannel})">
         </div>
 
     </div>
@@ -77,25 +81,29 @@
                         <p class="m-1 member_name" th:text="${member.userName}"></p>
                     </div>
                     <button th:if="${user.equals(room.owner)}" th:unless="${member.equals(room.owner)}"
-                            class="justify-content-center btn text-light m-0 p-0 mt-1" type="submit"><i
+                            class="justify-content-center btn text-light m-0 p-0 mt-1" type="submit"
+                            onclick="disconnect()"><i
                             class="material-icons">delete</i>
                     </button>
                 </form>
             </div>
             <div class="text-center pt-2 pb-2 mt-2 border-top secondary-border">
-                <a th:href="@{/room/{roomID}/invite(roomID=${room.id})}" class="btn btn-outline-success m-2 p-2">
+                <a th:href="@{/room/{roomID}/invite(roomID=${room.id})}" class="btn btn-outline-success m-2 p-2"
+                   onclick="disconnect()">
                     INVITE CONTACT
                 </a>
             </div>
         </div>
         <form th:if="${user.equals(room.owner)}" class="text-center border-top secondary-border pb-4 pt-3"
               th:method="delete"
-              th:action="@{/room/{roomID}/delete(roomID=${room.id})}">
+              th:action="@{/room/{roomID}/delete(roomID=${room.id})}"
+              onclick="disconnect()">
             <button type="submit" class="btn btn-outline-danger">DELETE ROOM</button>
         </form>
         <form th:unless="${user.equals(room.owner)}" class="text-center border-top secondary-border pb-4 pt-3"
               th:method="delete"
-              th:action="@{/room/{roomID}/leave(roomID=${room.id})}">
+              th:action="@{/room/{roomID}/leave(roomID=${room.id})}"
+              onclick="disconnect()">
             <button type="submit" class="btn btn-outline-danger">LEAVE ROOM</button>
         </form>
     </div>

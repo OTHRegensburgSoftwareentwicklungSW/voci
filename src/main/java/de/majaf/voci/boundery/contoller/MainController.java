@@ -12,8 +12,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 
-import javax.websocket.server.PathParam;
 import java.security.Principal;
 
 @Controller
@@ -53,7 +53,7 @@ public class MainController {
     }
 
     @RequestMapping(value = "/main/deleteContact", method = RequestMethod.DELETE)
-    public String deleteContact(Model model, Principal principal, @PathParam("contactID") long contactID){
+    public String deleteContact(Model model, Principal principal, @RequestParam("contactID") long contactID){
         try {
             userService.removeContact(getActiveUser(principal), contactID);
         } catch (UserDoesNotExistException uidnee) {

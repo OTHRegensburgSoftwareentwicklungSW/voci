@@ -10,7 +10,7 @@ public interface IChannelService {
 
     Channel createChannel();
     Channel loadChannelByID(long channelID) throws ChannelDoesNotExistException;
-    Channel loadChannelByIDInRoom(long channelID, Room room, RegisteredUser initiator) throws InvalidUserException, ChannelDoesNotExistException, InvalidChannelException;
+    Channel loadChannelByIDInRoom(long channelID, Room room) throws InvalidUserException, ChannelDoesNotExistException, InvalidChannelException;
     void deleteChannel(Channel channel);
     void deleteChannelByID(long channelID) throws ChannelDoesNotExistException;
     Message createTextMessage(String msg, long channelID, User user) throws ChannelDoesNotExistException; // TODO: don't know where to put it

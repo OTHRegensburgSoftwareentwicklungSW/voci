@@ -55,16 +55,16 @@
             </div>
         </div>
 
-        <div class="flex-row d-flex justify-content-center border-top secondary-border">
-            <div class="col text-center p-0">
-                <div class="flex-row d-flex justify-content-start">
-                    <p class="m-0 pt-2">Invite Guests? Let them join via </p>
+        <div class="flex-row d-flex border-top secondary-border">
+            <div class="col p-0">
+                <div class="flex-row d-flex">
+                    <p class="m-0 pt-2">Invite Guests? Let them join with this Access-Token: </p>
                 </div>
                 <!-- TODO insert proper link-->
 
-                <div class="flex-row d-flex justify-content-between">
+                <div class="flex-row d-flex">
                     <div class="flex-column d-flex overflow-auto">
-                        <p class="m-0 pb-2" th:text="'http://voci:8080/invitation/' + ${invitation.accessToken}"
+                        <p class="m-0 pb-2" th:text="${invitation.accessToken}"
                            style="overflow-wrap: break-word" id="invitationURL"></p>
                     </div>
                 </div>

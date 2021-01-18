@@ -5,6 +5,6 @@ import de.majaf.voci.control.exceptions.user.UserTokenDoesNotExistException;
 
 
 public interface IExternalCallService {
-    String generateCallURL(String userToken) throws UserTokenDoesNotExistException, InvitationDoesNotExistException;
+    String startCall(String userToken) throws UserTokenDoesNotExistException, InvitationDoesNotExistException;
     void joinCall(String userToken, String callURL);
 }

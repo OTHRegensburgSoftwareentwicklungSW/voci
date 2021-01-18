@@ -13,8 +13,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 
-import javax.websocket.server.PathParam;
 import java.security.Principal;
 
 @Controller
@@ -62,7 +62,7 @@ public class CallController {
 
 
     @RequestMapping(value = "/call/inviteContact", method = RequestMethod.POST)
-    public String inviteContact(Model model, Principal principal, @PathParam("contactID") long contactID) {
+    public String inviteContact(Model model, Principal principal, @RequestParam("contactID") long contactID) {
         RegisteredUser user = mainController.getActiveUser(principal);
         Invitation invitation = user.getOwnedInvitation();
         try {
@@ -78,7 +78,7 @@ public class CallController {
     }
 
     @RequestMapping(value = "/call/uninviteContact", method = RequestMethod.DELETE)
-    public String uninviteContact(Model model, Principal principal, @PathParam("invitedID") long invitedID) {
+    public String uninviteContact(Model model, Principal principal, @RequestParam("invitedID") long invitedID) {
         RegisteredUser user = mainController.getActiveUser(principal);
         Invitation invitation = user.getOwnedInvitation();
 

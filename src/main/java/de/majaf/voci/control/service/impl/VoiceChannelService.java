@@ -39,13 +39,11 @@ public class VoiceChannelService implements IChannelService {
 
     @Override
     @Transactional
-    public VoiceChannel loadChannelByIDInRoom(long channelID, Room room, RegisteredUser initiator) throws InvalidUserException, ChannelDoesNotExistException, InvalidChannelException {
-        if (initiator.equals(room.getOwner())) {
-            VoiceChannel channel = loadChannelByID(channelID);
-            if(room.getVoiceChannels().contains(channel)) {
-                return channel;
-            } else throw new InvalidChannelException(channel, "Channel is not in room.");
-        } else throw new InvalidUserException(initiator, "User is not Owner");
+    public VoiceChannel loadChannelByIDInRoom(long channelID, Room room) throws ChannelDoesNotExistException, InvalidChannelException {
+        VoiceChannel channel = loadChannelByID(channelID);
+        if (room.getVoiceChannels().contains(channel)) {
+            return channel;
+        } else throw new InvalidChannelException(channel, "Channel is not in room.");
     }
 
     @Override
@@ -65,7 +63,7 @@ public class VoiceChannelService implements IChannelService {
     @Transactional
     public void addChannelToRoom(Room room, String channelName, RegisteredUser initiator) throws InvalidUserException, InvalidNameException {
         if (initiator.equals(room.getOwner())) {
-            if(channelName != null && !channelName.equals("")) {
+            if (channelName != null && !channelName.equals("")) {
                 VoiceChannel voiceChannel = new VoiceChannel(channelName);
                 room.addVoiceChannel(voiceChannel);
                 roomService.saveRoom(room);

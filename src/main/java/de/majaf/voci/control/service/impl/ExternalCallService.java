@@ -19,7 +19,7 @@ public class ExternalCallService implements IExternalCallService {
     private ICallService callService;
 
     @Override
-    public String generateCallURL(String userToken) throws UserTokenDoesNotExistException, InvitationDoesNotExistException {
+    public String startCall(String userToken) throws UserTokenDoesNotExistException, InvitationDoesNotExistException {
         RegisteredUser user = userService.loadUserBySecurityToken(userToken);
 
         // TODO: Exception Handling
