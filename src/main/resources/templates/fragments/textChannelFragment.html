@@ -1,6 +1,7 @@
 <html xmlns:th="http://www.thymeleaf.org/" lang="en">
 
 <div th:fragment="textChannel(textChannel)" class="flex-column d-flex flex-grow-1 overflow-auto">
+    <script th:src="@{/js/message_app.js}"></script>
     <div class="overflow-auto flex-grow-1 pr-2" id="msg-container">
         <div class="flex-row d-flex pt-1 pb-1" th:each="message : ${textChannel.messages}"
              th:classappend="${message.sender.equals(user)} ? 'justify-content-end text-right' : 'justify-content-start'">

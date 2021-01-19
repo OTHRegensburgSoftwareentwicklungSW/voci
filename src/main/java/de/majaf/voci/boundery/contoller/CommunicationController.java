@@ -29,38 +29,18 @@ public class CommunicationController {
     @Autowired
     private ICallService callService;
 
-    // user for special cases in sendTo (see startCall(Principal))
     @Autowired
     private SimpMessagingTemplate simpMessagingTemplate;
 
-    @MessageMapping(value = "/startCall")
-    // actual response would be
-    // @SendTo("/broker/{userID}/startedCall")
-    // AND
-    // @SendTo("/broker/{userID}/invited")
-    public void startCall(Principal principal) throws InvitationDoesNotExistException {
-        RegisteredUser user = mainController.getActiveUser(principal);
 
-        System.out.println("hello");
-        Invitation invitation = user.getOwnedInvitation();
-        callService.startCall(invitation.getId());
-
-        // cannot use destination Variable in @SendTo only. So this is a workaround.
-        simpMessagingTemplate.convertAndSend("/broker/" + user.getId() + "/startedCall", true);
-
-        for (RegisteredUser invited : invitation.getInvitedUsers()) {
-            simpMessagingTemplate.convertAndSend("/broker/" + invited.getId() + "/invited", invitation);
-        }
-    }
-
+    // Done with sockets, not thymeleaf, because invitations are dynamically appended to DOM, see invitation_app.js
     @MessageMapping(value = "/{invitationID}/joinCall")
     @SendTo("/broker/{invitationID}/addedCallMember")
-    public String joinCall(@DestinationVariable long invitationID, Principal principal) throws InvitationDoesNotExistException, InvalidUserException, InvalidCallStateException {
+    public User joinCall(@DestinationVariable long invitationID, Principal principal) throws InvitationDoesNotExistException, InvalidUserException, InvalidCallStateException {
         RegisteredUser user = mainController.getActiveUser(principal);
         callService.joinCallByInvitationID(user, invitationID);
         simpMessagingTemplate.convertAndSend("/broker/" + user.getId() + "/joinedCall", true);
-        return user.getUserName();
-
+        return user;
     }
 
     @MessageMapping(value = "/{invitationID}/leaveCall")

@@ -103,6 +103,12 @@ public class CallService extends ExternalCallService implements ICallService {
 
     @Transactional
     @Override
+    public void joinCallByAccessToken(User user, String accessToken) throws InvalidUserException, InvalidCallStateException, InvitationTokenDoesNotExistException {
+        joinCall(user, loadInvitationByToken(accessToken));
+    }
+
+    @Transactional
+    @Override
     public void joinCall(User user, Invitation invitation) throws InvalidUserException, InvalidCallStateException {
         if (user.isRegistered())
             if (!invitation.getInvitedUsers().contains(user) && !user.equals(invitation.getInitiator()))

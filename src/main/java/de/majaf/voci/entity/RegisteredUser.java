@@ -1,5 +1,6 @@
 package de.majaf.voci.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -18,24 +19,31 @@ public class RegisteredUser extends User implements UserDetails {
     @Column(unique = true, nullable = false)
     private String email;
 
+    @JsonIgnore
     @Column(nullable = false)
     private String passwordHash;
 
+    @JsonIgnore
     @Column(unique = true)
     private String securityToken;
 
+    @JsonIgnore
     @ManyToMany
     private List<RegisteredUser> contacts = new ArrayList<>();
 
+    @JsonIgnore
     @ManyToMany(mappedBy = "members")
     private List<Room> rooms = new ArrayList<>();
 
+    @JsonIgnore
     @OneToMany(mappedBy = "owner")
     private List<Room> ownedRooms = new ArrayList<>();
 
+    @JsonIgnore
     @OneToOne(mappedBy = "initiator")
     private Invitation ownedInvitation;
 
+    @JsonIgnore
     @ManyToMany(mappedBy = "invitedUsers")
     private List<Invitation> activeInvitations = new ArrayList<>();
 
@@ -56,6 +64,7 @@ public class RegisteredUser extends User implements UserDetails {
         this.userName = username;
     }
 
+    @JsonIgnore
     public String getUsername() {
         return userName;
     }
@@ -149,31 +158,37 @@ public class RegisteredUser extends User implements UserDetails {
         return true;
     }
 
+    @JsonIgnore
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return null;
     }
 
+    @JsonIgnore
     @Override
     public String getPassword() {
         return passwordHash;
     }
 
+    @JsonIgnore
     @Override
     public boolean isAccountNonExpired() {
         return true;
     }
 
+    @JsonIgnore
     @Override
     public boolean isAccountNonLocked() {
         return true;
     }
 
+    @JsonIgnore
     @Override
     public boolean isCredentialsNonExpired() {
         return true;
     }
 
+    @JsonIgnore
     @Override
     public boolean isEnabled() {
         return true;

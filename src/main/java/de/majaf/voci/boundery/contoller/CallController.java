@@ -1,5 +1,6 @@
 package de.majaf.voci.boundery.contoller;
 
+import de.majaf.voci.control.exceptions.call.InvitationDoesNotExistException;
 import de.majaf.voci.control.service.ICallService;
 import de.majaf.voci.control.exceptions.call.InvalidCallStateException;
 import de.majaf.voci.control.exceptions.user.InvalidUserException;
@@ -7,6 +8,7 @@ import de.majaf.voci.control.exceptions.user.UserDoesNotExistException;
 import de.majaf.voci.entity.Call;
 import de.majaf.voci.entity.Invitation;
 import de.majaf.voci.entity.RegisteredUser;
+import de.majaf.voci.entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
@@ -90,6 +92,20 @@ public class CallController {
         model.addAttribute("invitingList", invitation.getInvitedUsers());
         model.addAttribute("user", user);
         return "prepareCall";
+    }
+
+    @RequestMapping(value = "/call/start", method = RequestMethod.POST)
+    public String startCall(Model model, Principal principal) throws InvitationDoesNotExistException {
+        RegisteredUser user = mainController.getActiveUser(principal);
+        Invitation invitation = user.getOwnedInvitation();
+        callService.startCall(invitation.getId());
+        for (RegisteredUser invited : invitation.getInvitedUsers()) {
+            simpMessagingTemplate.convertAndSend("/broker/" + invited.getId() + "/invited", invitation);
+        }
+        model.addAttribute("invitation", invitation);
+        model.addAttribute("textChannel", invitation.getCall().getTextChannel());
+        model.addAttribute("user", user);
+        return "call";
     }
 
 

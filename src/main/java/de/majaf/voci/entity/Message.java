@@ -18,7 +18,6 @@ public class Message extends SingleIdEntity implements Comparable<Message>{
     @Enumerated(EnumType.ORDINAL)
     private MessageType type;
 
-    @JsonIgnore
     @ManyToOne
     private User sender;
 
@@ -66,12 +65,6 @@ public class Message extends SingleIdEntity implements Comparable<Message>{
         return sender;
     }
 
-    @JsonGetter("senderName")
-    public String getSenderName() {
-        return sender.getUserName();
-    }
-
-    @JsonGetter("senderID")
     public long getSenderId() {
         return sender.getId();
     }

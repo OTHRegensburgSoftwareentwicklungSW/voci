@@ -1,6 +1,7 @@
 package de.majaf.voci.entity;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import javax.persistence.*;
 
@@ -8,9 +9,11 @@ import javax.persistence.*;
 @Inheritance(strategy=InheritanceType.TABLE_PER_CLASS)
 public abstract class User extends SingleIdEntity{
 
+    @JsonIgnore
     @ManyToOne
     private VoiceChannel activeVoiceChannel;
 
+    @JsonIgnore
     @ManyToOne
     private Call activeCall;
 

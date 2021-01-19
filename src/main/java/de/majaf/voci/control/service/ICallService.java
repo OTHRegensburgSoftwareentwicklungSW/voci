@@ -22,7 +22,8 @@ public interface ICallService extends IExternalCallService{
     void removeInvitedUserByID(Invitation invitation, long invitedContactID) throws UserDoesNotExistException;
 
     void startCall(long invitationID) throws InvitationDoesNotExistException;
-    void joinCallByInvitationID(User user, long InvitationID) throws InvalidUserException, InvalidCallStateException, InvitationDoesNotExistException;
+    void joinCallByInvitationID(User user, long invitationID) throws InvalidUserException, InvalidCallStateException, InvitationDoesNotExistException;
+    void joinCallByAccessToken(User user, String accessToken) throws InvalidUserException, InvalidCallStateException, InvitationDoesNotExistException, InvitationTokenDoesNotExistException;
     void joinCall(User user, Invitation invitation) throws InvalidUserException, InvalidCallStateException;
     GuestUser createGuestUserAndJoinCall(String accessToken) throws InvitationTokenDoesNotExistException, InvalidCallStateException, InvalidUserException;
 

@@ -22,9 +22,6 @@ public class TextChannelController {
     @Autowired
     private IUserService userService;
 
-    @Autowired
-    private MainController mainController;
-
     @MessageMapping("/{textChannelID}/{userID}/sendMessage")
     @SendTo("/broker/{textChannelID}/receivedMessage")
     public Message sendMessage(@DestinationVariable long textChannelID, @DestinationVariable long userID, String message) throws UserDoesNotExistException, ChannelDoesNotExistException {

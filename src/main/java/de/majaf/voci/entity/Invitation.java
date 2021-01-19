@@ -18,22 +18,18 @@ public class Invitation extends SingleIdEntity{
     @Column(unique = true)
     private String accessToken;
 
-    @JsonIgnore
     @JoinColumn(unique = true, nullable = false)
     @OneToOne(cascade = CascadeType.ALL)
     private RegisteredUser initiator;
 
-    @JsonIgnore
     @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<RegisteredUser> invitedUsers = new ArrayList<>();
 
-    @JsonIgnore
     @JoinColumn(unique = true, nullable = false)
     @OneToOne(cascade = CascadeType.ALL)
     private Call call;
 
     @OneToMany
-    @JsonIgnore
     @JoinColumn(name = "invitation_id")
     private List<GuestUser> guestUsers = new ArrayList<>();
 
@@ -70,11 +66,6 @@ public class Invitation extends SingleIdEntity{
 
     public RegisteredUser getInitiator() {
         return initiator;
-    }
-
-    @JsonGetter("initiator")
-    public String getInitiatorName() {
-        return initiator.getUserName();
     }
 
     public void setInitiator(RegisteredUser initiator) {

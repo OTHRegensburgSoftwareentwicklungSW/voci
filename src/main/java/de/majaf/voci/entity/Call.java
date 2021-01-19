@@ -1,5 +1,7 @@
 package de.majaf.voci.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -14,12 +16,15 @@ public class Call extends SingleIdEntity {
     @OneToMany(mappedBy = "activeCall", fetch = FetchType.LAZY)
     private List<User> participants = new ArrayList<>();
 
+    @JsonIgnore
     @OneToOne(mappedBy = "call")
     private Invitation invitation;
 
+    @JsonIgnore
     @OneToOne
     private VoiceChannel voiceChannel;
 
+    @JsonIgnore
     @OneToOne
     private TextChannel textChannel;
 

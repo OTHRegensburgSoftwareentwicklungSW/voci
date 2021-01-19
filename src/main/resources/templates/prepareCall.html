@@ -6,7 +6,7 @@
     <title th:replace="fragments/bootstrap :: header"></title>
     <title th:replace="fragments/sockets :: header"></title>
     <link rel="stylesheet" th:href="@{/css/main.css}">
-    <script th:src="@{/js/call_app.js}"></script>
+    <script th:src="@{/js/invitation_app.js}"></script>
 
     <script th:inline="javascript">
         window.onload = function () {
@@ -76,18 +76,12 @@
                     </div>
                 </div>
 
-                <div class="flex-row d-flex justify-content-center mr-3 ml-3 pt-3 border-top secondary-border">
+                <form th:action="@{/call/start}" th:method="post" class="flex-row d-flex justify-content-center mr-3 ml-3 pt-3 border-top secondary-border">
 
-                    <button class="btn btn-outline-success" id="start-call-btn">
+                    <button type="submit" class="btn btn-outline-success" id="start-call-btn">
                         START CALL
                     </button>
-                    <script>
-                        let startCallBtn = document.getElementById('start-call-btn');
-                        startCallBtn.addEventListener("click", function () {
-                            stompClient.send('/ws/startCall', {});
-                        })
-                    </script>
-                </div>
+                </form>
 
             </div>
         </div>
