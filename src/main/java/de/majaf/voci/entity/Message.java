@@ -61,14 +61,6 @@ public class Message extends SingleIdEntity implements Comparable<Message>{
         this.type = type;
     }
 
-    public User getSender() {
-        return sender;
-    }
-
-    public long getSenderId() {
-        return sender.getId();
-    }
-
     public void setSender(User sender) {
         this.sender = sender;
     }

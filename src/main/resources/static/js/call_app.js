@@ -10,9 +10,11 @@ function connectCallSocket(invitationID, userID, textChannelID) {
                 addCallMember(u.userName);
             }
         });
-        stompClient.subscribe('/broker/' + invitationID + '/removedCallMember', function (username) {
-            if (username.body != null)
-                removeCallMember(username.body);
+        stompClient.subscribe('/broker/' + invitationID + '/removedCallMember', function (user) {
+            if (user.body) {
+                let u = JSON.parse(user.body);
+                removeCallMember(u.userName);
+            }
         });
         stompClient.subscribe('/broker/' + invitationID + '/endedCall', function (ended) {
             if (ended.body) {

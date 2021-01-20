@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.util.Date;
 import java.util.UUID;
 
 @Service
@@ -30,7 +31,8 @@ public class CallService extends ExternalCallService implements ICallService {
     @Autowired
     private IUserService userService;
 
-    @Autowired @Qualifier("textChannelService")
+    @Autowired
+    @Qualifier("textChannelService")
     private IChannelService channelService;
 
     @Override
@@ -54,6 +56,11 @@ public class CallService extends ExternalCallService implements ICallService {
     @Transactional
     public Invitation loadInvitationByToken(String accessToken) throws InvitationTokenDoesNotExistException {
         return invitationRepo.findByAccessToken(accessToken).orElseThrow(() -> new InvitationTokenDoesNotExistException(accessToken, "Invalid Access-Token"));
+    }
+
+    @Override
+    public Invitation saveInvitation(Invitation invitation) {
+        return invitationRepo.save(invitation);
     }
 
     @Override
@@ -84,15 +91,17 @@ public class CallService extends ExternalCallService implements ICallService {
 
     @Override
     @Transactional
-    public void startCall(long invitationID) throws InvitationDoesNotExistException {
-        Invitation invitation = loadInvitationByID(invitationID);
+    public Invitation startCall(RegisteredUser user) throws InvitationDoesNotExistException {
+        Invitation invitation = user.getOwnedInvitation();
         Call call = invitation.getCall();
         call.setTextChannel((TextChannel) channelService.createChannel());
         call.setActive(true);
         call.addParticipant(invitation.getInitiator());
         invitation.getInitiator().setActiveCall(call);
         invitation.setAccessToken(generateAccessToken(invitation));
+        invitation.setCreationDate(new Date());
         invitationRepo.save(invitation);
+        return invitation;
     }
 
     @Transactional
@@ -120,21 +129,10 @@ public class CallService extends ExternalCallService implements ICallService {
         userService.saveUser(user);
     }
 
-    @Override
-    @Transactional
-    public GuestUser createGuestUserAndJoinCall(String accessToken) throws InvitationTokenDoesNotExistException, InvalidCallStateException, InvalidUserException {
-        Invitation invitation = loadInvitationByToken(accessToken);
-        GuestUser user = userService.createGuestUser(invitation.getGuestUsers().size());
-        invitation.addGuestUser(user);
-        joinCall(user, invitation);
-        invitationRepo.save(invitation);
-        return user;
-    }
-
     @Transactional
     @Override
     public boolean isUserInvited(User user, Invitation invitation) {
-        if(user.isRegistered())
+        if (user.isRegistered())
             return invitation.getInvitedUsers().contains(user) || user.equals(invitation.getInitiator());
         else return false;
     }
@@ -191,6 +189,7 @@ public class CallService extends ExternalCallService implements ICallService {
             participant.setActiveCall(null);
 
         invitation.setAccessToken(null);
+        invitation.setCreationDate(null);
         userService.removeAllGuests(invitation);
         call.removeAllParticipants();
         call.setActive(false);

@@ -13,7 +13,7 @@ import java.util.List;
 @Table(name = "communication")
 public class Call extends SingleIdEntity {
 
-    @OneToMany(mappedBy = "activeCall", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "activeCall", fetch = FetchType.EAGER)
     private List<User> participants = new ArrayList<>();
 
     @JsonIgnore
@@ -66,18 +66,9 @@ public class Call extends SingleIdEntity {
         return Collections.unmodifiableList(participants);
     }
 
-    public void setParticipants(List<User> participants) {
-        this.participants = participants;
-    }
-
     public void addParticipant(User participant) {
         if (!participants.contains(participant))
             participants.add(participant);
-    }
-
-    public void addParticipants(List<User> participants) {
-        for (User u : participants)
-            addParticipant(u);
     }
 
     public void removeParticipant(User participant) {

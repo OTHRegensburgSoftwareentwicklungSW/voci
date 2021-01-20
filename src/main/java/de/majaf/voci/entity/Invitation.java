@@ -13,7 +13,7 @@ import java.util.List;
 public class Invitation extends SingleIdEntity{
 
     private Date creationDate;
-    private long timeout;
+    private long timeout = 600000;
 
     @Column(unique = true)
     private String accessToken;
@@ -22,7 +22,7 @@ public class Invitation extends SingleIdEntity{
     @OneToOne(cascade = CascadeType.ALL)
     private RegisteredUser initiator;
 
-    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<RegisteredUser> invitedUsers = new ArrayList<>();
 
     @JoinColumn(unique = true, nullable = false)
@@ -74,10 +74,6 @@ public class Invitation extends SingleIdEntity{
 
     public List<RegisteredUser> getInvitedUsers() {
         return Collections.unmodifiableList(invitedUsers);
-    }
-
-    public void setInvitedUsers(List<RegisteredUser> invitedUsers) {
-        this.invitedUsers = invitedUsers;
     }
 
     public void addInvitedUser(RegisteredUser invitedUser) {

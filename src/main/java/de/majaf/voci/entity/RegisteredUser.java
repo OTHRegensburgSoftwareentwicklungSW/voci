@@ -11,7 +11,7 @@ import java.util.Collections;
 import java.util.List;
 
 @Entity
-public class RegisteredUser extends User implements UserDetails {
+public class RegisteredUser extends User {
 
     @Column(unique = true, nullable = false)
     private String userName;
@@ -65,6 +65,7 @@ public class RegisteredUser extends User implements UserDetails {
     }
 
     @JsonIgnore
+    @Override
     public String getUsername() {
         return userName;
     }
@@ -81,6 +82,7 @@ public class RegisteredUser extends User implements UserDetails {
         this.passwordHash = password;
     }
 
+    @JsonIgnore
     public String getPasswordHash() {
         return passwordHash;
     }
@@ -160,38 +162,8 @@ public class RegisteredUser extends User implements UserDetails {
 
     @JsonIgnore
     @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return null;
-    }
-
-    @JsonIgnore
-    @Override
     public String getPassword() {
         return passwordHash;
-    }
-
-    @JsonIgnore
-    @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
-
-    @JsonIgnore
-    @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
-
-    @JsonIgnore
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
-
-    @JsonIgnore
-    @Override
-    public boolean isEnabled() {
-        return true;
     }
 
     @Override

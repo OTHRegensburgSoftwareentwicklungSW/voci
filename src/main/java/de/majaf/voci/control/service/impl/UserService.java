@@ -1,21 +1,29 @@
 package de.majaf.voci.control.service.impl;
 
+import de.majaf.voci.control.exceptions.call.InvitationTokenDoesNotExistException;
 import de.majaf.voci.control.service.ICallService;
 import de.majaf.voci.control.service.IUserService;
 import de.majaf.voci.control.exceptions.user.*;
-import de.majaf.voci.entity.GuestUser;
-import de.majaf.voci.entity.Invitation;
-import de.majaf.voci.entity.RegisteredUser;
-import de.majaf.voci.entity.User;
+import de.majaf.voci.entity.*;
 import de.majaf.voci.entity.repo.UserRepository;
 import de.majaf.voci.entity.repo.RegisteredUserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import javax.transaction.Transactional;
+import java.util.List;
 import java.util.UUID;
+
+import static org.springframework.security.web.context.HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY;
 
 @Service
 public class UserService implements IUserService {
@@ -49,14 +57,19 @@ public class UserService implements IUserService {
     }
 
     @Override
-    @Transactional
-    public GuestUser createGuestUser(int num) {
-        GuestUser guestUser = new GuestUser("guest" + num);
+    public GuestUser createGuestUser(String accessToken, HttpServletRequest req) throws InvitationTokenDoesNotExistException {
+        Invitation invitation = callService.loadInvitationByToken(accessToken);
+        GuestUser guestUser = new GuestUser("guest" + (invitation.getGuestUsers().size() + 1));
+        authenticateUser(guestUser, req);
+        guestUser.setActiveCall(invitation.getCall());
         userRepo.save(guestUser);
+        invitation.addGuestUser(guestUser);
+        callService.saveInvitation(invitation);
         return guestUser;
     }
 
     @Override
+    @Transactional
     public void removeAllGuests(Invitation invitation) {
         for(GuestUser user : invitation.getGuestUsers())
             userRepo.delete(user);
@@ -70,6 +83,12 @@ public class UserService implements IUserService {
     @Override
     public RegisteredUser loadUserBySecurityToken(String securityToken) throws UserTokenDoesNotExistException {
         return regUserRepo.findBySecurityToken(securityToken).orElseThrow(() -> new UserTokenDoesNotExistException(securityToken, "Invalid UserToken"));
+    }
+
+    @Override
+    @Transactional
+    public List<User> loadParticipants(Call call) {
+        return userRepo.participantsInCall(call);
     }
 
     @Override
@@ -115,6 +134,21 @@ public class UserService implements IUserService {
     public UserDetails loadUserByUsername(String username) throws UsernameDoesNotExistException {
         return regUserRepo.findByUserName(username).orElseThrow(
                 () -> new UsernameDoesNotExistException(username, "User does not exist"));
+    }
+
+    @Override
+    public RegisteredUser authenticateUser(String securityToken, HttpServletRequest req) throws UserTokenDoesNotExistException {
+        RegisteredUser user = loadUserBySecurityToken(securityToken);
+        authenticateUser(user, req);
+        return user;
+    }
+
+    private void authenticateUser(User user, HttpServletRequest req) {
+        Authentication auth = new UsernamePasswordAuthenticationToken(user, null, ((UserDetails) user).getAuthorities());
+        SecurityContext sc = SecurityContextHolder.getContext();
+        sc.setAuthentication(auth);
+        HttpSession session = req.getSession(true);
+        session.setAttribute(SPRING_SECURITY_CONTEXT_KEY, sc);
     }
 
 }

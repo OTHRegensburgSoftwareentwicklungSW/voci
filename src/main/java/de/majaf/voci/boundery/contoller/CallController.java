@@ -97,8 +97,7 @@ public class CallController {
     @RequestMapping(value = "/call/start", method = RequestMethod.POST)
     public String startCall(Model model, Principal principal) throws InvitationDoesNotExistException {
         RegisteredUser user = mainController.getActiveUser(principal);
-        Invitation invitation = user.getOwnedInvitation();
-        callService.startCall(invitation.getId());
+        Invitation invitation = callService.startCall(user);
         for (RegisteredUser invited : invitation.getInvitedUsers()) {
             simpMessagingTemplate.convertAndSend("/broker/" + invited.getId() + "/invited", invitation);
         }
@@ -107,6 +106,5 @@ public class CallController {
         model.addAttribute("user", user);
         return "call";
     }
-
 
 }

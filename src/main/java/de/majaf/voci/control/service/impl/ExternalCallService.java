@@ -23,7 +23,7 @@ public class ExternalCallService implements IExternalCallService {
         RegisteredUser user = userService.loadUserBySecurityToken(userToken);
 
         // TODO: Exception Handling
-        callService.startCall(user.getOwnedInvitation().getId());
+        callService.startCall(user);
         return user.getOwnedInvitation().getAccessToken();
     }
 

@@ -45,13 +45,13 @@ public class CommunicationController {
 
     @MessageMapping(value = "/{invitationID}/leaveCall")
     @SendTo(value = "/broker/{invitationID}/removedCallMember")
-    public String leaveCall(@DestinationVariable long invitationID, long userID) throws UserDoesNotExistException, InvitationDoesNotExistException, InvalidCallStateException {
+    public User leaveCall(@DestinationVariable long invitationID, long userID) throws UserDoesNotExistException, InvitationDoesNotExistException, InvalidCallStateException {
         User user = userService.loadUserByID(userID);
         boolean callStillActive = callService.leaveCallByInvitationID(user, invitationID);
         simpMessagingTemplate.convertAndSend("/broker/" + user.getId() + "/leftCall", true);
         if (!callStillActive)
             simpMessagingTemplate.convertAndSend("/broker/" + invitationID + "/endedInvitation", true);
-        return user.getUserName();
+        return user;
     }
 
 

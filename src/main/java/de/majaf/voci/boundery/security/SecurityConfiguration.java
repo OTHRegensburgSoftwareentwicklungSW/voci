@@ -27,7 +27,12 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     private SecurityUtilities securityUtilities;
 
     // TODO adjust when guest users work properly
-    private static final String[] ALLOW_ACCESS_WITHOUT_AUTHENTICATION = {"/", "/login", "/register", "/css/**", "/img/**", "/js/**", "/invitation/**", "/webjars/**", "/chat/**"};
+    private static final String[] ALLOW_ACCESS_WITHOUT_AUTHENTICATION = {
+            "/", "/login", "/register",
+            "/css/**", "/img/**", "/js/**",
+            "/invitation/**",
+            "/webjars/**", "/chat/**",
+            "/api/**", "/test/**"};
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
