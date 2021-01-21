@@ -1,10 +1,8 @@
 package de.majaf.voci.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.springframework.security.core.GrantedAuthority;
 
 import javax.persistence.Entity;
-import java.util.Collection;
 
 @Entity
 public class GuestUser extends User {

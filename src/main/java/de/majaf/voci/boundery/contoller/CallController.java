@@ -8,9 +8,12 @@ import de.majaf.voci.control.exceptions.user.UserDoesNotExistException;
 import de.majaf.voci.entity.Call;
 import de.majaf.voci.entity.Invitation;
 import de.majaf.voci.entity.RegisteredUser;
-import de.majaf.voci.entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.handler.annotation.DestinationVariable;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -49,7 +52,7 @@ public class CallController {
                     model.addAttribute("invitation", invitation);
                     model.addAttribute("textChannel", invitation.getCall().getTextChannel());
                     model.addAttribute("user", user);
-                    simpMessagingTemplate.convertAndSend("/broker/" + invitation.getId() + "/addedCallMember", user.getUserName());
+                    simpMessagingTemplate.convertAndSend("/broker/" + invitation.getId() + "/addedCallMember", user);
                     return "call";
                 } catch (InvalidCallStateException | InvalidUserException e) {
                     throw new IllegalArgumentException(e);
@@ -95,7 +98,7 @@ public class CallController {
     }
 
     @RequestMapping(value = "/call/start", method = RequestMethod.POST)
-    public String startCall(Model model, Principal principal) throws InvitationDoesNotExistException {
+    public String startCall(Model model, Principal principal) throws InvalidCallStateException {
         RegisteredUser user = mainController.getActiveUser(principal);
         Invitation invitation = callService.startCall(user);
         for (RegisteredUser invited : invitation.getInvitedUsers()) {
@@ -107,4 +110,17 @@ public class CallController {
         return "call";
     }
 
+    @RequestMapping(value = "/call/end", method = RequestMethod.DELETE)
+    public String endCall(Principal principal, Model model) throws InvalidCallStateException {
+        RegisteredUser user = mainController.getActiveUser(principal);
+        Call activeCall = user.getActiveCall();
+        if (activeCall != null) {
+            callService.endCall(user.getOwnedInvitation());
+            simpMessagingTemplate.convertAndSend("/broker/" + user.getOwnedInvitation().getId() + "/endedInvitation", true);
+            simpMessagingTemplate.convertAndSend("/broker/" + user.getOwnedInvitation().getId() + "/endedCall", true);
+        }
+        model.addAttribute("invitingList", user.getOwnedInvitation().getInvitedUsers());
+        model.addAttribute("user", user);
+        return "prepareCall";
+    }
 }

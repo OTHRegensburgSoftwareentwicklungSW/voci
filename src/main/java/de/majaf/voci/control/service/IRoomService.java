@@ -8,12 +8,16 @@ import de.majaf.voci.entity.Room;
 
 
 public interface IRoomService {
-    Room loadRoomByID(long id) throws RoomIDDoesNotExistException;
-    void createRoom(String roomName, RegisteredUser owner);
     Room saveRoom(Room room);
-    boolean roomHasAsMember(Room room, RegisteredUser user);
+    Room loadRoomByID(long id) throws RoomIDDoesNotExistException;
+
+    void createRoom(String roomName, RegisteredUser owner);
+
     void addMemberToRoom(Room room, long memberID, RegisteredUser initiator) throws InvalidUserException, UserDoesNotExistException;
     void removeMemberFromRoom(Room room, long memberID, RegisteredUser initiator) throws InvalidUserException, UserDoesNotExistException;
-    void deleteRoom(long roomID, RegisteredUser initiator) throws RoomIDDoesNotExistException, InvalidUserException;
+
     void leaveRoom(long roomID, RegisteredUser member) throws RoomIDDoesNotExistException, InvalidUserException;
+    void deleteRoom(long roomID, RegisteredUser initiator) throws RoomIDDoesNotExistException, InvalidUserException;
+
+    boolean roomHasAsMember(Room room, RegisteredUser user);
 }

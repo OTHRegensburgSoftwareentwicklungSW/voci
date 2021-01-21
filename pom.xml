@@ -10,7 +10,7 @@
     </parent>
     <groupId>de.majaf</groupId>
     <artifactId>voci</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.1</version>
     <name>voci</name>
     <description>Voice and Textchat</description>
 
@@ -105,7 +105,7 @@
         <dependency>
             <groupId>org.webjars</groupId>
             <artifactId>jquery</artifactId>
-            <version>3.1.1-1</version>
+            <version>3.1.0</version>
         </dependency>
 
         <dependency>
@@ -117,6 +117,13 @@
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-security</artifactId>
             <version>1.5.2</version>
+        </dependency>
+
+        <!-- dropsi -->
+        <dependency>
+            <groupId>de.mschoettle</groupId>
+            <artifactId>dropsi</artifactId>
+            <version>0.0.1</version>
         </dependency>
 
     </dependencies>
@@ -145,6 +152,44 @@
                     <source>14</source>
                     <target>14</target>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.2.0</version>
+                <executions>
+                    <execution>
+                        <id>default-jar</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>remote-jar</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <classifier>remote</classifier>
+                            <includes>
+                                <include>**/entity/Invitation.class</include>
+                                <include>**/entity/Call.class</include>
+                                <include>**/entity/User.class</include>
+                                <include>**/entity/RegisteredUser.class</include>
+                                <include>**/entity/GuestUser.class</include>
+                                <include>**/entity/Message.class</include>
+                                <include>**/entity/MessageType.class</include>
+                                <include>**/entity/Room.class</include>
+                                <include>**/entity/SingleIdEntity.class</include>
+                                <include>**/entity/TextChannel.class</include>
+                                <include>**/entity/Channel.class</include>
+                                <include>**/entity/VoiceChannel.class</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

@@ -37,7 +37,7 @@ public class InvitationController {
     // TODO: Exception Handling
     @RequestMapping(value = "/invitation", method = RequestMethod.GET)
     public String prepareInvitationPage(Model model, @RequestParam("accessToken") Optional<String> accessToken, HttpServletRequest req, Authentication auth) throws InvitationTokenDoesNotExistException, InvalidCallStateException, InvalidUserException, InvitationDoesNotExistException {
-        if (!accessToken.isPresent())
+        if (accessToken.isEmpty())
             return "invitation";
         else {
             return joinCall(model, accessToken.get(), auth, req);
@@ -58,7 +58,7 @@ public class InvitationController {
             callService.joinCallByAccessToken(user, accessToken);
         }
         Call call = user.getActiveCall();
-        simpMessagingTemplate.convertAndSend("/broker/" + call.getId() + "/addedCallMember", user);
+        simpMessagingTemplate.convertAndSend("/broker/" + call.getInvitation().getId() + "/addedCallMember", user);
         model.addAttribute("user", user);
         model.addAttribute("invitation", call.getInvitation());
         model.addAttribute("textChannel", call.getTextChannel());

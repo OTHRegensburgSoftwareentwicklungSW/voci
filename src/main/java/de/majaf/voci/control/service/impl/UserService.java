@@ -62,7 +62,8 @@ public class UserService implements IUserService {
         GuestUser guestUser = new GuestUser("guest" + (invitation.getGuestUsers().size() + 1));
         authenticateUser(guestUser, req);
         guestUser.setActiveCall(invitation.getCall());
-        userRepo.save(guestUser);
+        guestUser = userRepo.save(guestUser);
+        invitation.getCall().addParticipant(guestUser);
         invitation.addGuestUser(guestUser);
         callService.saveInvitation(invitation);
         return guestUser;
@@ -87,14 +88,13 @@ public class UserService implements IUserService {
 
     @Override
     @Transactional
-    public List<User> loadParticipants(Call call) {
-        return userRepo.participantsInCall(call);
+    public User saveUser(User user) {
+        return userRepo.save(user);
     }
 
     @Override
-    @Transactional
-    public User saveUser(User user) {
-        return userRepo.save(user);
+    public void deleteUser(User user) {
+        userRepo.delete(user);
     }
 
     @Override

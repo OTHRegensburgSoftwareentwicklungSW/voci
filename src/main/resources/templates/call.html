@@ -85,17 +85,11 @@
                 </script>
             </div>
 
-            <div class="text-center" th:if="${user.equals(invitation.initiator)}">
+            <form class="text-center" th:if="${user.equals(invitation.initiator)}" th:action="@{/call/end}" th:method="delete">
                 <button class="btn btn-outline-danger m-2 p-2" id="end-call-btn">
                     END CALL
                 </button>
-                <script th:inline="javascript">
-                    let endCallBtn = document.getElementById('end-call-btn');
-                    endCallBtn.addEventListener("click", function () {
-                        stompClient.send('/ws/' + [[${invitation.id}]] + '/endCall', {});
-                    })
-                </script>
-            </div>
+            </form>
         </div>
 
     </div>

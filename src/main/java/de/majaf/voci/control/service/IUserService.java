@@ -10,23 +10,18 @@ import java.util.List;
 
 
 public interface IUserService extends UserDetailsService {
-    void registerUser(RegisteredUser user) throws UserAlreadyExistsException;
-
-    GuestUser createGuestUser(String accessToken, HttpServletRequest req) throws InvitationTokenDoesNotExistException;
-
-    void removeAllGuests(Invitation invitation);
-
+    User saveUser(User user);
+    void deleteUser(User user);
     User loadUserByID(long id) throws UserDoesNotExistException;
 
     RegisteredUser loadUserBySecurityToken(String securityToken) throws UserTokenDoesNotExistException;
-
-    List<User> loadParticipants(Call call);
-
-    User saveUser(User user);
+    void registerUser(RegisteredUser user) throws UserAlreadyExistsException;
 
     void addContact(RegisteredUser user, String usernameContact) throws UsernameDoesNotExistException, InvalidUserException;
-
     void removeContact(RegisteredUser user, long contactID) throws UserDoesNotExistException;
 
-    RegisteredUser authenticateUser(String userToken, HttpServletRequest req) throws UserTokenDoesNotExistException;
+    GuestUser createGuestUser(String accessToken, HttpServletRequest req) throws InvitationTokenDoesNotExistException;
+    void removeAllGuests(Invitation invitation);
+
+    RegisteredUser authenticateUser(String userToken, HttpServletRequest req) throws UserTokenDoesNotExistException; // TODO move somewhere else
 }

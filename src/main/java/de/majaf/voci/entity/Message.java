@@ -65,6 +65,10 @@ public class Message extends SingleIdEntity implements Comparable<Message>{
         this.sender = sender;
     }
 
+    public User getSender() {
+        return sender;
+    }
+
     @Override
     public String toString() {
         return "Sender: " + sender.getUserName() + "\nContent: " + content + "\nat: " + getFormatDate();

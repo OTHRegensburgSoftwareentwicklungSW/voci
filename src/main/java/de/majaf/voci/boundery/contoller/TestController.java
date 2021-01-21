@@ -27,9 +27,8 @@ public class TestController {
     private final String url = "http://voci:8945/api/";
     @RequestMapping(value = "test")
     public String test(Model model, Principal principal) {
-        String body = "6efd0eb5-204f-4831-9dde-0d702817fcf0";
-        Invitation invitation = restServiceClient.getForObject(url + "startCall?securityToken=" + body, Invitation.class);
-        System.out.println(SecurityContextHolder.getContext().getAuthentication().getPrincipal());
+        String key = "6efd0eb5-204f-4831-9dde-0d702817fcf0";
+        Invitation invitation = restServiceClient.getForObject(url + "startCall?securityToken=" + key, Invitation.class);
         System.out.println(invitation);
         return "error";
     }

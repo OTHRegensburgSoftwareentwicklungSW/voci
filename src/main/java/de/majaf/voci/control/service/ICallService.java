@@ -8,9 +8,10 @@ import de.majaf.voci.control.exceptions.user.UserDoesNotExistException;
 import de.majaf.voci.entity.*;
 
 public interface ICallService extends IExternalCallService{
-    Invitation createInvitation(RegisteredUser initiator);
     Invitation loadInvitationByID(long id) throws InvitationDoesNotExistException;
     Invitation loadInvitationByToken(String accessToken) throws InvitationTokenDoesNotExistException;
+
+    Invitation createInvitation(RegisteredUser initiator);
 
     Invitation saveInvitation(Invitation invitation);
 
@@ -19,21 +20,13 @@ public interface ICallService extends IExternalCallService{
     void removeInvitedUser(Invitation invitation, RegisteredUser invited);
     void removeInvitedUserByID(Invitation invitation, long invitedContactID) throws UserDoesNotExistException;
 
-    Invitation startCall(RegisteredUser user) throws InvitationDoesNotExistException;
     void joinCallByInvitationID(User user, long invitationID) throws InvalidUserException, InvalidCallStateException, InvitationDoesNotExistException;
     void joinCallByAccessToken(User user, String accessToken) throws InvalidUserException, InvalidCallStateException, InvitationDoesNotExistException, InvitationTokenDoesNotExistException;
     void joinCall(User user, Invitation invitation) throws InvalidUserException, InvalidCallStateException;
-
-    boolean isUserInvited(User user, Invitation invitation);
-    boolean isUserInvited(User user, long invitationID) throws InvitationDoesNotExistException;
-
-    boolean isUserInCall(User user, long invitationID) throws InvitationDoesNotExistException;
 
     // returns if call is still active after leaving TODO maybe
     boolean leaveCallByInvitationID(User user, long invitationID) throws InvalidCallStateException, InvitationDoesNotExistException;
     boolean leaveCall(User user, Invitation invitation) throws InvalidCallStateException;
 
     void endCallByInvitationID(RegisteredUser user, long invitationID) throws InvalidUserException, InvalidCallStateException, InvitationDoesNotExistException;
-    void endCall(Invitation invitation) throws InvalidCallStateException;
-    String generateAccessToken(Invitation invitation);
 }

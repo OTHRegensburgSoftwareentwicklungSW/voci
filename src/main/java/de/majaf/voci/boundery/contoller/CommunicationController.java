@@ -53,23 +53,4 @@ public class CommunicationController {
             simpMessagingTemplate.convertAndSend("/broker/" + invitationID + "/endedInvitation", true);
         return user;
     }
-
-
-    @MessageMapping(value = "/{invitationID}/endCall")
-    @SendTo("/broker/{invitationID}/endedCall")
-    public Boolean endCall(@DestinationVariable long invitationID, Principal principal) {
-        RegisteredUser user = mainController.getActiveUser(principal);
-        try {
-            Call activeCall = user.getActiveCall();
-            if (activeCall != null) {
-                callService.endCallByInvitationID(user, invitationID);
-                simpMessagingTemplate.convertAndSend("/broker/" + invitationID + "/endedInvitation", true);
-                return true;
-            } else return null;
-        } catch (InvalidUserException iue) { // TODO: maybe was anderes
-            throw new AccessDeniedException("403 forbidden", iue);
-        } catch (InvalidCallStateException | InvitationDoesNotExistException e) {
-            throw new IllegalArgumentException(e);
-        }
-    }
 }
