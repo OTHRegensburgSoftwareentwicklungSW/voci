@@ -1,19 +1,17 @@
 package de.majaf.voci.boundery.contoller;
 
-import de.majaf.voci.control.exceptions.call.InvitationDoesNotExistException;
+import de.majaf.voci.control.exceptions.call.DropsiException;
 import de.majaf.voci.control.service.ICallService;
 import de.majaf.voci.control.exceptions.call.InvalidCallStateException;
 import de.majaf.voci.control.exceptions.user.InvalidUserException;
 import de.majaf.voci.control.exceptions.user.UserDoesNotExistException;
+import de.majaf.voci.control.service.IDropsiService;
 import de.majaf.voci.entity.Call;
 import de.majaf.voci.entity.Invitation;
 import de.majaf.voci.entity.RegisteredUser;
+import de.mschoettle.entity.dto.FolderDTO;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.messaging.handler.annotation.DestinationVariable;
-import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,18 +27,25 @@ public class CallController {
     private ICallService callService;
 
     @Autowired
+    private IDropsiService dropsiService;
+
+    @Autowired
     private MainController mainController;
+
+    @Autowired
+    private DropsiController dropsiController;
 
     // TODO: inherit from this and create producer method
     @Autowired
     private SimpMessagingTemplate simpMessagingTemplate;
 
     @RequestMapping(value = "/call", method = RequestMethod.GET)
-    public String prepareCallCreationPage(Model model, Principal principal) {
+    public String prepareCallCreationPage(Model model, Principal principal) throws InvalidCallStateException, InvalidUserException, DropsiException {
         RegisteredUser user = mainController.getActiveUser(principal);
         Call activeCall = user.getActiveCall();
 
         if (activeCall != null) { // if the user is already in a call
+            dropsiController.addDropsiFilesToModel(model, user);
             model.addAttribute("invitation", activeCall.getInvitation());
             model.addAttribute("textChannel", activeCall.getTextChannel());
             model.addAttribute("user", user);
@@ -48,16 +53,14 @@ public class CallController {
         } else {
             Invitation invitation = user.getOwnedInvitation();
             if (invitation.getCall().isActive()) { // if the personal call of the user is active
-                try {
-                    callService.joinCall(user, invitation);
-                    model.addAttribute("invitation", invitation);
-                    model.addAttribute("textChannel", invitation.getCall().getTextChannel());
-                    model.addAttribute("user", user);
-                    simpMessagingTemplate.convertAndSend("/broker/" + invitation.getId() + "/addedCallMember", user);
-                    return "call";
-                } catch (InvalidCallStateException | InvalidUserException e) {
-                    throw new IllegalArgumentException(e);
-                }
+                callService.joinCall(user, invitation);
+                dropsiController.addDropsiFilesToModel(model, user);
+
+                model.addAttribute("invitation", invitation);
+                model.addAttribute("textChannel", invitation.getCall().getTextChannel());
+                model.addAttribute("user", user);
+                simpMessagingTemplate.convertAndSend("/broker/" + invitation.getId() + "/addedCallMember", user);
+                return "call";
             } else {
                 model.addAttribute("invitingList", invitation.getInvitedUsers());
                 model.addAttribute("user", user);
@@ -99,12 +102,13 @@ public class CallController {
     }
 
     @RequestMapping(value = "/call/start", method = RequestMethod.POST)
-    public String startCall(Model model, Principal principal) throws InvalidCallStateException {
+    public String startCall(Model model, Principal principal) throws InvalidCallStateException, DropsiException {
         RegisteredUser user = mainController.getActiveUser(principal);
         Invitation invitation = callService.startCall(user);
         for (RegisteredUser invited : invitation.getInvitedUsers()) {
             simpMessagingTemplate.convertAndSend("/broker/" + invited.getId() + "/invited", invitation);
         }
+        dropsiController.addDropsiFilesToModel(model, user);
         model.addAttribute("invitation", invitation);
         model.addAttribute("textChannel", invitation.getCall().getTextChannel());
         model.addAttribute("user", user);

@@ -9,7 +9,6 @@ import java.util.List;
 public class TextChannel extends Channel {
 
     @OneToMany(cascade = {CascadeType.ALL})
-    @JoinColumn(name = "text_channel_id")
     private List<Message> messages = new ArrayList<>();
 
     public TextChannel() {

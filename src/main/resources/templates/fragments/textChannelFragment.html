@@ -8,7 +8,12 @@
             <div class="flex-column d-flex rounded main-bg p-1 pl-3 pr-3" style="max-width: 75%;">
                 <p class="border-bottom secondary-border mb-1 text-success"
                    th:text="${message.sender.userName}"></p>
-                <p class="mb-1" th:text="${message.content}" style="overflow-wrap: break-word;"></p>
+                <p th:if="${message.isTextMessage()}" class="mb-1" th:text="${message.content}"
+                   style="overflow-wrap: break-word;"></p>
+                <a th:unless="${message.isTextMessage()}" class="mb-1"
+                   th:text="${message.dropsiFileName.substring(message.dropsiFileName.lastIndexOf('/') + 1 )}"
+                   th:href="@{/call/download/{senderID}/{dropsiFileId}/{dropsiFileName}(senderID = ${message.sender.id}, dropsiFileId = ${message.dropsiFileId}, dropsiFileName = ${message.dropsiFileName.substring(message.dropsiFileName.lastIndexOf('/') + 1 )})}"
+                   style="overflow-wrap: break-word;"></a>
                 <small class="pb-1 border-top secondary-border text-secondary text-right"
                        th:text="${message.getFormatDate()}"></small>
             </div>
@@ -35,7 +40,8 @@
 
         <div class="d-flex flex-column justify-content-center ml-2">
             <div class="d-flex flex-row">
-                <button th:if="${user.isRegistered && user.dropsiToken != null}" class="btn btn-outline-success btn-sm pl-2 pr-2"><i class="material-icons">upload</i>
+                <button th:if="${fileList}" class="btn btn-outline-success btn-sm pl-2 pr-2"
+                        data-toggle="modal" data-target="#dropsifileOverview"><i class="material-icons">upload</i>
                 </button>
                 <button class="btn btn-success btn-sm ml-2 pl-4 pr-4" id="send-btn">SEND</button>
                 <script th:inline="javascript">
@@ -51,8 +57,7 @@
                 </script>
             </div>
         </div>
-
     </div>
+    <div th:replace="fragments/modal :: dropsifileOverview"></div>
 </div>
-
 </html>

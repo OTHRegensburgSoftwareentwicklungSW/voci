@@ -9,6 +9,7 @@ import de.majaf.voci.control.service.IRoomService;
 import de.majaf.voci.entity.*;
 import de.majaf.voci.entity.repo.MessageRepository;
 import de.majaf.voci.entity.repo.TextChannelRepository;
+import de.mschoettle.entity.dto.FileDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
@@ -105,7 +106,17 @@ public class TextChannelService implements IChannelService {
     @Transactional
     public Message createTextMessage(String msg, long textChannelID, User sender) throws ChannelDoesNotExistException {
         TextChannel textChannel = loadChannelByID(textChannelID);
-        Message message = new Message(msg, sender);
+        Message message = new TextMessage(msg, sender);
+        textChannel.addMessage(message);
+        textChannelRepo.save(textChannel);
+        return message;
+    }
+
+    @Override
+    @Transactional
+    public Message createDropsiFileMessage(FileDTO file, long textChannelID, User sender) throws ChannelDoesNotExistException {
+        TextChannel textChannel = loadChannelByID(textChannelID);
+        Message message = new DropsiFileMessage(file, sender);
         textChannel.addMessage(message);
         textChannelRepo.save(textChannel);
         return message;

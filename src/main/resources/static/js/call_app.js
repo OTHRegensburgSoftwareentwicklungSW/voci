@@ -31,6 +31,7 @@ function connectCallSocket(invitationID, userID, textChannelID, isRegisteredUser
             }
         });
         subscribeToTextChannel(userID, textChannelID);
+        subscribeToDropsiDownload(userID);
     });
 }
 

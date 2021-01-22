@@ -2,6 +2,8 @@ package de.majaf.voci.entity;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -10,13 +12,17 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 @Entity
-public class Message extends SingleIdEntity implements Comparable<Message>{
+@JsonTypeInfo(
+        use = JsonTypeInfo.Id.NAME,
+        include = JsonTypeInfo.As.PROPERTY,
+        property = "type")
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = TextMessage.class, name = "textMessage"),
+        @JsonSubTypes.Type(value = DropsiFileMessage.class, name = "dropsiFileMessage")})
+@Inheritance(strategy= InheritanceType.TABLE_PER_CLASS)
+public abstract class Message extends SingleIdEntity implements Comparable<Message>{
 
     private Date sentAt;
-    private String content;
-
-    @Enumerated(EnumType.ORDINAL)
-    private MessageType type;
 
     @ManyToOne
     private User sender;
@@ -24,18 +30,15 @@ public class Message extends SingleIdEntity implements Comparable<Message>{
     public Message() {
     }
 
-    public Message(String content, User sender) {
-        this.content = content;
+    public Message(User sender) {
         this.sender = sender;
-        this.sentAt = new Date();
-        this.type = MessageType.TEXT;
+        sentAt = new Date();
     }
 
     public Date getSentAt() {
         return sentAt;
     }
 
-    @JsonGetter("sentAt") // TODO: maybe do this in thymeleaf
     public String getFormatDate() {
         DateFormat df = new SimpleDateFormat("dd.MM.yyyy HH:mm");
         return df.format(sentAt);
@@ -43,22 +46,6 @@ public class Message extends SingleIdEntity implements Comparable<Message>{
 
     public void setSentAt(Date sentAt) {
         this.sentAt = sentAt;
-    }
-
-    public String getContent() {
-        return content;
-    }
-
-    public void setContent(String content) {
-        this.content = content;
-    }
-
-    public MessageType getType() {
-        return type;
-    }
-
-    public void setType(MessageType type) {
-        this.type = type;
     }
 
     public void setSender(User sender) {
@@ -69,9 +56,10 @@ public class Message extends SingleIdEntity implements Comparable<Message>{
         return sender;
     }
 
-    @Override
-    public String toString() {
-        return "Sender: " + sender.getUserName() + "\nContent: " + content + "\nat: " + getFormatDate();
+    // only for thymeleaf TODO
+    @JsonIgnore
+    public boolean isTextMessage() {
+        return this instanceof TextMessage;
     }
 
     @Override

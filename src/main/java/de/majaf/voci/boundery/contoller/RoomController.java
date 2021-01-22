@@ -1,6 +1,7 @@
 package de.majaf.voci.boundery.contoller;
 
 import de.majaf.voci.control.exceptions.InvalidNameException;
+import de.majaf.voci.control.exceptions.call.DropsiException;
 import de.majaf.voci.control.exceptions.channel.ChannelDoesNotExistException;
 import de.majaf.voci.control.exceptions.channel.InvalidChannelException;
 import de.majaf.voci.control.exceptions.user.InvalidUserException;
@@ -41,8 +42,11 @@ public class RoomController {
     @Autowired
     private MainController mainController;
 
+    @Autowired
+    private DropsiController dropsiController;
+
     @RequestMapping(value = "/room/{roomID}", method = RequestMethod.GET)
-    public String prepareRoomPageAndTextChannel(@PathVariable("roomID") long roomID, @RequestParam("textChannelID") Optional<Long> textChannelID, Model model, Principal principal) throws RoomIDDoesNotExistException, InvalidChannelException, InvalidUserException, ChannelDoesNotExistException {
+    public String prepareRoomPageAndTextChannel(@PathVariable("roomID") long roomID, @RequestParam("textChannelID") Optional<Long> textChannelID, Model model, Principal principal) throws RoomIDDoesNotExistException, InvalidChannelException, InvalidUserException, ChannelDoesNotExistException, DropsiException {
         RegisteredUser user = mainController.getActiveUser(principal);
         Room room = roomService.loadRoomByID(roomID);
         if (roomService.roomHasAsMember(room, user)) {
@@ -52,6 +56,7 @@ public class RoomController {
             } else {
                 textChannel = room.getTextChannels().get(0);
             }
+            dropsiController.addDropsiFilesToModel(model, user);
             model.addAttribute("textChannel", textChannel);
             model.addAttribute("user", user);
             model.addAttribute("room", room);
@@ -73,10 +78,11 @@ public class RoomController {
 
     // TODO Exceptions
     @RequestMapping(value = "/room/{roomID}/inviteContact", method = RequestMethod.POST)
-    public String inviteContact(@PathVariable("roomID") long roomID, Model model, Principal principal, @RequestParam("contactID") long contactID) throws RoomIDDoesNotExistException, UserDoesNotExistException, InvalidUserException {
+    public String inviteContact(@PathVariable("roomID") long roomID, Model model, Principal principal, @RequestParam("contactID") long contactID) throws RoomIDDoesNotExistException, UserDoesNotExistException, InvalidUserException, DropsiException {
         RegisteredUser user = mainController.getActiveUser(principal);
         Room room = roomService.loadRoomByID(roomID);
         roomService.addMemberToRoom(room, contactID, user);
+        dropsiController.addDropsiFilesToModel(model, user);
         model.addAttribute("textChannel", room.getTextChannels().get(0));
         model.addAttribute("user", user);
         model.addAttribute("room", room);
@@ -85,10 +91,11 @@ public class RoomController {
 
     // TODO Exceptions
     @RequestMapping(value = "/room/{roomID}/removeMember", method = RequestMethod.DELETE)
-    public String removeMember(@PathVariable("roomID") long roomID, Model model, Principal principal, @RequestParam("memberID") long memberID) throws RoomIDDoesNotExistException, UserDoesNotExistException, InvalidUserException {
+    public String removeMember(@PathVariable("roomID") long roomID, Model model, Principal principal, @RequestParam("memberID") long memberID) throws RoomIDDoesNotExistException, UserDoesNotExistException, InvalidUserException, DropsiException {
         RegisteredUser user = mainController.getActiveUser(principal);
         Room room = roomService.loadRoomByID(roomID);
         roomService.removeMemberFromRoom(room, memberID, user);
+        dropsiController.addDropsiFilesToModel(model, user);
         model.addAttribute("textChannel", room.getTextChannels().get(0));
         model.addAttribute("user", user);
         model.addAttribute("room", room);

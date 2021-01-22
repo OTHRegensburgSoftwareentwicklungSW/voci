@@ -8,6 +8,7 @@ import de.majaf.voci.control.service.IChannelService;
 import de.majaf.voci.control.service.IRoomService;
 import de.majaf.voci.entity.*;
 import de.majaf.voci.entity.repo.VoiceChannelRepository;
+import de.mschoettle.entity.dto.FileDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
@@ -100,6 +101,11 @@ public class VoiceChannelService implements IChannelService {
     @Override
     @Transactional
     public Message createTextMessage(String msg, long channelID, User user) throws ChannelDoesNotExistException {
+        return null;
+    }
+
+    @Override
+    public Message createDropsiFileMessage(FileDTO file, long textChannelID, User sender) throws ChannelDoesNotExistException {
         return null;
     }
 }
