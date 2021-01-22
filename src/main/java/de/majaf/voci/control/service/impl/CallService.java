@@ -45,12 +45,6 @@ public class CallService extends ExternalCallService implements ICallService {
     }
 
     @Override
-    @Transactional
-    public Invitation loadInvitationByToken(String accessToken) throws InvitationTokenDoesNotExistException {
-        return invitationRepo.findByAccessToken(accessToken).orElseThrow(() -> new InvitationTokenDoesNotExistException(accessToken, "Invalid Access-Token"));
-    }
-
-    @Override
     public Invitation saveInvitation(Invitation invitation) {
         return invitationRepo.save(invitation);
     }

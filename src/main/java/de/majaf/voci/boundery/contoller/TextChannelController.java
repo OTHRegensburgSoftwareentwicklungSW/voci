@@ -12,6 +12,7 @@ import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
 public class TextChannelController {
@@ -27,7 +28,6 @@ public class TextChannelController {
     public Message sendMessage(@DestinationVariable long textChannelID, @DestinationVariable long userID, String message) throws UserDoesNotExistException, ChannelDoesNotExistException {
         User user = userService.loadUserByID(userID);
         return channelService.createTextMessage(message, textChannelID, user);
-
     }
 
 }

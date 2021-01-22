@@ -9,7 +9,6 @@ import de.majaf.voci.entity.*;
 
 public interface ICallService extends IExternalCallService{
     Invitation loadInvitationByID(long id) throws InvitationDoesNotExistException;
-    Invitation loadInvitationByToken(String accessToken) throws InvitationTokenDoesNotExistException;
 
     Invitation createInvitation(RegisteredUser initiator);
 

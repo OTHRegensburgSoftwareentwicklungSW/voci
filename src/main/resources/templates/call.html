@@ -7,10 +7,16 @@
     <title th:replace="fragments/sockets :: header"></title>
     <link rel="stylesheet" th:href="@{/css/main.css}">
     <script th:src="@{/js/call_app.js}"></script>
+    <script>
+        function windowClose() {
+            window.open('','_parent','');
+            window.close();
+        }
+    </script>
 
     <script th:inline="javascript">
         window.onload = function () {
-            connectCallSocket([[${invitation.id}]], [[${user.id}]], [[${textChannel.id}]]);
+            connectCallSocket([[${invitation.id}]], [[${user.id}]], [[${textChannel.id}]], [[${user.isRegistered()}]]);
             scrollToBottom('msg-container');
         }
     </script>

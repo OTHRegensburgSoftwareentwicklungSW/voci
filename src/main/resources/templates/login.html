@@ -29,7 +29,7 @@
                         <input name="password" type="password" id="password" class="form-control" placeholder="Password"
                                required>
                     </div>
-                    <p th:if="${usernameOrPwWrong}" class="text-danger">Wrong username or password</p>
+                    <p th:if="${errorMsg}" th:text="${errorMsg}" class="text-danger"></p>
                     <div class="form-group">
                         <button class="btn btn-lg btn-outline-success" type="submit">Sign in</button>
                     </div>

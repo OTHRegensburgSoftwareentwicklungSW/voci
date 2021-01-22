@@ -20,20 +20,19 @@ public class LoginController {
 
     @RequestMapping(value = {"/", "/login"}, method = RequestMethod.GET)
     public String prepareLoginPage(Model model, Principal principal) {
-        model.addAttribute("usernameOrPwWrong", false);
+        model.addAttribute("errorMsg", false);
         return "login";
     }
 
     @RequestMapping(value = "/failedLogin", method = RequestMethod.GET)
     public String prepareFailedLoginPage(Model model) {
-        model.addAttribute("usernameOrPwWrong", true);
+        model.addAttribute("errorMsg", "Wrong username or password");
         return "login";
     }
 
     @RequestMapping(value = "/register", method = RequestMethod.GET)
     public String prepareRegisterPage(Model model) {
         model.addAttribute("registeredUser", new RegisteredUser());
-        model.addAttribute("errorMsg", "");
         return "register";
     }
 
@@ -48,5 +47,4 @@ public class LoginController {
         }
         return "register";
     }
-
 }

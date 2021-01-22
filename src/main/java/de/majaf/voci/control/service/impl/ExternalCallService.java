@@ -1,12 +1,11 @@
 package de.majaf.voci.control.service.impl;
 
 import de.majaf.voci.control.exceptions.call.InvalidCallStateException;
-import de.majaf.voci.control.service.ICallService;
+import de.majaf.voci.control.exceptions.call.InvitationTokenDoesNotExistException;
+import de.majaf.voci.control.exceptions.user.InvalidUserException;
 import de.majaf.voci.control.service.IChannelService;
 import de.majaf.voci.control.service.IExternalCallService;
 import de.majaf.voci.control.service.IUserService;
-import de.majaf.voci.control.exceptions.call.InvitationDoesNotExistException;
-import de.majaf.voci.control.exceptions.user.UserTokenDoesNotExistException;
 import de.majaf.voci.entity.*;
 import de.majaf.voci.entity.repo.InvitationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +30,16 @@ public class ExternalCallService implements IExternalCallService {
 
     @Override
     @Transactional
+    public Invitation loadInvitationByToken(String accessToken) throws InvitationTokenDoesNotExistException {
+        return invitationRepo.findByAccessToken(accessToken).orElseThrow(() -> new InvitationTokenDoesNotExistException(accessToken, "Invalid Access-Token"));
+    }
+
+    private String generateAccessToken(Invitation invitation) {
+        return UUID.randomUUID().toString();
+    }
+
+    @Override
+    @Transactional
     public Invitation startCall(RegisteredUser user) throws InvalidCallStateException {
         Invitation invitation = user.getOwnedInvitation();
         Call call = invitation.getCall();
@@ -47,8 +56,14 @@ public class ExternalCallService implements IExternalCallService {
         return invitation;
     }
 
-    private String generateAccessToken(Invitation invitation) {
-        return UUID.randomUUID().toString();
+    @Override
+    @Transactional
+    public void endCallByAccessToken(RegisteredUser user, String accessToken) throws InvalidUserException, InvalidCallStateException, InvitationTokenDoesNotExistException {
+        Invitation invitation = loadInvitationByToken(accessToken);
+        if (!user.equals(invitation.getInitiator()))
+            throw new InvalidUserException(user, "User must not end call. No Initiator");
+
+        endCall(invitation);
     }
 
     @Override

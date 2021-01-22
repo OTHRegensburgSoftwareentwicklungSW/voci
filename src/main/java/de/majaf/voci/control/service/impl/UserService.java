@@ -72,7 +72,7 @@ public class UserService implements IUserService {
     @Override
     @Transactional
     public void removeAllGuests(Invitation invitation) {
-        for(GuestUser user : invitation.getGuestUsers())
+        for (GuestUser user : invitation.getGuestUsers())
             userRepo.delete(user);
     }
 

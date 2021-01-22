@@ -65,7 +65,7 @@ public class MainController {
 
     @RequestMapping(value = "/info", method = RequestMethod.GET)
     public String prepareInfoPage(Principal principal, Model model) {
-        model.addAttribute("user", getActiveUser(principal));
+        model.addAttribute("user", (RegisteredUser) getActiveUser(principal));
         return "info";
     }
 

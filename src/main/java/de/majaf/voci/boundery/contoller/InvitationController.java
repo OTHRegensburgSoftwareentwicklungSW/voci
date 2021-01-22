@@ -11,6 +11,7 @@ import de.majaf.voci.entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -52,8 +53,10 @@ public class InvitationController {
     private String joinCall(Model model, String accessToken, Authentication auth, HttpServletRequest req) throws InvalidCallStateException, InvalidUserException, InvitationTokenDoesNotExistException, InvitationDoesNotExistException {
         User user;
         if (auth == null) {
+            System.out.println(SecurityContextHolder.getContext().getAuthentication().getPrincipal());
             user = userService.createGuestUser(accessToken, req);
         } else {
+            System.out.println(SecurityContextHolder.getContext().getAuthentication().getPrincipal());
             user = (User) auth.getPrincipal();
             callService.joinCallByAccessToken(user, accessToken);
         }
@@ -63,5 +66,15 @@ public class InvitationController {
         model.addAttribute("invitation", call.getInvitation());
         model.addAttribute("textChannel", call.getTextChannel());
         return "call";
+    }
+
+    @RequestMapping(value = "/call/ended", method = RequestMethod.GET)
+    public String prepareCallEndPage() {
+        return "endedCall";
+    }
+
+    @RequestMapping(value = "/call/left", method = RequestMethod.GET)
+    public String prepareCallLeftPage() {
+        return "leftCall";
     }
 }

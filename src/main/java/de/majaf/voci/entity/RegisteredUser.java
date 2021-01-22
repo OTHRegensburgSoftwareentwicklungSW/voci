@@ -1,12 +1,9 @@
 package de.majaf.voci.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -26,6 +23,10 @@ public class RegisteredUser extends User {
     @JsonIgnore
     @Column(unique = true)
     private String securityToken;
+
+    @JsonIgnore
+    @Column(unique = true)
+    private String dropsiToken;
 
     @JsonIgnore
     @ManyToMany
@@ -151,13 +152,16 @@ public class RegisteredUser extends User {
         this.securityToken = securityToken;
     }
 
-    public void removeActiveInvitation(Invitation invitation) {
-        activeInvitations.remove(invitation);
+    public String getDropsiToken() {
+        return dropsiToken;
     }
 
-    @Override
-    public Boolean isRegistered() {
-        return true;
+    public void setDropsiToken(String dropsiToken) {
+        this.dropsiToken = dropsiToken;
+    }
+
+    public void removeActiveInvitation(Invitation invitation) {
+        activeInvitations.remove(invitation);
     }
 
     @JsonIgnore

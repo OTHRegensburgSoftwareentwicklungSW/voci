@@ -1,8 +1,13 @@
-function connectCallSocket(invitationID, userID, textChannelID) {
+function connectCallSocket(invitationID, userID, textChannelID, isRegisteredUser) {
     connectSocket(function () {
         stompClient.subscribe('/broker/' + userID + '/leftCall', function (left) {
-            if (left.body)
-                window.location.href = "/main";
+            if (left.body) {
+                disconnect();
+                if (isRegisteredUser)
+                    window.location.href = "/main";
+                else
+                    window.location.href = "/call/left"
+            }
         });
         stompClient.subscribe('/broker/' + invitationID + '/addedCallMember', function (user) {
             if (user.body) {
@@ -18,7 +23,11 @@ function connectCallSocket(invitationID, userID, textChannelID) {
         });
         stompClient.subscribe('/broker/' + invitationID + '/endedCall', function (ended) {
             if (ended.body) {
-                window.location.href = "/call";
+                disconnect();
+                if(isRegisteredUser)
+                    window.location.href = "/call";
+                else
+                    window.location.href = "/call/ended"
             }
         });
         subscribeToTextChannel(userID, textChannelID);

@@ -45,8 +45,11 @@ public abstract class User extends SingleIdEntity implements UserDetails {
         this.activeCall = activeCall;
     }
 
+    // TODO: Only for thymeleaf, because there is no other real workaround
     @JsonIgnore
-    public abstract Boolean isRegistered();
+    public Boolean isRegistered() {
+        return this instanceof RegisteredUser;
+    };
 
     public boolean isInCall() {
         return activeCall != null;

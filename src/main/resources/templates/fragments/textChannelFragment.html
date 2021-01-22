@@ -35,7 +35,7 @@
 
         <div class="d-flex flex-column justify-content-center ml-2">
             <div class="d-flex flex-row">
-                <button class="btn btn-outline-success btn-sm pl-2 pr-2"><i class="material-icons">upload</i>
+                <button th:if="${user.isRegistered && user.dropsiToken != null}" class="btn btn-outline-success btn-sm pl-2 pr-2"><i class="material-icons">upload</i>
                 </button>
                 <button class="btn btn-success btn-sm ml-2 pl-4 pr-4" id="send-btn">SEND</button>
                 <script th:inline="javascript">

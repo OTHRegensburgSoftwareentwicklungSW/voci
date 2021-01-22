@@ -6,6 +6,8 @@ import javax.persistence.Entity;
 
 @Entity
 public class GuestUser extends User {
+
+    @JsonIgnore
     private String tempName;
 
     public GuestUser() {}
@@ -22,13 +24,6 @@ public class GuestUser extends User {
         this.tempName = tempName;
     }
 
-    @JsonIgnore
-    @Override
-    public Boolean isRegistered() {
-        return false;
-    }
-
-    @JsonIgnore
     @Override
     public String getUserName() {
         return tempName;
