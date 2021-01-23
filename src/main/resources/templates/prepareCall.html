@@ -10,7 +10,7 @@
 
     <script th:inline="javascript">
         window.onload = function () {
-            connectInvitationSocket([[${user.id}]]);
+            connectInvitationSocket([[${user.id}]], [[${user.activeInvitations}]]);
         }
     </script>
 
@@ -97,13 +97,10 @@
                 <div class="flex-column d-flex justify-content-center">
                     <p class="m-0 invitation_name" th:text="${invitation.initiator.username}"></p>
                 </div>
-                <button class="justify-content-center btn text-light m-0 p-0 mt-1"
-                        th:onclick="'javascript:takeInvitation(' + ${invitation.id} + ')'"><i
+                <a class="justify-content-center btn text-light m-0 p-0 mt-1"
+                        th:href="@{/invitation(accessToken=${invitation.accessToken})}"><i
                         class="material-icons">ring_volume</i>
-                </button>
-                <script th:inline="javascript">
-                    addToInvitationMap([[${invitation.id}]], [[${invitation.initiator.username}]])
-                </script>
+                </a>
             </div>
         </div>
     </div>

@@ -5,14 +5,9 @@ import de.majaf.voci.control.service.ICallService;
 import de.majaf.voci.control.exceptions.call.InvalidCallStateException;
 import de.majaf.voci.control.exceptions.user.InvalidUserException;
 import de.majaf.voci.control.exceptions.user.UserDoesNotExistException;
-import de.majaf.voci.control.service.IDropsiService;
 import de.majaf.voci.control.service.IUserService;
 import de.majaf.voci.entity.*;
-import de.mschoettle.entity.dto.FolderDTO;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.messaging.handler.annotation.DestinationVariable;
-import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -24,7 +19,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
-import java.security.Principal;
 
 @Controller
 public class CallController {
@@ -110,6 +104,10 @@ public class CallController {
     @RequestMapping(value = "/call/start", method = RequestMethod.POST)
     public String startCall(Model model, Authentication auth) throws InvalidCallStateException, DropsiException, UserDoesNotExistException {
         RegisteredUser user = (RegisteredUser) mainController.getActiveUser(auth);
+
+        // make sure that all invitations of previous calls get removed in GUI
+        simpMessagingTemplate.convertAndSend("/broker/" + user.getOwnedInvitation().getId() + "/endedInvitation", true);
+
         Invitation invitation = callService.startCall(user);
         for (RegisteredUser invited : invitation.getInvitedUsers()) {
             simpMessagingTemplate.convertAndSend("/broker/" + invited.getId() + "/invited", invitation);

@@ -32,7 +32,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             "/css/**", "/img/**", "/js/**",
             "/invitation/**",
             "/webjars/**", "/chat/**",
-            "/test/**",
+            "/test/**", "/api/**",
             "/call/leave/**", "/call/ended"};
 
     @Override
