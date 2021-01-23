@@ -1,9 +1,12 @@
 package de.majaf.voci.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.AuthorityUtils;
 
 import javax.persistence.*;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -169,6 +172,13 @@ public class RegisteredUser extends User {
     public String getPassword() {
         return passwordHash;
     }
+
+    @JsonIgnore
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return AuthorityUtils.createAuthorityList("ROLE_USER");
+    }
+
 
     @Override
     public String toString(){

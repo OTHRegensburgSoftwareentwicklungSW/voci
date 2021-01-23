@@ -24,9 +24,6 @@ public class TextChannelService implements IChannelService {
     private TextChannelRepository textChannelRepo;
 
     @Autowired
-    private MessageRepository messageRepo;
-
-    @Autowired
     private IRoomService roomService;
 
     @Override

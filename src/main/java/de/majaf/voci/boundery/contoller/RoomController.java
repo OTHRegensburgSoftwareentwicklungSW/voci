@@ -15,14 +15,11 @@ import de.majaf.voci.entity.Room;
 import de.majaf.voci.entity.TextChannel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
-
-import java.security.Principal;
 import java.util.Optional;
 
 @Controller
@@ -46,8 +43,8 @@ public class RoomController {
     private DropsiController dropsiController;
 
     @RequestMapping(value = "/room/{roomID}", method = RequestMethod.GET)
-    public String prepareRoomPageAndTextChannel(@PathVariable("roomID") long roomID, @RequestParam("textChannelID") Optional<Long> textChannelID, Model model, Principal principal) throws RoomIDDoesNotExistException, InvalidChannelException, InvalidUserException, ChannelDoesNotExistException, DropsiException {
-        RegisteredUser user = mainController.getActiveUser(principal);
+    public String prepareRoomPageAndTextChannel(@PathVariable("roomID") long roomID, @RequestParam("textChannelID") Optional<Long> textChannelID, Model model, Authentication auth) throws RoomIDDoesNotExistException, InvalidChannelException, InvalidUserException, ChannelDoesNotExistException, DropsiException, UserDoesNotExistException {
+        RegisteredUser user = (RegisteredUser) mainController.getActiveUser(auth);
         Room room = roomService.loadRoomByID(roomID);
         if (roomService.roomHasAsMember(room, user)) {
             TextChannel textChannel;
@@ -68,8 +65,8 @@ public class RoomController {
     // TODO: Exception Handling
     @RequestMapping(value = "/room/{roomID}/invite", method = RequestMethod.GET)
     public String prepareRoomInvitationPage(@PathVariable("roomID") long roomID,
-                                            Model model, Principal principal) throws RoomIDDoesNotExistException {
-        RegisteredUser user = mainController.getActiveUser(principal);
+                                            Model model, Authentication auth) throws RoomIDDoesNotExistException, UserDoesNotExistException {
+        RegisteredUser user = (RegisteredUser) mainController.getActiveUser(auth);
         Room room = roomService.loadRoomByID(roomID);
         model.addAttribute("user", user);
         model.addAttribute("room", room);
@@ -78,8 +75,8 @@ public class RoomController {
 
     // TODO Exceptions
     @RequestMapping(value = "/room/{roomID}/inviteContact", method = RequestMethod.POST)
-    public String inviteContact(@PathVariable("roomID") long roomID, Model model, Principal principal, @RequestParam("contactID") long contactID) throws RoomIDDoesNotExistException, UserDoesNotExistException, InvalidUserException, DropsiException {
-        RegisteredUser user = mainController.getActiveUser(principal);
+    public String inviteContact(@PathVariable("roomID") long roomID, Model model, Authentication auth, @RequestParam("contactID") long contactID) throws RoomIDDoesNotExistException, UserDoesNotExistException, InvalidUserException, DropsiException {
+        RegisteredUser user = (RegisteredUser) mainController.getActiveUser(auth);
         Room room = roomService.loadRoomByID(roomID);
         roomService.addMemberToRoom(room, contactID, user);
         dropsiController.addDropsiFilesToModel(model, user);
@@ -91,8 +88,8 @@ public class RoomController {
 
     // TODO Exceptions
     @RequestMapping(value = "/room/{roomID}/removeMember", method = RequestMethod.DELETE)
-    public String removeMember(@PathVariable("roomID") long roomID, Model model, Principal principal, @RequestParam("memberID") long memberID) throws RoomIDDoesNotExistException, UserDoesNotExistException, InvalidUserException, DropsiException {
-        RegisteredUser user = mainController.getActiveUser(principal);
+    public String removeMember(@PathVariable("roomID") long roomID, Model model, Authentication auth, @RequestParam("memberID") long memberID) throws RoomIDDoesNotExistException, UserDoesNotExistException, InvalidUserException, DropsiException {
+        RegisteredUser user = (RegisteredUser) mainController.getActiveUser(auth);
         Room room = roomService.loadRoomByID(roomID);
         roomService.removeMemberFromRoom(room, memberID, user);
         dropsiController.addDropsiFilesToModel(model, user);
@@ -104,26 +101,26 @@ public class RoomController {
 
     // TODO Exceptions
     @RequestMapping(value = "/room/{roomID}/delete", method = RequestMethod.DELETE)
-    public String deleteRoom(@PathVariable("roomID") long roomID, Model model, Principal principal) throws RoomIDDoesNotExistException, InvalidUserException {
-        RegisteredUser user = mainController.getActiveUser(principal);
+    public String deleteRoom(@PathVariable("roomID") long roomID, Model model, Authentication auth) throws RoomIDDoesNotExistException, InvalidUserException, UserDoesNotExistException {
+        RegisteredUser user = (RegisteredUser) mainController.getActiveUser(auth);
         roomService.deleteRoom(roomID, user);
-        mainController.showUpdate(model, principal);
+        mainController.showUpdate(model, user);
         return "main";
     }
 
     // TODO Exceptions
     @RequestMapping(value = "/room/{roomID}/leave", method = RequestMethod.DELETE)
-    public String leaveRoom(@PathVariable("roomID") long roomID, Model model, Principal principal) throws RoomIDDoesNotExistException, InvalidUserException {
-        RegisteredUser user = mainController.getActiveUser(principal);
+    public String leaveRoom(@PathVariable("roomID") long roomID, Model model, Authentication auth) throws RoomIDDoesNotExistException, InvalidUserException, UserDoesNotExistException {
+        RegisteredUser user = (RegisteredUser) mainController.getActiveUser(auth);
         roomService.leaveRoom(roomID, user);
-        mainController.showUpdate(model, principal);
+        mainController.showUpdate(model, user);
         return "main";
     }
 
     // TODO Exceptions
     @RequestMapping(value = "/room/{roomID}/edit", method = RequestMethod.GET)
-    public String prepareEditRoomPage(@PathVariable("roomID") long roomID, Model model, Principal principal) throws RoomIDDoesNotExistException {
-        RegisteredUser user = mainController.getActiveUser(principal);
+    public String prepareEditRoomPage(@PathVariable("roomID") long roomID, Model model, Authentication auth) throws RoomIDDoesNotExistException, UserDoesNotExistException {
+        RegisteredUser user = (RegisteredUser) mainController.getActiveUser(auth);
         Room room = roomService.loadRoomByID(roomID);
         if (user.equals(room.getOwner())) {
             model.addAttribute("room", room);
@@ -133,8 +130,8 @@ public class RoomController {
 
 
     @RequestMapping(value = "/room/{roomID}/edit/addChannel", method = RequestMethod.POST)
-    public String createVoiceChannel(@PathVariable("roomID") long roomID, @ModelAttribute("channelName") String channelName, @RequestParam("isTC") boolean isTC, Model model, Principal principal) throws RoomIDDoesNotExistException, InvalidUserException, InvalidNameException {
-        RegisteredUser user = mainController.getActiveUser(principal);
+    public String createVoiceChannel(@PathVariable("roomID") long roomID, @ModelAttribute("channelName") String channelName, @RequestParam("isTC") boolean isTC, Model model, Authentication auth) throws RoomIDDoesNotExistException, InvalidUserException, InvalidNameException, UserDoesNotExistException {
+        RegisteredUser user = (RegisteredUser) mainController.getActiveUser(auth);
         Room room = roomService.loadRoomByID(roomID);
         if (isTC)
             textChannelService.addChannelToRoom(room, channelName, user);
@@ -145,8 +142,8 @@ public class RoomController {
     }
 
     @RequestMapping(value = "/room/{roomID}/edit/deleteChannel", method = RequestMethod.DELETE)
-    public String deleteVoiceChannel(@PathVariable("roomID") long roomID, @RequestParam("channelID") long channelID, @RequestParam("isTC") boolean isTC, Model model, Principal principal) throws RoomIDDoesNotExistException, ChannelDoesNotExistException, InvalidUserException {
-        RegisteredUser user = mainController.getActiveUser(principal);
+    public String deleteVoiceChannel(@PathVariable("roomID") long roomID, @RequestParam("channelID") long channelID, @RequestParam("isTC") boolean isTC, Model model, Authentication auth) throws RoomIDDoesNotExistException, ChannelDoesNotExistException, InvalidUserException, UserDoesNotExistException {
+        RegisteredUser user = (RegisteredUser) mainController.getActiveUser(auth);
         Room room = roomService.loadRoomByID(roomID);
         if (isTC)
             textChannelService.deleteChannelFromRoom(room, channelID, user);
@@ -157,8 +154,8 @@ public class RoomController {
     }
 
     @RequestMapping(value = "/room/{roomID}/edit/rename", method = RequestMethod.GET)
-    public String prepareChannelRenamePage(@PathVariable("roomID") long roomID, @RequestParam("channelID") long channelID, @RequestParam("isTC") boolean isTC, Model model, Principal principal) throws ChannelDoesNotExistException, RoomIDDoesNotExistException, InvalidChannelException, InvalidUserException {
-        RegisteredUser user = mainController.getActiveUser(principal);
+    public String prepareChannelRenamePage(@PathVariable("roomID") long roomID, @RequestParam("channelID") long channelID, @RequestParam("isTC") boolean isTC, Model model, Authentication auth) throws ChannelDoesNotExistException, RoomIDDoesNotExistException, InvalidChannelException, InvalidUserException, UserDoesNotExistException {
+        RegisteredUser user = (RegisteredUser) mainController.getActiveUser(auth);
         Room room = roomService.loadRoomByID(roomID);
         if (user.equals(room.getOwner())) {
             Channel channel;
@@ -177,8 +174,8 @@ public class RoomController {
     public String RenameChannel(@PathVariable("roomID") long roomID, @RequestParam("channelID") long channelID,
                                 @ModelAttribute("channelName") String channelName,
                                 @RequestParam("isTC") boolean isTC,
-                                Model model, Principal principal) throws ChannelDoesNotExistException, RoomIDDoesNotExistException, InvalidChannelException, InvalidUserException, InvalidNameException {
-        RegisteredUser user = mainController.getActiveUser(principal);
+                                Model model, Authentication auth) throws ChannelDoesNotExistException, RoomIDDoesNotExistException, InvalidChannelException, InvalidUserException, InvalidNameException, UserDoesNotExistException {
+        RegisteredUser user = (RegisteredUser) mainController.getActiveUser(auth);
         Room room = roomService.loadRoomByID(roomID);
         Channel channel;
         if (isTC) {

@@ -1,9 +1,12 @@
 package de.majaf.voci.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.AuthorityUtils;
 
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
+import java.util.Collection;
 
 @Entity
 public class GuestUser extends User {
@@ -28,6 +31,12 @@ public class GuestUser extends User {
     @Override
     public String getUserName() {
         return tempName;
+    }
+
+    @JsonIgnore
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return AuthorityUtils.createAuthorityList("ROLE_GUEST");
     }
 
     @JsonIgnore

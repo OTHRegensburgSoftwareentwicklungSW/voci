@@ -24,8 +24,5 @@ public interface ICallService extends IExternalCallService{
     void joinCall(User user, Invitation invitation) throws InvalidUserException, InvalidCallStateException;
 
     // returns if call is still active after leaving TODO maybe
-    boolean leaveCallByInvitationID(User user, long invitationID) throws InvalidCallStateException, InvitationDoesNotExistException;
-    boolean leaveCall(User user, Invitation invitation) throws InvalidCallStateException;
-
-    void endCallByInvitationID(RegisteredUser user, long invitationID) throws InvalidUserException, InvalidCallStateException, InvitationDoesNotExistException;
+    boolean leaveCall(User user) throws InvalidCallStateException;
 }

@@ -1,5 +1,6 @@
 package de.majaf.voci.control.service.impl;
 
+import de.majaf.voci.control.exceptions.call.InvalidCallStateException;
 import de.majaf.voci.control.exceptions.call.InvitationTokenDoesNotExistException;
 import de.majaf.voci.control.service.ICallService;
 import de.majaf.voci.control.service.IUserService;
@@ -57,15 +58,12 @@ public class UserService implements IUserService {
     }
 
     @Override
-    public GuestUser createGuestUser(String accessToken, HttpServletRequest req) throws InvitationTokenDoesNotExistException {
+    public GuestUser createGuestUserAndJoinCall(String accessToken, HttpServletRequest req) throws InvitationTokenDoesNotExistException, InvalidCallStateException, InvalidUserException {
         Invitation invitation = callService.loadInvitationByToken(accessToken);
         GuestUser guestUser = new GuestUser("guest" + (invitation.getGuestUsers().size() + 1));
         authenticateUser(guestUser, req);
-        guestUser.setActiveCall(invitation.getCall());
-        guestUser = userRepo.save(guestUser);
-        invitation.getCall().addParticipant(guestUser);
         invitation.addGuestUser(guestUser);
-        callService.saveInvitation(invitation);
+        callService.joinCall(guestUser, invitation);
         return guestUser;
     }
 
@@ -90,11 +88,6 @@ public class UserService implements IUserService {
     @Transactional
     public User saveUser(User user) {
         return userRepo.save(user);
-    }
-
-    @Override
-    public void deleteUser(User user) {
-        userRepo.delete(user);
     }
 
     @Override

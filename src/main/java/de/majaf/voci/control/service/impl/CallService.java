@@ -93,40 +93,42 @@ public class CallService extends ExternalCallService implements ICallService {
         if (user instanceof RegisteredUser)
             if (!invitation.getInvitedUsers().contains(user) && !user.equals(invitation.getInitiator()))
                 throw new InvalidUserException(user, "User is not invited");
+
         Call call = invitation.getCall();
         if (!call.isActive()) throw new InvalidCallStateException(call, "Call is not active");
-        user.setActiveCall(invitation.getCall());
+
+        Call userCall = user.getActiveCall();
+        if (userCall != null) {         // check if user is active in other call
+            if (!userCall.equals(call)) { // nothing happens if the user is already in the right call
+                leaveCall(user);
+                joinCall(call, user);
+            }
+        } else {
+            joinCall(call, user);
+        }
+    }
+
+    private void joinCall(Call call, User user) {
+        user.setActiveCall(call);
         call.addParticipant(user);
         userService.saveUser(user);
     }
 
     @Transactional
     @Override
-    public boolean leaveCallByInvitationID(User user, long invitationID) throws InvitationDoesNotExistException, InvalidCallStateException {
-        return leaveCall(user, loadInvitationByID(invitationID));
-    }
+    public boolean leaveCall(User user) throws InvalidCallStateException {
+        Call call = user.getActiveCall();
+        if (call != null) {
+            Invitation invitation = call.getInvitation();
+            call.removeParticipant(user);
+            user.setActiveCall(null);
 
-    @Transactional
-    @Override
-    public boolean leaveCall(User user, Invitation invitation) throws InvalidCallStateException {
-        Call call = invitation.getCall();
-        call.removeParticipant(user);
-        user.setActiveCall(null);
-        if (call.getParticipants().isEmpty())
-            endCall(invitation);
+            if (call.getParticipants().isEmpty())
+                endCall(invitation);
 
-        userService.saveUser(user);
-        invitationRepo.save(invitation);
-        return call.isActive();
-    }
-
-    @Override
-    @Transactional
-    public void endCallByInvitationID(RegisteredUser user, long invitationID) throws InvalidUserException, InvalidCallStateException, InvitationDoesNotExistException {
-        Invitation invitation = loadInvitationByID(invitationID);
-        if (!user.equals(invitation.getInitiator()))
-            throw new InvalidUserException(user, "User must not end call. No Initiator");
-
-        endCall(invitation);
+            userService.saveUser(user);
+            invitationRepo.save(invitation);
+            return call.isActive();
+        } else throw new InvalidCallStateException(call, "User has no active Call");
     }
 }

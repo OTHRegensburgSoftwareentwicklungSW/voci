@@ -1,14 +1,5 @@
 function connectCallSocket(invitationID, userID, textChannelID, isRegisteredUser) {
     connectSocket(function () {
-        stompClient.subscribe('/broker/' + userID + '/leftCall', function (left) {
-            if (left.body) {
-                disconnect();
-                if (isRegisteredUser)
-                    window.location.href = "/main";
-                else
-                    window.location.href = "/call/left"
-            }
-        });
         stompClient.subscribe('/broker/' + invitationID + '/addedCallMember', function (user) {
             if (user.body) {
                 let u = JSON.parse(user.body);

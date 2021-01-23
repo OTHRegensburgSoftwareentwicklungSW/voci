@@ -59,9 +59,7 @@ public abstract class User extends SingleIdEntity implements UserDetails {
 
     @JsonIgnore
     @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return null;
-    }
+    public abstract Collection<? extends GrantedAuthority> getAuthorities();
 
     @JsonIgnore
     @Override

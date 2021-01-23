@@ -13,22 +13,19 @@ import de.mschoettle.entity.dto.FileDTO;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.http.MediaType;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.security.Principal;
 
 @Controller
 public class TextChannelController {
@@ -55,8 +52,8 @@ public class TextChannelController {
 
     @MessageMapping({"/{textChannelID}/sendDropsiFile"})
     @SendTo("/broker/{textChannelID}/receivedMessage")
-    public Message sendDropsiFile(@DestinationVariable long textChannelID, FileDTO file, Principal principal) throws DropsiException, ChannelDoesNotExistException {
-        RegisteredUser user = mainController.getActiveUser(principal);
+    public Message sendDropsiFile(@DestinationVariable long textChannelID, FileDTO file, Authentication auth) throws DropsiException, ChannelDoesNotExistException, UserDoesNotExistException {
+        RegisteredUser user = (RegisteredUser) mainController.getActiveUser(auth);
         return channelService.createDropsiFileMessage(file, textChannelID, user);
     }
 

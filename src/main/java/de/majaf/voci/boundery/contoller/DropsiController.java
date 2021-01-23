@@ -1,13 +1,13 @@
 package de.majaf.voci.boundery.contoller;
 
 import de.majaf.voci.control.exceptions.call.DropsiException;
+import de.majaf.voci.control.exceptions.user.UserDoesNotExistException;
 import de.majaf.voci.control.service.IDropsiService;
-import de.majaf.voci.control.service.IUserService;
 import de.majaf.voci.entity.RegisteredUser;
-import de.mschoettle.entity.dto.FileDTO;
 import de.mschoettle.entity.dto.FileSystemObjectDTO;
 import de.mschoettle.entity.dto.FolderDTO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -15,8 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.client.RestTemplate;
 
-import java.security.Principal;
-
+//TODO: make exceptionHandling with unknownHostException
 @Controller
 public class DropsiController {
 
@@ -32,8 +31,8 @@ public class DropsiController {
     private final String dropsiURL = "http://im-codd:8922/";
 
     @RequestMapping(value = "/info/updateDropsi", method = RequestMethod.POST)
-    public String changeDropsiToken(@ModelAttribute("dropsiToken") String dropsiToken, Principal principal, Model model) throws DropsiException {
-        RegisteredUser user = mainController.getActiveUser(principal);
+    public String changeDropsiToken(@ModelAttribute("dropsiToken") String dropsiToken, Authentication auth, Model model) throws DropsiException, UserDoesNotExistException {
+        RegisteredUser user = (RegisteredUser) mainController.getActiveUser(auth);
         if (dropsiToken != null && !dropsiToken.equals("")) {
             getRootFolder(dropsiToken);
             FileSystemObjectDTO rootFolder = restService.getForObject(dropsiURL + "api/rootfolder?secretKey=" + dropsiToken, FileSystemObjectDTO.class);

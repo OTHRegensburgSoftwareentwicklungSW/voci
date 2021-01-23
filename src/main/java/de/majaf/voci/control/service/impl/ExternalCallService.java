@@ -68,7 +68,7 @@ public class ExternalCallService implements IExternalCallService {
 
     @Override
     @Transactional
-    public void endCall(Invitation invitation) throws InvalidCallStateException {
+    public void endCall(Invitation invitation) throws InvalidCallStateException { // TODO maybe do this with call
         Call call = invitation.getCall();
         if (!call.isActive()) throw new InvalidCallStateException(call, "Call is not active");
         for (User participant : call.getParticipants())

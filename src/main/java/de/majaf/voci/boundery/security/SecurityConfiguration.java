@@ -32,14 +32,18 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             "/css/**", "/img/**", "/js/**",
             "/invitation/**",
             "/webjars/**", "/chat/**",
-            "/api/**", "/test/**"};
+            "/test/**",
+            "/call/leave/**", "/call/ended"};
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
                 .authorizeRequests()
                 .antMatchers(ALLOW_ACCESS_WITHOUT_AUTHENTICATION)
-                .permitAll().anyRequest().authenticated();
+                .permitAll()
+                .antMatchers("/**").hasRole("USER").anyRequest().authenticated()
+                .and()
+                .exceptionHandling().accessDeniedPage("/accessDenied");
         http
                 .formLogin().loginPage("/login").permitAll().defaultSuccessUrl("/main").failureUrl("/failedLogin")
                 .and()
@@ -47,7 +51,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .deleteCookies("remember-me").permitAll()
                 .and().rememberMe();
         http.
-                csrf().disable();
+                csrf().ignoringAntMatchers("/api/**")
+                .and().headers().frameOptions().sameOrigin();
     }
 
     @Autowired

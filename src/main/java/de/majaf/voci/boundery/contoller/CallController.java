@@ -6,18 +6,24 @@ import de.majaf.voci.control.exceptions.call.InvalidCallStateException;
 import de.majaf.voci.control.exceptions.user.InvalidUserException;
 import de.majaf.voci.control.exceptions.user.UserDoesNotExistException;
 import de.majaf.voci.control.service.IDropsiService;
-import de.majaf.voci.entity.Call;
-import de.majaf.voci.entity.Invitation;
-import de.majaf.voci.entity.RegisteredUser;
+import de.majaf.voci.control.service.IUserService;
+import de.majaf.voci.entity.*;
 import de.mschoettle.entity.dto.FolderDTO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.handler.annotation.DestinationVariable;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
 import java.security.Principal;
 
 @Controller
@@ -27,7 +33,7 @@ public class CallController {
     private ICallService callService;
 
     @Autowired
-    private IDropsiService dropsiService;
+    private IUserService userService;
 
     @Autowired
     private MainController mainController;
@@ -40,8 +46,8 @@ public class CallController {
     private SimpMessagingTemplate simpMessagingTemplate;
 
     @RequestMapping(value = "/call", method = RequestMethod.GET)
-    public String prepareCallCreationPage(Model model, Principal principal) throws InvalidCallStateException, InvalidUserException, DropsiException {
-        RegisteredUser user = mainController.getActiveUser(principal);
+    public String prepareCallCreationPage(Model model, Authentication auth) throws InvalidCallStateException, InvalidUserException, DropsiException, UserDoesNotExistException {
+        RegisteredUser user = (RegisteredUser) mainController.getActiveUser(auth);
         Call activeCall = user.getActiveCall();
 
         if (activeCall != null) { // if the user is already in a call
@@ -71,8 +77,8 @@ public class CallController {
 
 
     @RequestMapping(value = "/call/inviteContact", method = RequestMethod.POST)
-    public String inviteContact(Model model, Principal principal, @RequestParam("contactID") long contactID) {
-        RegisteredUser user = mainController.getActiveUser(principal);
+    public String inviteContact(Model model, Authentication auth, @RequestParam("contactID") long contactID) throws UserDoesNotExistException {
+        RegisteredUser user = (RegisteredUser) mainController.getActiveUser(auth);
         Invitation invitation = user.getOwnedInvitation();
         try {
             callService.inviteToCall(invitation, contactID);
@@ -87,8 +93,8 @@ public class CallController {
     }
 
     @RequestMapping(value = "/call/uninviteContact", method = RequestMethod.DELETE)
-    public String uninviteContact(Model model, Principal principal, @RequestParam("invitedID") long invitedID) {
-        RegisteredUser user = mainController.getActiveUser(principal);
+    public String uninviteContact(Model model, Authentication auth, @RequestParam("invitedID") long invitedID) throws UserDoesNotExistException {
+        RegisteredUser user = (RegisteredUser) mainController.getActiveUser(auth);
         Invitation invitation = user.getOwnedInvitation();
 
         try {
@@ -102,8 +108,8 @@ public class CallController {
     }
 
     @RequestMapping(value = "/call/start", method = RequestMethod.POST)
-    public String startCall(Model model, Principal principal) throws InvalidCallStateException, DropsiException {
-        RegisteredUser user = mainController.getActiveUser(principal);
+    public String startCall(Model model, Authentication auth) throws InvalidCallStateException, DropsiException, UserDoesNotExistException {
+        RegisteredUser user = (RegisteredUser) mainController.getActiveUser(auth);
         Invitation invitation = callService.startCall(user);
         for (RegisteredUser invited : invitation.getInvitedUsers()) {
             simpMessagingTemplate.convertAndSend("/broker/" + invited.getId() + "/invited", invitation);
@@ -116,8 +122,8 @@ public class CallController {
     }
 
     @RequestMapping(value = "/call/end", method = RequestMethod.DELETE)
-    public String endCall(Principal principal, Model model) throws InvalidCallStateException {
-        RegisteredUser user = mainController.getActiveUser(principal);
+    public String endCall(Authentication auth, Model model) throws InvalidCallStateException, UserDoesNotExistException {
+        RegisteredUser user = (RegisteredUser) mainController.getActiveUser(auth);
         Call activeCall = user.getActiveCall();
         if (activeCall != null) {
             callService.endCall(user.getOwnedInvitation());
@@ -127,5 +133,24 @@ public class CallController {
         model.addAttribute("invitingList", user.getOwnedInvitation().getInvitedUsers());
         model.addAttribute("user", user);
         return "prepareCall";
+    }
+
+    @RequestMapping(value = "/call/leave/{invitationID}/{userID}", method = RequestMethod.DELETE)
+    public String leaveCall(@PathVariable("invitationID") long invitationID, @PathVariable("userID")long userID, // TODO: use principal for this
+                            Model model, HttpServletRequest req) throws UserDoesNotExistException, InvalidCallStateException, ServletException {
+        User user = userService.loadUserByID(userID);
+        boolean callStillActive = callService.leaveCall(user);
+        if (!callStillActive) {
+            simpMessagingTemplate.convertAndSend("/broker/" + invitationID + "/endedInvitation", true);
+        } else {
+            simpMessagingTemplate.convertAndSend("/broker/" + invitationID + "/removedCallMember", user);
+        }
+        if (user instanceof GuestUser) {
+            req.logout();
+            return "leftCall";
+        } else {
+            mainController.showUpdate(model, (RegisteredUser) user);
+            return "main";
+        }
     }
 }

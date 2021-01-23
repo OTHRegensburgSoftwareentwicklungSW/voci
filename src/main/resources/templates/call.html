@@ -72,18 +72,12 @@
         </div>
 
         <div class="flex-row d-flex justify-content-center border-top secondary-border">
-            <div class="text-center">
-                <button class="btn btn-outline-danger m-2 p-2" id="leave-call-btn">
+            <form th:action="@{/call/leave/{invitationID}/{userID}(invitationID=${invitation.id}, userID=${user.id})}"
+                  th:method="delete" class="text-center">
+                <button onclick="disconnect()" class="btn btn-outline-danger m-2 p-2" id="leave-call-btn">
                     LEAVE CALL
                 </button>
-                <script th:inline="javascript">
-                    let leaveCallBtn = document.getElementById('leave-call-btn');
-
-                    leaveCallBtn.addEventListener("click", function () {
-                        stompClient.send('/ws/' + [[${invitation.id}]] + '/leaveCall', {}, [[${user.id}]]);
-                    });
-                </script>
-            </div>
+            </form>
 
             <form class="text-center" th:if="${user.equals(invitation.initiator)}" th:action="@{/call/end}"
                   th:method="delete">
