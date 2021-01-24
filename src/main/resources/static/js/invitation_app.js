@@ -1,15 +1,5 @@
-let invitation_username_map = new Map();
-
-function addToInvitationMap(invitationID, initiatorName) {
-    invitation_username_map.set(invitationID, initiatorName);
-}
-
-function connectInvitationSocket(userID) {
+function connectInvitationSocket(userID, invitationList) {
     connectSocket(function () {
-        stompClient.subscribe('/broker/' + userID + '/joinedCall', function (joined) {
-            if (joined.body)
-                document.location.href = "/call";
-        });
         stompClient.subscribe('/broker/' + userID + '/invited', function (inv) {
             let invitation = JSON.parse(inv.body)
             if (invitation) {
@@ -17,7 +7,9 @@ function connectInvitationSocket(userID) {
                 subscribeToInvitationEnd(invitation);
             }
         });
-        invitation_username_map.forEach((value, key) => subscribeToInvitationEnd(key, value));
+        for(let i = 0; i < invitationList.length; i++) {
+            subscribeToInvitationEnd(invitationList[0]);
+        }
     });
 }
 
@@ -26,11 +18,6 @@ function subscribeToInvitationEnd(invitation) {
         if (ended.body)
             removeInvitation(invitation.initiator.userName);
     });
-}
-
-// no thymeleaf form action, because the invitation in DOM can also be created dynamical
-function takeInvitation(invitationID) {
-    stompClient.send('/ws/' + invitationID + '/joinCall', {});
 }
 
 function addInvitation(invitation) {
@@ -43,19 +30,17 @@ function addInvitation(invitation) {
         if (names_par[i].innerHTML === username) {
             names_par[i].classList.add('m-0');
 
-            let takeCallButton = document.createElement("button");
-            takeCallButton.classList.add('justify-content-center', 'btn', 'text-light', 'm-0', 'p-0', 'mt-1');
+            let takeCallRef = document.createElement("a");
+            takeCallRef.classList.add('justify-content-center', 'btn', 'text-light', 'm-0', 'p-0', 'mt-1');
 
             let takeCallIcon = document.createElement("i");
             takeCallIcon.classList.add('material-icons');
             takeCallIcon.innerHTML = 'ring_volume';
 
-            takeCallButton.appendChild(takeCallIcon);
-            takeCallButton.addEventListener('click', function () {
-                takeInvitation(invitation.id);
-            })
+            takeCallRef.appendChild(takeCallIcon);
+            takeCallRef.href = "/invitation?accessToken=" + invitation.accessToken;
 
-            names_par[i].parentNode.parentNode.appendChild(takeCallButton);
+            names_par[i].parentNode.parentNode.appendChild(takeCallRef);
             break;
         }
     }
