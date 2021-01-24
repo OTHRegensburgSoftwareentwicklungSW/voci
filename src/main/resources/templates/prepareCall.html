@@ -36,14 +36,15 @@
     <div class="col-md-7 col-sm-6 d-flex flex-column h-100 secondary-bg p-4">
         <div th:replace="fragments/mainFragments :: heading('CREATE A CALL', 'main-border')"></div>
         <p class="m-0 text-danger" th:if="${errorMsg}" th:text="${errorMsg}"></p>
+        <p class="m-0 text-warning" th:if="${infoMsg}" th:text="${infoMsg}"></p>
         <div class="flex-column d-flex justify-content-center overflow-auto flex-grow-1 p-0 mt-2 ">
             <div class="main-bg rounded p-3 ">
                 <div class="d-flex row m-0 overflow-auto">
                     <div class="col-12 col-md-6 p-3">
                         <div th:replace="fragments/mainFragments :: heading('CALL MEMBERS', 'secondary-border')"></div>
-                        <div th:replace="fragments/mainFragments :: listEmptyWarning(${invitingList}, 'You have not selected anyone! After clicking start you can only invite guests.')"></div>
+                        <div th:replace="fragments/mainFragments :: listEmptyWarning(${user.ownedInvitation.invitedUsers}, 'You have not selected anyone! After clicking start you can only invite guests.')"></div>
                         <form class="flex-row d-flex justify-content-between secondary-bg rounded mt-2 p-1 pl-3 pr-2"
-                              th:each="invited : ${invitingList}"
+                              th:each="invited : ${user.ownedInvitation.invitedUsers}"
                               th:action="@{/call/uninviteContact(invitedID=${invited.getId()})}"
                               th:method="delete">
 
@@ -63,7 +64,7 @@
                               th:each="contact : ${user.contacts}"
                               th:action="@{/call/inviteContact(contactID=${contact.id})}"
                               th:method="post"
-                              th:unless="${invitingList.contains(contact)}">
+                              th:unless="${user.ownedInvitation.invitedUsers.contains(contact)}">
 
                             <div class="flex-column d-flex justify-content-center">
                                 <p class="m-0" th:text="${contact.username}"></p>
@@ -93,9 +94,9 @@
         <div id="invitation_container" class="overflow-auto">
             <div class="flex-row d-flex justify-content-between secondary-bg rounded mt-2 p-1 pl-3 pr-2"
                  th:each="invitation : ${user.activeInvitations}"
-                 th:if="${invitation.call.isActive()}">
+                 th:if="${invitation.call != null}">
                 <div class="flex-column d-flex justify-content-center">
-                    <p class="m-0 invitation_name" th:text="${invitation.initiator.username}"></p>
+                    <p class="m-1 invitation_name" th:text="${invitation.initiator.username}"></p>
                 </div>
                 <a class="justify-content-center btn text-light m-0 p-0 mt-1"
                         th:href="@{/invitation(accessToken=${invitation.accessToken})}"><i

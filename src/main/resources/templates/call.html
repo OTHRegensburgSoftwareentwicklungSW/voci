@@ -10,7 +10,7 @@
 
     <script th:inline="javascript">
         window.onload = function () {
-            connectCallSocket([[${invitation.id}]], [[${user.id}]], [[${textChannel.id}]], [[${user.isRegistered()}]]);
+            connectCallSocket([[${call}]], [[${user}]], [[${textChannel}]]);
             scrollToBottom('msg-container');
         }
     </script>
@@ -28,25 +28,25 @@
     <div class="col-md-3 col-sm-3 d-flex flex-column h-100 p-4">
 
         <div th:replace="fragments/mainFragments :: heading('CALL MEMBERS', 'secondary-border')"></div>
-        <div th:replace="fragments/mainFragments :: listEmptyWarning(${invitation.call.participants}, 'No members here!')"></div>
+        <div th:replace="fragments/mainFragments :: listEmptyWarning(${call.participants}, 'No members here!')"></div>
         <div class="overflow-auto flex-grow-1">
             <div class="mb-4" id="member_container">
                 <div class="flex-row d-flex justify-content-between secondary-bg rounded mt-2 p-1 pl-3 pr-2"
-                     th:each="participant : ${invitation.call.participants}">
+                     th:each="participant : ${call.participants}">
 
                     <div class="flex-column d-flex justify-content-center">
                         <p class="m-1 member_name" th:text="${participant.userName}"></p>
                     </div>
                 </div>
             </div>
-            <div class="mb-4" id="invited_container">
+            <div th:if="${call.invitation}" class="mb-4" id="invited_container">
                 <div th:replace="fragments/mainFragments :: heading('ALSO INVITED', 'secondary-border')"></div>
                 <div id="empty-message">
-                    <div th:replace="fragments/mainFragments :: listEmptyWarning(${invitation.invitedUsers}, 'No one else is invited!')"></div>
+                    <div th:replace="fragments/mainFragments :: listEmptyWarning(${call.invitation.invitedUsers}, 'No one else is invited!')"></div>
                 </div>
                 <div class="flex-row d-flex justify-content-between secondary-bg rounded mt-2 p-1 pl-3 pr-2"
-                     th:each="invited : ${invitation.invitedUsers}"
-                     th:unless="${invitation.call.participants.contains(invited)}">
+                     th:each="invited : ${call.invitation.invitedUsers}"
+                     th:unless="${call.participants.contains(invited)}">
 
                     <div class="flex-column d-flex justify-content-center">
                         <p class="m-1 invited_name" th:text="${invited.username}"></p>
@@ -55,7 +55,7 @@
             </div>
         </div>
 
-        <div class="flex-row d-flex border-top secondary-border">
+        <div th:if="${call.invitation}" class="flex-row d-flex border-top secondary-border" id="invitation_token_container">
             <div class="col p-0">
                 <div class="flex-row d-flex">
                     <p class="m-0 pt-2">Invite Guests? Let them join with this Access-Token: </p>
@@ -64,7 +64,7 @@
 
                 <div class="flex-row d-flex">
                     <div class="flex-column d-flex overflow-auto">
-                        <p class="m-0 pb-2" th:text="${invitation.accessToken}"
+                        <p class="m-0 pb-2" th:text="${call.invitation.accessToken}"
                            style="overflow-wrap: break-word" id="invitationURL"></p>
                     </div>
                 </div>
@@ -72,14 +72,14 @@
         </div>
 
         <div class="flex-row d-flex justify-content-center border-top secondary-border">
-            <form th:action="@{/call/leave/{invitationID}/{userID}(invitationID=${invitation.id}, userID=${user.id})}"
+            <form th:action="@{/call/leave/{callID}/{userID}(callID=${call.id}, userID=${user.id})}"
                   th:method="delete" class="text-center">
                 <button onclick="disconnect()" class="btn btn-outline-danger m-2 p-2" id="leave-call-btn">
                     LEAVE CALL
                 </button>
             </form>
 
-            <form class="text-center" th:if="${user.equals(invitation.initiator)}" th:action="@{/call/end}"
+            <form class="text-center" th:if="${call.invitation != null && user.equals(call.invitation.initiator)}" th:action="@{/call/end}"
                   th:method="delete">
                 <button class="btn btn-outline-danger m-2 p-2" id="end-call-btn">
                     END CALL

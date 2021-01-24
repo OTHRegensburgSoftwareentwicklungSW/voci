@@ -13,13 +13,6 @@ function subscribeToTextChannel(userID, textChannelID) {
     });
 }
 
-function subscribeToDropsiDownload(userID) {
-    stompClient.subscribe('/broker/' + userID + '/downloadFile', function (file) {
-        let f = JSON.parse(file.body);
-        console.log(f);
-    })
-}
-
 function sendMessage(textChannelID, msgInput, userID) {
     let msg = msgInput.value.trim();
     if (msg !== "") {

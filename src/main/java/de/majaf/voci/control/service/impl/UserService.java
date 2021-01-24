@@ -10,25 +10,16 @@ import de.majaf.voci.entity.repo.UserRepository;
 import de.majaf.voci.entity.repo.RegisteredUserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
-import org.springframework.context.annotation.ScopedProxyMode;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 import javax.transaction.Transactional;
-import java.util.List;
 import java.util.UUID;
 
-import static org.springframework.security.web.context.HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY;
-
-@Service @Scope(value = "singleton")
+@Service
+@Scope(value = "singleton")
 public class UserService implements IUserService {
 
     @Autowired
@@ -62,16 +53,19 @@ public class UserService implements IUserService {
     @Override
     public GuestUser createGuestUserAndJoinCall(String accessToken, HttpServletRequest req) throws InvitationTokenDoesNotExistException, InvalidCallStateException, InvalidUserException {
         Invitation invitation = callService.loadInvitationByToken(accessToken);
-        GuestUser guestUser = new GuestUser("guest" + (invitation.getGuestUsers().size() + 1));
-        invitation.addGuestUser(guestUser);
-        callService.joinCall(guestUser, invitation);
-        return guestUser;
+        Call call = invitation.getCall();
+        if (call != null) {
+            GuestUser guestUser = new GuestUser("guest" + (call.getGuestUsers().size() + 1));
+            call.addGuestUser(guestUser);
+            callService.joinCall(guestUser, invitation);
+            return guestUser;
+        } else throw new InvitationTokenDoesNotExistException(accessToken, "No call belongs to this token");
     }
 
     @Override
     @Transactional
-    public void removeAllGuests(Invitation invitation) {
-        for (GuestUser user : invitation.getGuestUsers())
+    public void removeAllGuests(Call call) {
+        for (GuestUser user : call.getGuestUsers())
             userRepo.delete(user);
     }
 
@@ -111,7 +105,7 @@ public class UserService implements IUserService {
         RegisteredUser contact = (RegisteredUser) loadUserByID(contactID);
         contact.removeContact(user);
         user.removeContact(contact);
-        callService.removeInvitedUser(user.getOwnedInvitation(), contact);
+        callService.uninviteUser(user.getOwnedInvitation(), contact);
         regUserRepo.save(contact);
         regUserRepo.save(user);
     }

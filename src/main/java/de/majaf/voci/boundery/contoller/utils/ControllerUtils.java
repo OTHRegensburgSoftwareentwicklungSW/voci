@@ -28,10 +28,14 @@ public class ControllerUtils {
     @Autowired
     private IUserService userService;
 
-    public User getActiveUser(Authentication auth) throws UserDoesNotExistException {
-        if (auth != null)
-            return userService.loadUserByID(((User) auth.getPrincipal()).getId());
-        else return null;
+    public User getActiveUser(Authentication auth) {
+        try {
+            if (auth != null)
+                return userService.loadUserByID(((User) auth.getPrincipal()).getId());
+            else return null;
+        } catch (UserDoesNotExistException e) {
+            return null;
+        }
     }
 
     public void authenticateUser(User user, HttpServletRequest req) {

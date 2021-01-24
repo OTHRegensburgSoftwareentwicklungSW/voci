@@ -21,5 +21,5 @@ public interface IUserService extends UserDetailsService {
     void removeContact(RegisteredUser user, long contactID) throws UserDoesNotExistException;
 
     GuestUser createGuestUserAndJoinCall(String accessToken, HttpServletRequest req) throws InvitationTokenDoesNotExistException, InvalidCallStateException, InvalidUserException;
-    void removeAllGuests(Invitation invitation);
+    void removeAllGuests(Call call);
 }

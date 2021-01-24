@@ -32,7 +32,7 @@ public class CallRestController {
     public Invitation startCall(@RequestHeader String securityToken, HttpServletRequest req) throws UserTokenDoesNotExistException {
         RegisteredUser user = userService.loadUserBySecurityToken(securityToken);
         controllerUtils.authenticateUser(user, req);
-        return callService.startCall(user);
+        return callService.startCall(user).getInvitation();
     }
 
     @RequestMapping(value = "/api/endCall", method = RequestMethod.DELETE)

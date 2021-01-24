@@ -1,7 +1,6 @@
 package de.majaf.voci.entity;
 
-import com.fasterxml.jackson.annotation.JsonGetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.*;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -10,10 +9,10 @@ import java.util.Date;
 import java.util.List;
 
 @Entity
+@JsonIdentityInfo(
+        generator = ObjectIdGenerators.PropertyGenerator.class,
+        property = "id")
 public class Invitation extends SingleIdEntity{
-
-    private Date creationDate;
-    private long timeout = 600000;
 
     @Column(unique = true)
     private String accessToken;
@@ -25,35 +24,14 @@ public class Invitation extends SingleIdEntity{
     @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<RegisteredUser> invitedUsers = new ArrayList<>();
 
-    @JoinColumn(unique = true, nullable = false)
+    @JoinColumn(unique = true)
     @OneToOne(cascade = CascadeType.ALL)
     private Call call;
 
-    @OneToMany
-    @JoinColumn(name = "invitation_id")
-    private List<GuestUser> guestUsers = new ArrayList<>();
-
     public Invitation() {}
 
-    public Invitation(RegisteredUser initiator, Call call) {
+    public Invitation(RegisteredUser initiator) {
         this.initiator = initiator;
-        this.call = call;
-    }
-
-    public Date getCreationDate() {
-        return creationDate;
-    }
-
-    public void setCreationDate(Date creationDate) {
-        this.creationDate = creationDate;
-    }
-
-    public long getTimeout() {
-        return timeout;
-    }
-
-    public void setTimeout(long timeout) {
-        this.timeout = timeout;
     }
 
     public String getAccessToken() {
@@ -97,17 +75,8 @@ public class Invitation extends SingleIdEntity{
         this.call = call;
     }
 
-    public List<GuestUser> getGuestUsers() {
-        return Collections.unmodifiableList(guestUsers);
-    }
-
-    public void addGuestUser(GuestUser guestUser) {
-        if(!guestUsers.contains(guestUser))
-            this.guestUsers.add(guestUser);
-    }
-
     @Override
     public String toString() {
-        return "Invitation from " + initiator + "\nCall is active: " + call.isActive() + "\nInvited: " + invitedUsers;
+        return "Invitation from " + initiator + "\nCall is active: " + (call != null) + "\nInvited: " + invitedUsers;
     }
 }

@@ -2,8 +2,6 @@ package de.majaf.voci.control.service.impl;
 
 import de.majaf.voci.control.exceptions.call.InvitationTokenDoesNotExistException;
 import de.majaf.voci.control.service.ICallService;
-import de.majaf.voci.control.service.IChannelService;
-import de.majaf.voci.control.service.IExternalCallService;
 import de.majaf.voci.control.service.IUserService;
 import de.majaf.voci.control.exceptions.call.InvalidCallStateException;
 import de.majaf.voci.control.exceptions.call.InvitationDoesNotExistException;
@@ -13,28 +11,36 @@ import de.majaf.voci.entity.*;
 import de.majaf.voci.entity.repo.CallRepository;
 import de.majaf.voci.entity.repo.InvitationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.logging.Logger;
 
-@Service @Scope(value = "session", proxyMode = ScopedProxyMode.INTERFACES)
+@Service
+@Scope(value = "singleton")
 public class CallService extends ExternalCallService implements ICallService {
 
     @Autowired
     private InvitationRepository invitationRepo;
 
     @Autowired
+    private CallRepository callRepo;
+
+    @Autowired
     private IUserService userService;
+
+    @Autowired
+    Logger logger;
 
     @Override
     @Transactional
     public Invitation createInvitation(RegisteredUser initiator) {
-        Call call = new Call();
-        Invitation invitation = new Invitation(initiator, call);
-        call.setInvitation(invitation);
+        Invitation invitation = new Invitation(initiator);
         initiator.setOwnedInvitation(invitation);
         invitationRepo.save(invitation);
         return invitation;
@@ -47,6 +53,13 @@ public class CallService extends ExternalCallService implements ICallService {
     }
 
     @Override
+    @Transactional
+    public Iterable<Call> getAllCalls() {
+        return callRepo.findAll();
+    }
+
+    @Override
+    @Transactional
     public Invitation saveInvitation(Invitation invitation) {
         return invitationRepo.save(invitation);
     }
@@ -64,14 +77,14 @@ public class CallService extends ExternalCallService implements ICallService {
     }
 
     @Override
-    public void removeInvitedUserByID(Invitation invitation, long invitedContactID) throws UserDoesNotExistException {
+    public void uninviteUserByID(Invitation invitation, long invitedContactID) throws UserDoesNotExistException {
         RegisteredUser invited = (RegisteredUser) userService.loadUserByID(invitedContactID);
-        removeInvitedUser(invitation, invited);
+        uninviteUser(invitation, invited);
     }
 
     @Transactional
     @Override
-    public void removeInvitedUser(Invitation invitation, RegisteredUser invited) {
+    public void uninviteUser(Invitation invitation, RegisteredUser invited) {
         invited.removeActiveInvitation(invitation);
         invitation.removeInvitedUser(invited);
         invitationRepo.save(invitation);
@@ -97,7 +110,7 @@ public class CallService extends ExternalCallService implements ICallService {
                 throw new InvalidUserException(user, "User is not invited");
 
         Call call = invitation.getCall();
-        if (!call.isActive()) throw new InvalidCallStateException(call, "Call is not active");
+        if (call == null) throw new InvalidCallStateException(call, "Call is not active");
 
         Call userCall = user.getActiveCall();
         if (userCall != null) {         // check if user is active in other call
@@ -118,19 +131,42 @@ public class CallService extends ExternalCallService implements ICallService {
 
     @Transactional
     @Override
-    public boolean leaveCall(User user) throws InvalidCallStateException {
+    public Call leaveCall(User user) throws InvalidCallStateException {
         Call call = user.getActiveCall();
         if (call != null) {
-            Invitation invitation = call.getInvitation();
+
             call.removeParticipant(user);
             user.setActiveCall(null);
 
             if (call.getParticipants().isEmpty())
-                endCall(invitation);
-
-            userService.saveUser(user);
-            invitationRepo.save(invitation);
-            return call.isActive();
+                endCall(call);
+            else if (user instanceof RegisteredUser) {
+                Invitation invitation = call.getInvitation();
+                if (invitation.equals(((RegisteredUser) user).getOwnedInvitation()))
+                    endInvitation(invitation);
+                userService.saveUser(user);
+            }
+            return call;
         } else throw new InvalidCallStateException(call, "User has no active Call");
+    }
+
+    @Override
+    @Transactional
+    public List<Long> updateTimeout(long timediff) {
+        List<Call> calls = (List<Call>) getAllCalls();
+
+        // this is the workaround for informing the frontend which calls have ended
+        List<Long> endedCallIDs = new ArrayList<>();
+
+        for (Call call : calls) {
+            if (call.getTimeout() <= 0) {
+                endedCallIDs.add(call.getId());
+                endCall(call);
+            } else {
+                call.setTimeout(call.getTimeout() - timediff);
+            }
+        }
+        logger.info("Currently open calls: " + (calls.size()-endedCallIDs.size()));
+        return endedCallIDs;
     }
 }

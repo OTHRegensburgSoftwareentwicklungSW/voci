@@ -7,8 +7,11 @@ import de.majaf.voci.control.exceptions.user.InvalidUserException;
 import de.majaf.voci.control.exceptions.user.UserDoesNotExistException;
 import de.majaf.voci.entity.*;
 
+import java.util.List;
+
 public interface ICallService extends IExternalCallService{
     Invitation loadInvitationByID(long id) throws InvitationDoesNotExistException;
+    Iterable<Call> getAllCalls();
 
     Invitation createInvitation(RegisteredUser initiator);
 
@@ -16,13 +19,15 @@ public interface ICallService extends IExternalCallService{
 
     void inviteToCall(Invitation invitation, long invitedContactID) throws InvalidUserException, UserDoesNotExistException;
 
-    void removeInvitedUser(Invitation invitation, RegisteredUser invited);
-    void removeInvitedUserByID(Invitation invitation, long invitedContactID) throws UserDoesNotExistException;
+    void uninviteUser(Invitation invitation, RegisteredUser invited);
+    void uninviteUserByID(Invitation invitation, long invitedContactID) throws UserDoesNotExistException;
 
     void joinCallByInvitationID(User user, long invitationID) throws InvalidUserException, InvalidCallStateException, InvitationDoesNotExistException;
     void joinCallByAccessToken(User user, String accessToken) throws InvalidUserException, InvalidCallStateException, InvitationDoesNotExistException, InvitationTokenDoesNotExistException;
     void joinCall(User user, Invitation invitation) throws InvalidUserException, InvalidCallStateException;
 
-    // returns if call is still active after leaving TODO maybe
-    boolean leaveCall(User user) throws InvalidCallStateException;
+    // returns the call after leaving
+    Call leaveCall(User user) throws InvalidCallStateException;
+
+    List<Long> updateTimeout(long timediff);
 }

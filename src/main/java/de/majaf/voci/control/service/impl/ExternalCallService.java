@@ -7,6 +7,7 @@ import de.majaf.voci.control.service.IChannelService;
 import de.majaf.voci.control.service.IExternalCallService;
 import de.majaf.voci.control.service.IUserService;
 import de.majaf.voci.entity.*;
+import de.majaf.voci.entity.repo.CallRepository;
 import de.majaf.voci.entity.repo.InvitationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -17,14 +18,19 @@ import javax.transaction.Transactional;
 import java.util.Date;
 import java.util.UUID;
 
-@Service @Scope("session")
+@Service
+@Scope("session")
 public class ExternalCallService implements IExternalCallService {
-
-    @Autowired @Qualifier("textChannelService")
-    private IChannelService channelService;
 
     @Autowired
     private InvitationRepository invitationRepo;
+
+    @Autowired
+    private CallRepository callRepo;
+
+    @Autowired
+    @Qualifier("textChannelService")
+    private IChannelService channelService;
 
     @Autowired
     private IUserService userService;
@@ -35,26 +41,27 @@ public class ExternalCallService implements IExternalCallService {
         return invitationRepo.findByAccessToken(accessToken).orElseThrow(() -> new InvitationTokenDoesNotExistException(accessToken, "Invalid Access-Token"));
     }
 
-    private String generateAccessToken(Invitation invitation) {
+    private String generateAccessToken() {
         return UUID.randomUUID().toString();
-    } // TODO remove invitation
+    }
 
     @Override
     @Transactional
-    public Invitation startCall(RegisteredUser user) {
+    public Call startCall(RegisteredUser user) {
         Invitation invitation = user.getOwnedInvitation();
-        Call call = invitation.getCall();
-        if(call.isActive()) {
-            endCall(invitation);
-        }
+
+        Call call = new Call();
+        call.setCreationDate(new Date());
+        call.setInvitation(invitation);
+        invitation.setCall(call);
         call.setTextChannel((TextChannel) channelService.createChannel());
-        call.setActive(true);
         call.addParticipant(invitation.getInitiator());
         invitation.getInitiator().setActiveCall(call);
-        invitation.setAccessToken(generateAccessToken(invitation));
-        invitation.setCreationDate(new Date());
+        call = callRepo.save(call);
+
+        invitation.setAccessToken(generateAccessToken());
         invitationRepo.save(invitation);
-        return invitation;
+        return call;
     }
 
     @Override
@@ -64,31 +71,37 @@ public class ExternalCallService implements IExternalCallService {
         if (!user.equals(invitation.getInitiator()))
             throw new InvalidUserException(user, "User must not end call. No Initiator");
 
-        endCall(invitation);
+        endCall(invitation.getCall());
     }
 
     @Override
     @Transactional
-    public void endCall(Invitation invitation) { // TODO maybe do this with call
-        Call call = invitation.getCall();
-        if (call.isActive()) {
+    public void endCall(Call call) {
+        if (call != null) {
+
             for (User participant : call.getParticipants())
                 participant.setActiveCall(null);
 
-            invitation.setAccessToken(null);
-            invitation.setCreationDate(null);
-            userService.removeAllGuests(invitation);
-            call.removeAllParticipants();
-            call.setActive(false);
-            channelService.deleteChannel(call.getTextChannel());
-            call.setTextChannel(null);
+            Invitation invitation = call.getInvitation();
 
-            for (RegisteredUser invited : invitation.getInvitedUsers())
-                invited.removeActiveInvitation(invitation);
+            if (invitation != null)
+                endInvitation(invitation);
 
-            invitation.removeAllInvitedUsers();
+            userService.removeAllGuests(call);
 
-            invitationRepo.save(invitation);
+            // channelService.deleteChannel(call.getTextChannel());
+            callRepo.delete(call);
         }
+    }
+
+    @Transactional
+    @Override
+    public void endInvitation(Invitation invitation) {
+        invitation.setAccessToken(null);
+        invitation.setCall(null);
+        for (RegisteredUser invited : invitation.getInvitedUsers())
+            invited.removeActiveInvitation(invitation);
+        invitation.removeAllInvitedUsers();
+        invitationRepo.save(invitation);
     }
 }

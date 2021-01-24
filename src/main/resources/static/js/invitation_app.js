@@ -1,22 +1,24 @@
 function connectInvitationSocket(userID, invitationList) {
     connectSocket(function () {
-        stompClient.subscribe('/broker/' + userID + '/invited', function (inv) {
-            let invitation = JSON.parse(inv.body)
-            if (invitation) {
-                addInvitation(invitation);
-                subscribeToInvitationEnd(invitation);
+        stompClient.subscribe('/broker/' + userID + '/invited', function (call) {
+            let c = JSON.parse(call.body)
+            if (c) {
+                addInvitation(c.invitation);
+                stompClient.subscribe('/broker/' + c.id + '/endedInvitation', function (ended) {
+                    if (ended.body)
+                        removeInvitation(c.invitation.initiator.userName);
+                });
             }
         });
-        for(let i = 0; i < invitationList.length; i++) {
-            subscribeToInvitationEnd(invitationList[0]);
+        for (let i = 0; i < invitationList.length; i++) {
+            if (invitationList[i].call !== null) {
+                let invitation = invitationList[i];
+                stompClient.subscribe('/broker/' + invitation.call.id + '/endedInvitation', function (ended) {
+                    if (ended.body)
+                        removeInvitation(invitation.initiator.userName);
+                });
+            }
         }
-    });
-}
-
-function subscribeToInvitationEnd(invitation) {
-    stompClient.subscribe('/broker/' + invitation.id + '/endedInvitation', function (ended) {
-        if (ended.body)
-            removeInvitation(invitation.initiator.userName);
     });
 }
 

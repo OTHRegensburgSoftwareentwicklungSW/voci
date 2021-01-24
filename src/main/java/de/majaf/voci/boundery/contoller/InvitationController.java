@@ -5,7 +5,6 @@ import de.majaf.voci.control.exceptions.call.InvalidCallStateException;
 import de.majaf.voci.control.exceptions.call.InvitationDoesNotExistException;
 import de.majaf.voci.control.exceptions.call.InvitationTokenDoesNotExistException;
 import de.majaf.voci.control.exceptions.user.InvalidUserException;
-import de.majaf.voci.control.exceptions.user.UserDoesNotExistException;
 import de.majaf.voci.control.service.ICallService;
 import de.majaf.voci.control.service.IUserService;
 import de.majaf.voci.entity.Call;
@@ -21,8 +20,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.util.Optional;
 
 
@@ -47,7 +44,7 @@ public class InvitationController {
 
     // TODO: Exception Handling
     @RequestMapping(value = "/invitation", method = RequestMethod.GET)
-    public String prepareInvitationPage(Model model, @RequestParam("accessToken") Optional<String> accessToken, HttpServletRequest req, Authentication auth) throws InvitationTokenDoesNotExistException, InvalidCallStateException, InvalidUserException, InvitationDoesNotExistException, UserDoesNotExistException {
+    public String prepareInvitationPage(Model model, @RequestParam("accessToken") Optional<String> accessToken, HttpServletRequest req, Authentication auth) throws InvitationTokenDoesNotExistException, InvalidCallStateException, InvalidUserException, InvitationDoesNotExistException {
         if (accessToken.isEmpty())
             return "invitation";
         else {
@@ -59,14 +56,14 @@ public class InvitationController {
     public String prepareInvitationAccess(@ModelAttribute("accessToken") String accessToken,
                                           Model model,
                                           HttpServletRequest req,
-                                          Authentication auth) throws InvitationTokenDoesNotExistException, InvitationDoesNotExistException, InvalidCallStateException, InvalidUserException, UserDoesNotExistException {
+                                          Authentication auth) throws InvitationTokenDoesNotExistException, InvitationDoesNotExistException, InvalidCallStateException, InvalidUserException {
         return joinCall(accessToken, model, req, auth);
     }
 
     private String joinCall(String accessToken,
                             Model model,
                             HttpServletRequest req,
-                            Authentication auth) throws InvitationTokenDoesNotExistException, InvitationDoesNotExistException, InvalidCallStateException, InvalidUserException, UserDoesNotExistException {
+                            Authentication auth) throws InvitationTokenDoesNotExistException, InvitationDoesNotExistException, InvalidCallStateException, InvalidUserException {
         User user;
         if (auth == null) {
             user = userService.createGuestUserAndJoinCall(accessToken, req);
@@ -76,20 +73,35 @@ public class InvitationController {
             callService.joinCallByAccessToken(user, accessToken);
         }
         Call call = user.getActiveCall();
-        simpMessagingTemplate.convertAndSend("/broker/" + call.getInvitation().getId() + "/addedCallMember", user);
+        simpMessagingTemplate.convertAndSend("/broker/" + call.getId() + "/addedCallMember", user);
 
         if (user instanceof RegisteredUser)
             dropsiController.addDropsiFilesToModel(model, (RegisteredUser) user);
 
         model.addAttribute("user", user);
-        model.addAttribute("invitation", call.getInvitation());
+        model.addAttribute("call", call);
         model.addAttribute("textChannel", call.getTextChannel());
         return "call";
     }
 
-    @RequestMapping(value = {"/call/left", "/call/ended"}, method = RequestMethod.GET)
+    @RequestMapping(value = "/call/left", method = RequestMethod.GET)
     public String prepareCallLeftPage(HttpServletRequest req) throws ServletException {
         req.logout();
+        return "leftCall";
+    }
+
+    @RequestMapping(value = "/call/ended", method = RequestMethod.GET)
+    public String prepareCallEndedPage(Model model, HttpServletRequest req, Authentication auth) throws ServletException {
+        User user = controllerUtils.getActiveUser(auth);
+        if (user != null) {
+            if (user instanceof RegisteredUser) {
+                model.addAttribute("infoMsg", "Your call has ended. Either it was longer than an hour, or the initiator ended it.");
+                model.addAttribute("user", user);
+                return "prepareCall";
+            } else {
+                req.logout();
+            }
+        }
         return "leftCall";
     }
 
