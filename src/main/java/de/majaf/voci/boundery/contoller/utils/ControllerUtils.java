@@ -18,14 +18,11 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-
-import java.io.IOException;
 
 import static org.springframework.security.web.context.HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY;
 
-@Component @Scope(value = "session", proxyMode = ScopedProxyMode.TARGET_CLASS)
+@Component @Scope(value = "singleton")
 public class ControllerUtils {
 
     @Autowired

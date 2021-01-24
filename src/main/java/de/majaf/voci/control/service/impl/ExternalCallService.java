@@ -37,7 +37,7 @@ public class ExternalCallService implements IExternalCallService {
 
     private String generateAccessToken(Invitation invitation) {
         return UUID.randomUUID().toString();
-    }
+    } // TODO remove invitation
 
     @Override
     @Transactional
