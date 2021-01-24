@@ -13,11 +13,11 @@ public class Room extends SingleIdEntity {
     private String roomName;
 
     //@Column(nullable = false)
-    @OneToMany(cascade = {CascadeType.ALL})
+    @OneToMany(cascade = {CascadeType.ALL}, orphanRemoval = true)
     private List<VoiceChannel> voiceChannels = new ArrayList<>();
 
     //@Column(nullable = false)
-    @OneToMany(cascade = {CascadeType.ALL})
+    @OneToMany(cascade = {CascadeType.ALL}, orphanRemoval = true)
     private List<TextChannel> textChannels = new ArrayList<>();
 
     @Column(nullable = false)

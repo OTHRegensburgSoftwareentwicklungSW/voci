@@ -13,7 +13,6 @@ public interface IChannelService {
     Channel loadChannelByID(long channelID) throws ChannelDoesNotExistException;
     Channel loadChannelByIDInRoom(long channelID, Room room) throws InvalidUserException, ChannelDoesNotExistException, InvalidChannelException;
     void deleteChannel(Channel channel);
-    void deleteChannelByID(long channelID) throws ChannelDoesNotExistException;
     void addChannelToRoom(Room room, String channelName, RegisteredUser initiator) throws InvalidUserException, InvalidNameException;
     void deleteChannelFromRoom(Room room, long channelID, RegisteredUser initiator) throws InvalidUserException, ChannelDoesNotExistException;
     void renameChannel(long channelID, Room room, String channelName, RegisteredUser initiator) throws InvalidNameException, InvalidUserException, ChannelDoesNotExistException, InvalidChannelException;

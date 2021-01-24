@@ -1,7 +1,8 @@
-<html xmlns:th="http://www.thymeleaf.org/">
+<html xmlns:th="http://www.thymeleaf.org/" lang="en">
 
 <!-- Modal for adding room -->
-<div th:fragment="addRoomModal" class="modal fade text-light" id="addRoomModal" tabindex="-1" role="dialog" aria-labelledby="Add Room"
+<div th:fragment="addRoomModal" class="modal fade text-light" id="addRoomModal" tabindex="-1" role="dialog"
+     aria-labelledby="Add Room"
      aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content main-bg">
@@ -29,7 +30,8 @@
 </div>
 
 <!-- Modal for adding contact -->
-<div th:fragment="addContactModal" class="modal fade text-light" id="addContactModal" tabindex="-1" role="dialog" aria-labelledby="Add Contact"
+<div th:fragment="addContactModal" class="modal fade text-light" id="addContactModal" tabindex="-1" role="dialog"
+     aria-labelledby="Add Contact"
      aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content main-bg">
@@ -56,11 +58,13 @@
 </div>
 
 <!-- Modal for adding channel -->
-<div th:fragment="addTextChannelModal" class="modal fade text-light" id="addTextChannelModal" tabindex="-1" role="dialog" aria-labelledby="Add Text-Channel"
+<div th:fragment="addTextChannelModal" class="modal fade text-light" id="addTextChannelModal" tabindex="-1"
+     role="dialog" aria-labelledby="Add Text-Channel"
      aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content main-bg">
-            <form class="" th:action="@{/room/{roomID}/edit/addChannel(roomID=${room.id}, isTC = ${true})}" th:method="post">
+            <form class="" th:action="@{/room/{roomID}/edit/addChannel(roomID=${room.id}, isTC = ${true})}"
+                  th:method="post">
                 <div class="modal-header border-0">
                     <h5 class="modal-title">Create New Text-Channel</h5>
                     <button type="button" class="close " data-dismiss="modal" aria-label="Close">
@@ -84,11 +88,13 @@
 </div>
 
 <!-- Modal for adding channel -->
-<div th:fragment="addVoiceChannelModal" class="modal fade text-light" id="addVoiceChannelModal" tabindex="-1" role="dialog" aria-labelledby="Add Voice-Channel"
+<div th:fragment="addVoiceChannelModal" class="modal fade text-light" id="addVoiceChannelModal" tabindex="-1"
+     role="dialog" aria-labelledby="Add Voice-Channel"
      aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content main-bg">
-            <form class="" th:action="@{/room/{roomID}/edit/addChannel(roomID=${room.id}, isTC = ${false})}" th:method="post">
+            <form class="" th:action="@{/room/{roomID}/edit/addChannel(roomID=${room.id}, isTC = ${false})}"
+                  th:method="post">
                 <div class="modal-header border-0">
                     <h5 class="modal-title">Create New Voice-Channel</h5>
                     <button type="button" class="close " data-dismiss="modal" aria-label="Close">
@@ -112,7 +118,8 @@
 </div>
 
 <!--Modal for Dropsi File List in TextChannel-->
-<div th:fragment="dropsifileOverview" th:if="${fileList}" class="modal fade text-light" id="dropsifileOverview"
+<div th:fragment="dropsifileOverview" th:if="${fileList != null || dropsiErrorMsg != null}"
+     class="modal fade text-light" id="dropsifileOverview"
      tabindex="-1" role="dialog" aria-labelledby="Root-Folder-Overview"
      aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
@@ -124,22 +131,26 @@
                 </button>
             </div>
             <div class="flex-column d-flex modal-body border-top border-bottom secondary-border">
-                <div class="flex-row d-flex justify-content-between secondary-bg rounded mt-2 p-1 pl-3 pr-2"
-                     th:each="file : ${fileList}">
+                <p class="m-0 text-danger" th:if="${dropsiErrorMsg}" th:text="${dropsiErrorMsg}"></p>
+                <div th:if="${fileList}">
+                    <div th:replace="fragments/mainFragments :: listEmptyWarning(${fileList}, 'You have no files uploaded to Dropsi!')"></div>
+                    <div class="flex-row d-flex justify-content-between secondary-bg rounded mt-2 p-1 pl-3 pr-2"
+                         th:each="file : ${fileList}">
 
-                    <div class="flex-column d-flex justify-content-center">
-                        <p class="m-0" th:text="${file.name}"></p>
+                        <div class="flex-column d-flex justify-content-center">
+                            <p class="m-0" th:text="${file.name}"></p>
+                        </div>
+                        <button class="justify-content-center btn text-light m-0 p-0 mt-1"
+                                th:id="${'dropsi-send-btn-'+ file.id}"
+                                data-dismiss="modal"><i
+                                class="material-icons">send</i>
+                        </button>
+                        <script th:inline="javascript">
+                            document.getElementById('dropsi-send-btn-' + [[${file.id}]]).addEventListener("click", function () {
+                                sendDropsiFile([[${textChannel.id}]], [[${file}]]);
+                            });
+                        </script>
                     </div>
-                    <button class="justify-content-center btn text-light m-0 p-0 mt-1"
-                            th:id="${'dropsi-send-btn-'+ file.id}"
-                            data-dismiss="modal"><i
-                            class="material-icons">send</i>
-                    </button>
-                    <script th:inline="javascript">
-                        document.getElementById('dropsi-send-btn-' + [[${file.id}]]).addEventListener("click", function () {
-                            sendDropsiFile([[${textChannel.id}]], [[${file}]]);
-                        });
-                    </script>
                 </div>
             </div>
         </div>

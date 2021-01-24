@@ -40,7 +40,7 @@
 
         <div class="d-flex flex-column justify-content-center ml-2">
             <div class="d-flex flex-row">
-                <button th:if="${fileList}" class="btn btn-outline-success btn-sm pl-2 pr-2"
+                <button th:if="${fileList != null || dropsiErrorMsg != null}" class="btn btn-outline-success btn-sm pl-2 pr-2"
                         data-toggle="modal" data-target="#dropsifileOverview"><i class="material-icons">upload</i>
                 </button>
                 <button class="btn btn-success btn-sm ml-2 pl-4 pr-4" id="send-btn">SEND</button>

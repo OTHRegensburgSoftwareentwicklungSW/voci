@@ -11,12 +11,14 @@ import de.majaf.voci.entity.repo.MessageRepository;
 import de.majaf.voci.entity.repo.TextChannelRepository;
 import de.mschoettle.entity.dto.FileDTO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 
-@Service
+@Service @Scope(value = "singleton")
 @Component("textChannelService")
 public class TextChannelService implements IChannelService {
 
@@ -56,13 +58,6 @@ public class TextChannelService implements IChannelService {
 
     @Override
     @Transactional
-    public void deleteChannelByID(long textChannelID) throws ChannelDoesNotExistException {
-        TextChannel textChannel = textChannelRepo.findById(textChannelID).orElseThrow(() -> new ChannelDoesNotExistException(textChannelID, "Invalid TextChannel-ID"));
-        deleteChannel(textChannel);
-    }
-
-    @Override
-    @Transactional
     public void addChannelToRoom(Room room, String channelName, RegisteredUser initiator) throws InvalidUserException, InvalidNameException {
         if (initiator.equals(room.getOwner())) {
             if (channelName != null && !channelName.equals("")) {
@@ -78,7 +73,7 @@ public class TextChannelService implements IChannelService {
     public void deleteChannelFromRoom(Room room, long channelID, RegisteredUser initiator) throws InvalidUserException, ChannelDoesNotExistException {
         if (initiator.equals(room.getOwner())) {
             if (room.getTextChannels().size() > 1) {
-                TextChannel textChannel = (TextChannel) loadChannelByID(channelID);
+                TextChannel textChannel = loadChannelByID(channelID);
                 room.removeTextChannel(textChannel);
                 deleteChannel(textChannel);
             } // TODO: else Exception schmeißen

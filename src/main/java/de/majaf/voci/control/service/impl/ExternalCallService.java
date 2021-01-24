@@ -10,13 +10,14 @@ import de.majaf.voci.entity.*;
 import de.majaf.voci.entity.repo.InvitationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.util.Date;
 import java.util.UUID;
 
-@Service
+@Service @Scope("session")
 public class ExternalCallService implements IExternalCallService {
 
     @Autowired @Qualifier("textChannelService")
@@ -40,7 +41,7 @@ public class ExternalCallService implements IExternalCallService {
 
     @Override
     @Transactional
-    public Invitation startCall(RegisteredUser user) throws InvalidCallStateException {
+    public Invitation startCall(RegisteredUser user) {
         Invitation invitation = user.getOwnedInvitation();
         Call call = invitation.getCall();
         if(call.isActive()) {
@@ -58,7 +59,7 @@ public class ExternalCallService implements IExternalCallService {
 
     @Override
     @Transactional
-    public void endCallByAccessToken(RegisteredUser user, String accessToken) throws InvalidUserException, InvalidCallStateException, InvitationTokenDoesNotExistException {
+    public void endCallByAccessToken(RegisteredUser user, String accessToken) throws InvalidUserException, InvitationTokenDoesNotExistException {
         Invitation invitation = loadInvitationByToken(accessToken);
         if (!user.equals(invitation.getInitiator()))
             throw new InvalidUserException(user, "User must not end call. No Initiator");
@@ -68,25 +69,26 @@ public class ExternalCallService implements IExternalCallService {
 
     @Override
     @Transactional
-    public void endCall(Invitation invitation) throws InvalidCallStateException { // TODO maybe do this with call
+    public void endCall(Invitation invitation) { // TODO maybe do this with call
         Call call = invitation.getCall();
-        if (!call.isActive()) throw new InvalidCallStateException(call, "Call is not active");
-        for (User participant : call.getParticipants())
-            participant.setActiveCall(null);
+        if (call.isActive()) {
+            for (User participant : call.getParticipants())
+                participant.setActiveCall(null);
 
-        invitation.setAccessToken(null);
-        invitation.setCreationDate(null);
-        userService.removeAllGuests(invitation);
-        call.removeAllParticipants();
-        call.setActive(false);
-        channelService.deleteChannel(call.getTextChannel());
-        call.setTextChannel(null);
+            invitation.setAccessToken(null);
+            invitation.setCreationDate(null);
+            userService.removeAllGuests(invitation);
+            call.removeAllParticipants();
+            call.setActive(false);
+            channelService.deleteChannel(call.getTextChannel());
+            call.setTextChannel(null);
 
-        for (RegisteredUser invited : invitation.getInvitedUsers())
-            invited.removeActiveInvitation(invitation);
+            for (RegisteredUser invited : invitation.getInvitedUsers())
+                invited.removeActiveInvitation(invitation);
 
-        invitation.removeAllInvitedUsers();
+            invitation.removeAllInvitedUsers();
 
-        invitationRepo.save(invitation);
+            invitationRepo.save(invitation);
+        }
     }
 }

@@ -22,12 +22,14 @@
                         <input name="accessToken" type="text" class="form-control" id="accessToken"
                                placeholder="XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
                                required pattern="[a-z A-Z 0-9]{8}(-[a-z A-Z 0-9]{4}){3}-[a-z A-Z 0-9]{12}">
-
                         <div class="flex-column d-flex pl-2">
                             <button type="submit" class="btn btn-success">JOIN</button>
                         </div>
 
                     </form>
+                    <div th:if="${errorMsg}" class="flex-row d-flex pt-1">
+                        <p th:text="${errorMsg}" class="text-danger m-0"></p>
+                    </div>
                     <div class="flex-row d-flex pt-3">
                         <p>Not what you're looking for? <br> <a th:href="@{/login}" class="text-success">Login here!</a></p>
                     </div>

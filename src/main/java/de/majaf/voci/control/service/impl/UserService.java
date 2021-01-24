@@ -9,6 +9,8 @@ import de.majaf.voci.entity.*;
 import de.majaf.voci.entity.repo.UserRepository;
 import de.majaf.voci.entity.repo.RegisteredUserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
@@ -26,7 +28,7 @@ import java.util.UUID;
 
 import static org.springframework.security.web.context.HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY;
 
-@Service
+@Service @Scope(value = "singleton")
 public class UserService implements IUserService {
 
     @Autowired
@@ -61,7 +63,6 @@ public class UserService implements IUserService {
     public GuestUser createGuestUserAndJoinCall(String accessToken, HttpServletRequest req) throws InvitationTokenDoesNotExistException, InvalidCallStateException, InvalidUserException {
         Invitation invitation = callService.loadInvitationByToken(accessToken);
         GuestUser guestUser = new GuestUser("guest" + (invitation.getGuestUsers().size() + 1));
-        authenticateUser(guestUser, req);
         invitation.addGuestUser(guestUser);
         callService.joinCall(guestUser, invitation);
         return guestUser;
@@ -128,20 +129,4 @@ public class UserService implements IUserService {
         return regUserRepo.findByUserName(username).orElseThrow(
                 () -> new UsernameDoesNotExistException(username, "User does not exist"));
     }
-
-    @Override
-    public RegisteredUser authenticateUser(String securityToken, HttpServletRequest req) throws UserTokenDoesNotExistException {
-        RegisteredUser user = loadUserBySecurityToken(securityToken);
-        authenticateUser(user, req);
-        return user;
-    }
-
-    private void authenticateUser(User user, HttpServletRequest req) {
-        Authentication auth = new UsernamePasswordAuthenticationToken(user, null, ((UserDetails) user).getAuthorities());
-        SecurityContext sc = SecurityContextHolder.getContext();
-        sc.setAuthentication(auth);
-        HttpSession session = req.getSession(true);
-        session.setAttribute(SPRING_SECURITY_CONTEXT_KEY, sc);
-    }
-
 }

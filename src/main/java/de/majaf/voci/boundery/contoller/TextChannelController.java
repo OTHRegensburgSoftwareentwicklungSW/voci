@@ -1,5 +1,6 @@
 package de.majaf.voci.boundery.contoller;
 
+import de.majaf.voci.boundery.contoller.utils.ControllerUtils;
 import de.majaf.voci.control.exceptions.call.DropsiException;
 import de.majaf.voci.control.exceptions.user.UserDoesNotExistException;
 import de.majaf.voci.control.service.IChannelService;
@@ -13,6 +14,8 @@ import de.mschoettle.entity.dto.FileDTO;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
@@ -27,7 +30,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-@Controller
+@Controller @Scope(value = "singleton")
 public class TextChannelController {
 
     @Autowired
@@ -41,7 +44,7 @@ public class TextChannelController {
     private DropsiController dropsiController;
 
     @Autowired
-    private MainController mainController;
+    private ControllerUtils controllerUtils;
 
     @MessageMapping("/{textChannelID}/{userID}/sendMessage")
     @SendTo("/broker/{textChannelID}/receivedMessage")
@@ -52,8 +55,8 @@ public class TextChannelController {
 
     @MessageMapping({"/{textChannelID}/sendDropsiFile"})
     @SendTo("/broker/{textChannelID}/receivedMessage")
-    public Message sendDropsiFile(@DestinationVariable long textChannelID, FileDTO file, Authentication auth) throws DropsiException, ChannelDoesNotExistException, UserDoesNotExistException {
-        RegisteredUser user = (RegisteredUser) mainController.getActiveUser(auth);
+    public Message sendDropsiFile(@DestinationVariable long textChannelID, FileDTO file, Authentication auth) throws ChannelDoesNotExistException, UserDoesNotExistException {
+        RegisteredUser user = (RegisteredUser) controllerUtils.getActiveUser(auth);
         return channelService.createDropsiFileMessage(file, textChannelID, user);
     }
 

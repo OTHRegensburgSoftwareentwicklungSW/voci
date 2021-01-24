@@ -21,11 +21,11 @@ public class Call extends SingleIdEntity {
     private Invitation invitation;
 
     @JsonIgnore
-    @OneToOne
+    @OneToOne(orphanRemoval = true)
     private VoiceChannel voiceChannel;
 
     @JsonIgnore
-    @OneToOne
+    @OneToOne(orphanRemoval = true)
     private TextChannel textChannel;
 
     private Boolean active = false;

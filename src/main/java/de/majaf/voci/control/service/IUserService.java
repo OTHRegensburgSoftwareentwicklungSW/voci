@@ -22,6 +22,4 @@ public interface IUserService extends UserDetailsService {
 
     GuestUser createGuestUserAndJoinCall(String accessToken, HttpServletRequest req) throws InvitationTokenDoesNotExistException, InvalidCallStateException, InvalidUserException;
     void removeAllGuests(Invitation invitation);
-
-    RegisteredUser authenticateUser(String userToken, HttpServletRequest req) throws UserTokenDoesNotExistException; // TODO move somewhere else
 }

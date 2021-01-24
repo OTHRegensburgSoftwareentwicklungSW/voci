@@ -2,6 +2,7 @@ package de.majaf.voci.boundery.contoller;
 
 import de.majaf.voci.entity.Invitation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.http.*;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -17,16 +18,13 @@ import java.security.Principal;
 import java.util.HashMap;
 import java.util.Map;
 
-@Controller
+@Controller @Scope("session")
 public class TestController {
 
     @Autowired
     private RestTemplate restServiceClient;
 
-    @Autowired
-    private MainController mainController;
-
-    private final String url = "http://im-codd:8945/api/";
+    private final String url = "http://voci:8945/api/";
     @RequestMapping(value = "/test/start")
     public String test() {
         String key = "be387e28-8ff2-4d62-8b25-ce6eb86364d7";

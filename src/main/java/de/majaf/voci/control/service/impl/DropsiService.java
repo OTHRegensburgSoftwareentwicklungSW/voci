@@ -7,12 +7,13 @@ import de.mschoettle.entity.dto.FileDTO;
 import de.mschoettle.entity.dto.FileSystemObjectDTO;
 import de.mschoettle.entity.dto.FolderDTO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Service
+@Service @Scope("session")
 public class DropsiService implements IDropsiService {
 
     @Autowired

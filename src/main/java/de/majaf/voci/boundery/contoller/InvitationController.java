@@ -1,6 +1,6 @@
 package de.majaf.voci.boundery.contoller;
 
-import de.majaf.voci.control.exceptions.call.DropsiException;
+import de.majaf.voci.boundery.contoller.utils.ControllerUtils;
 import de.majaf.voci.control.exceptions.call.InvalidCallStateException;
 import de.majaf.voci.control.exceptions.call.InvitationDoesNotExistException;
 import de.majaf.voci.control.exceptions.call.InvitationTokenDoesNotExistException;
@@ -12,21 +12,22 @@ import de.majaf.voci.entity.Call;
 import de.majaf.voci.entity.RegisteredUser;
 import de.majaf.voci.entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.Optional;
 
 
 @Controller
+@Scope("session")
 public class InvitationController {
 
     @Autowired
@@ -36,35 +37,42 @@ public class InvitationController {
     private IUserService userService;
 
     @Autowired
-    private DropsiController dropsiController;
+    private ControllerUtils controllerUtils;
 
     @Autowired
-    private MainController mainController;
+    private DropsiController dropsiController;
 
     @Autowired
     private SimpMessagingTemplate simpMessagingTemplate;
 
     // TODO: Exception Handling
     @RequestMapping(value = "/invitation", method = RequestMethod.GET)
-    public String prepareInvitationPage(Model model, @RequestParam("accessToken") Optional<String> accessToken, HttpServletRequest req, Authentication auth) throws InvitationTokenDoesNotExistException, InvalidCallStateException, InvalidUserException, InvitationDoesNotExistException, UserDoesNotExistException, DropsiException {
+    public String prepareInvitationPage(Model model, @RequestParam("accessToken") Optional<String> accessToken, HttpServletRequest req, Authentication auth) throws InvitationTokenDoesNotExistException, InvalidCallStateException, InvalidUserException, InvitationDoesNotExistException, UserDoesNotExistException {
         if (accessToken.isEmpty())
             return "invitation";
         else {
-            return joinCall(model, accessToken.get(), auth, req);
+            return joinCall(accessToken.get(), model, req, auth);
         }
     }
 
     @RequestMapping(value = "/invitation", method = RequestMethod.POST)
-    public String prepareInvitationAccess(Model model, @ModelAttribute("accessToken") String accessToken, HttpServletRequest req, Authentication auth) throws InvitationTokenDoesNotExistException, InvalidCallStateException, InvalidUserException, InvitationDoesNotExistException, UserDoesNotExistException, DropsiException {
-        return joinCall(model, accessToken, auth, req);
+    public String prepareInvitationAccess(@ModelAttribute("accessToken") String accessToken,
+                                          Model model,
+                                          HttpServletRequest req,
+                                          Authentication auth) throws InvitationTokenDoesNotExistException, InvitationDoesNotExistException, InvalidCallStateException, InvalidUserException, UserDoesNotExistException {
+        return joinCall(accessToken, model, req, auth);
     }
 
-    private String joinCall(Model model, String accessToken, Authentication auth, HttpServletRequest req) throws InvalidCallStateException, InvalidUserException, InvitationTokenDoesNotExistException, InvitationDoesNotExistException, UserDoesNotExistException, DropsiException {
+    private String joinCall(String accessToken,
+                            Model model,
+                            HttpServletRequest req,
+                            Authentication auth) throws InvitationTokenDoesNotExistException, InvitationDoesNotExistException, InvalidCallStateException, InvalidUserException, UserDoesNotExistException {
         User user;
         if (auth == null) {
             user = userService.createGuestUserAndJoinCall(accessToken, req);
+            controllerUtils.authenticateUser(user, req);
         } else {
-            user = mainController.getActiveUser(auth);
+            user = controllerUtils.getActiveUser(auth);
             callService.joinCallByAccessToken(user, accessToken);
         }
         Call call = user.getActiveCall();
@@ -83,5 +91,17 @@ public class InvitationController {
     public String prepareCallLeftPage(HttpServletRequest req) throws ServletException {
         req.logout();
         return "leftCall";
+    }
+
+    @ExceptionHandler({InvitationTokenDoesNotExistException.class, InvitationDoesNotExistException.class, InvalidCallStateException.class})
+    public String handleInvitationException(Model model) {
+        model.addAttribute("errorMsg", "The call or invitation you are looking for does (currently) not exist");
+        return "invitation";
+    }
+
+    @ExceptionHandler(InvalidUserException.class)
+    public String handleInvalidUserException(InvalidUserException e, Model model) {
+        model.addAttribute("errorMsg", "User " + e.getUser().getUserName() + " is not invited.");
+        return "invitation";
     }
 }

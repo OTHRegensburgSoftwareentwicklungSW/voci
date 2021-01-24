@@ -51,12 +51,21 @@
                     </div>
                     <div class="flex-column d-flex col-md-9 col-sm-8 col-7 pl-2 m-0 justify-content-center">
                         <form class="flex-row d-flex" th:action="@{/info/updateDropsi}" th:method="post">
-                            <input type="text" name="dropsiToken" th:if="${user.dropsiToken != null}" class="m-0 form-control"
+                            <input type="text" name="dropsiToken" th:if="${user.dropsiToken != null}"
+                                   class="m-0 form-control"
                                    th:placeholder="${user.dropsiToken}">
-                            <input type="text" name="dropsiToken" th:if="${user.dropsiToken == null}" class="m-0 form-control"
+                            <input type="text" name="dropsiToken" th:if="${user.dropsiToken == null}"
+                                   class="m-0 form-control"
                                    placeholder="XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX">
                             <button type="submit" class="btn btn-success ml-2">UPDATE</button>
                         </form>
+                    </div>
+                </div>
+                <div th:if="${errorMsg}" class="d-flex flex-row overflow-auto pt-2">
+                    <div class="flex-column d-flex col-md-3 col-sm-4 col-6">
+                    </div>
+                    <div class="flex-column d-flex col-md-9 col-sm-8 col-6 pl-2 m-0">
+                        <p class="m-0 text-danger" th:text="${errorMsg}"></p>
                     </div>
                 </div>
             </div>

@@ -8,11 +8,13 @@ import de.majaf.voci.control.exceptions.room.RoomIDDoesNotExistException;
 import de.majaf.voci.entity.*;
 import de.majaf.voci.entity.repo.RoomRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 
-@Service
+@Service @Scope(value = "session", proxyMode = ScopedProxyMode.INTERFACES)
 public class RoomService implements IRoomService {
 
     @Autowired

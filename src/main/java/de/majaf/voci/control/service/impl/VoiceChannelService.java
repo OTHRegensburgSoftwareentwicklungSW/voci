@@ -10,12 +10,14 @@ import de.majaf.voci.entity.*;
 import de.majaf.voci.entity.repo.VoiceChannelRepository;
 import de.mschoettle.entity.dto.FileDTO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 
-@Service
+@Service @Scope(value = "session", proxyMode = ScopedProxyMode.INTERFACES)
 @Component("voiceChannelService")
 public class VoiceChannelService implements IChannelService {
 
@@ -55,13 +57,6 @@ public class VoiceChannelService implements IChannelService {
 
     @Override
     @Transactional
-    public void deleteChannelByID(long channelID) throws ChannelDoesNotExistException {
-        VoiceChannel voiceChannel = voiceChannelRepo.findById(channelID).orElseThrow(() -> new ChannelDoesNotExistException(channelID, "Voice-Channel does not exist"));
-        deleteChannel(voiceChannel);
-    }
-
-    @Override
-    @Transactional
     public void addChannelToRoom(Room room, String channelName, RegisteredUser initiator) throws InvalidUserException, InvalidNameException {
         if (initiator.equals(room.getOwner())) {
             if (channelName != null && !channelName.equals("")) {
@@ -77,7 +72,7 @@ public class VoiceChannelService implements IChannelService {
     public void deleteChannelFromRoom(Room room, long channelID, RegisteredUser initiator) throws InvalidUserException, ChannelDoesNotExistException {
         if (initiator.equals(room.getOwner())) {
             if (room.getVoiceChannels().size() > 1) {
-                VoiceChannel voiceChannel = (VoiceChannel) loadChannelByID(channelID);
+                VoiceChannel voiceChannel = loadChannelByID(channelID);
                 room.removeVoiceChannel(voiceChannel);
                 deleteChannel(voiceChannel);
             } // TODO: else Exception schmeißen

@@ -14,11 +14,13 @@ import de.majaf.voci.entity.repo.CallRepository;
 import de.majaf.voci.entity.repo.InvitationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 
-@Service
+@Service @Scope(value = "session", proxyMode = ScopedProxyMode.INTERFACES)
 public class CallService extends ExternalCallService implements ICallService {
 
     @Autowired
