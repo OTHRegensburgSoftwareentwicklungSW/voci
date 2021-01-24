@@ -1,34 +1,37 @@
 function connectCallSocket(call, user, textChannel) {
     connectSocket(function () {
-        stompClient.subscribe('/broker/' + call.id + '/addedCallMember', function (added_user) {
-            if (added_user.body) {
-                let u = JSON.parse(added_user.body);
-                addCallMember(u.userName);
-            }
-        });
-        stompClient.subscribe('/broker/' + call.id + '/removedCallMember', function (rem_user) {
-            if (rem_user.body) {
-                let u = JSON.parse(rem_user.body);
-                removeCallMember(u.userName);
-            }
-        });
-        stompClient.subscribe('/broker/' + call.id + '/endedCall', function (ended) {
-            if (ended.body) {
-                disconnect();
-                window.location.href = "/call/ended"
-            }
-        });
-        if (call.invitation != null) {
-            stompClient.subscribe('/broker/' + call.id + "/initiatorLeft", function (initiator) {
-                if (initiator.body) {
-                    let u = JSON.parse(initiator.body);
-                    removeCallMember(u.userName);
-                    removeInvitationInfo();
+            stompClient.subscribe('/broker/' + call.id + '/addedCallMember', function (added_user) {
+                if (added_user.body) {
+                    let u = JSON.parse(added_user.body);
+                    addCallMember(u.userName);
                 }
             });
+            stompClient.subscribe('/broker/' + call.id + '/removedCallMember', function (rem_user) {
+                if (rem_user.body) {
+                    let u = JSON.parse(rem_user.body);
+                    removeCallMember(u.userName);
+                }
+            });
+            stompClient.subscribe('/broker/' + call.id + '/endedCall', function (endedByTimeOut) {
+                if (endedByTimeOut.body === 'false' && user.type === 'registeredUser' && user.id === call.invitation.initiator.id)
+                    window.location.href = "/call";
+                else window.location.href = "/call/ended";
+
+                disconnect();
+            });
+            if (call.invitation != null) {
+                stompClient.subscribe('/broker/' + call.id + "/initiatorLeft", function (initiator) {
+                    if (initiator.body) {
+                        let u = JSON.parse(initiator.body);
+                        removeCallMember(u.userName);
+                        removeInvitationInfo();
+                    }
+                });
+            }
+            subscribeToTextChannel(user.id, textChannel.id);
         }
-        subscribeToTextChannel(user.id, textChannel.id);
-    });
+    )
+    ;
 }
 
 function addCallMember(username) {

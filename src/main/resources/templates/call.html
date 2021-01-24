@@ -72,7 +72,7 @@
         </div>
 
         <div class="flex-row d-flex justify-content-center border-top secondary-border">
-            <form th:action="@{/call/leave/{callID}/{userID}(callID=${call.id}, userID=${user.id})}"
+            <form th:action="@{/call/leave/{callID}(callID=${call.id})}"
                   th:method="delete" class="text-center">
                 <button onclick="disconnect()" class="btn btn-outline-danger m-2 p-2" id="leave-call-btn">
                     LEAVE CALL

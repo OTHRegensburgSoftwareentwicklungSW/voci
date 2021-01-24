@@ -89,7 +89,6 @@ public class ExternalCallService implements IExternalCallService {
 
             userService.removeAllGuests(call);
 
-            // channelService.deleteChannel(call.getTextChannel());
             callRepo.delete(call);
         }
     }

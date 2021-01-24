@@ -17,7 +17,7 @@ function removeName(container_id, name_id, username) {
     let invited_par = document.getElementsByClassName(name_id);
 
     for (let i = 0; i < invited_par.length; i++) {
-        if (invited_par[i].innerHTML === username) {
+        if (invited_par[i].innerText === username) {
             let invitedContainer = document.getElementById(container_id);
             invitedContainer.removeChild(invited_par[i].parentNode.parentNode);
             break;
@@ -29,7 +29,7 @@ function addName(container_id, name_id, username) {
     let names_par = document.getElementsByClassName(name_id);
 
     for (let i = 0; i < names_par.length; i++) {
-        if (names_par[i].innerHTML === username) {
+        if (names_par[i].innerText === username) {
             return;
         }
     }
@@ -46,7 +46,7 @@ function addName(container_id, name_id, username) {
 
     let name_paragraph = document.createElement("p");
     name_paragraph.classList.add('m-1', name_id);
-    name_paragraph.innerHTML = username;
+    name_paragraph.innerText = username;
     name_inner_container.appendChild(name_paragraph);
 }
 

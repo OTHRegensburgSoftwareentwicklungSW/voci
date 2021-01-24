@@ -28,13 +28,7 @@ public class CallController {
     private ICallService callService;
 
     @Autowired
-    private IUserService userService;
-
-    @Autowired
     private ControllerUtils controllerUtils;
-
-    @Autowired
-    private MainController mainController;
 
     @Autowired
     private DropsiController dropsiController;
@@ -42,12 +36,11 @@ public class CallController {
     @Autowired
     private Logger logger;
 
-    // TODO: inherit from this and create producer method
     @Autowired
     private SimpMessagingTemplate simpMessagingTemplate;
 
     @RequestMapping(value = "/call", method = RequestMethod.GET)
-    public String prepareCallCreationPage(Model model, Authentication auth) {
+    public String prepareCallCreationPage(Model model, Authentication auth) throws UserDoesNotExistException {
         RegisteredUser user = (RegisteredUser) controllerUtils.getActiveUser(auth);
         Call activeCall = user.getActiveCall();
 
@@ -58,7 +51,6 @@ public class CallController {
             model.addAttribute("user", user);
             return "call";
         } else {
-            Invitation invitation = user.getOwnedInvitation();
             model.addAttribute("user", user);
             return "prepareCall";
         }
@@ -67,7 +59,7 @@ public class CallController {
 
 
     @RequestMapping(value = "/call/inviteContact", method = RequestMethod.POST)
-    public String inviteContact(Model model, Authentication auth, @RequestParam("contactID") long contactID) {
+    public String inviteContact(Model model, Authentication auth, @RequestParam("contactID") long contactID) throws UserDoesNotExistException {
         RegisteredUser user = (RegisteredUser) controllerUtils.getActiveUser(auth);
         Invitation invitation = user.getOwnedInvitation();
         try {
@@ -82,7 +74,7 @@ public class CallController {
     }
 
     @RequestMapping(value = "/call/uninviteContact", method = RequestMethod.DELETE)
-    public String uninviteContact(Model model, Authentication auth, @RequestParam("invitedID") long invitedID) {
+    public String uninviteContact(Model model, Authentication auth, @RequestParam("invitedID") long invitedID) throws UserDoesNotExistException {
         RegisteredUser user = (RegisteredUser) controllerUtils.getActiveUser(auth);
         Invitation invitation = user.getOwnedInvitation();
         try {
@@ -95,7 +87,7 @@ public class CallController {
     }
 
     @RequestMapping(value = "/call/start", method = RequestMethod.POST)
-    public String startCall(Model model, Authentication auth) {
+    public String startCall(Model model, Authentication auth) throws UserDoesNotExistException {
         RegisteredUser user = (RegisteredUser) controllerUtils.getActiveUser(auth);
 
         Call call = callService.startCall(user);
@@ -111,22 +103,23 @@ public class CallController {
     }
 
     @RequestMapping(value = "/call/end", method = RequestMethod.DELETE)
-    public String endCall(Authentication auth, Model model) {
+    public String endCall(Authentication auth, Model model) throws UserDoesNotExistException {
         RegisteredUser user = (RegisteredUser) controllerUtils.getActiveUser(auth);
         Call activeCall = user.getActiveCall();
         if (activeCall != null) {
             callService.endCall(activeCall);
             simpMessagingTemplate.convertAndSend("/broker/" + activeCall.getId() + "/endedInvitation", true);
-            simpMessagingTemplate.convertAndSend("/broker/" + activeCall.getId() + "/endedCall", true);
+            simpMessagingTemplate.convertAndSend("/broker/" + activeCall.getId() + "/endedCall", false);
         }
         model.addAttribute("user", user);
         return "prepareCall";
     }
 
-    @RequestMapping(value = "/call/leave/{callID}/{userID}", method = RequestMethod.DELETE)
-    public String leaveCall(@PathVariable("callID") long callID, @PathVariable("userID") long userID, // TODO: use principal for this
-                            Model model, HttpServletRequest req) throws UserDoesNotExistException, InvalidCallStateException, ServletException {
-        User user = userService.loadUserByID(userID);
+    @RequestMapping(value = "/call/leave/{callID}", method = RequestMethod.DELETE)
+    public String leaveCall(@PathVariable("callID") long callID,
+                            Model model, Authentication auth,
+                            HttpServletRequest req) throws UserDoesNotExistException, InvalidCallStateException, ServletException {
+        User user = controllerUtils.getActiveUser(auth);
         Call call = callService.leaveCall(user);
 
         if (call == null) {

@@ -46,10 +46,12 @@ public class TextChannelController {
     @Autowired
     private ControllerUtils controllerUtils;
 
-    @MessageMapping("/{textChannelID}/{userID}/sendMessage")
+    @MessageMapping("/{textChannelID}/sendMessage")
     @SendTo("/broker/{textChannelID}/receivedMessage")
-    public Message sendMessage(@DestinationVariable long textChannelID, @DestinationVariable long userID, String message) throws UserDoesNotExistException, ChannelDoesNotExistException {
-        User user = userService.loadUserByID(userID);
+    public Message sendMessage(@DestinationVariable long textChannelID,
+                               String message,
+                               Authentication auth) throws UserDoesNotExistException, ChannelDoesNotExistException {
+        User user = controllerUtils.getActiveUser(auth);
         return channelService.createTextMessage(message, textChannelID, user);
     }
 

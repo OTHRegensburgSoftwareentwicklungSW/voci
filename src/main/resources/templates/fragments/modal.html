@@ -146,9 +146,9 @@
                                 class="material-icons">send</i>
                         </button>
                         <script th:inline="javascript">
-                            document.getElementById('dropsi-send-btn-' + [[${file.id}]]).addEventListener("click", function () {
+                            document.getElementById('dropsi-send-btn-' + [[${file.id}]]).onclick = function () {
                                 sendDropsiFile([[${textChannel.id}]], [[${file}]]);
-                            });
+                            };
                         </script>
                     </div>
                 </div>

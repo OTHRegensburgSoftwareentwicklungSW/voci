@@ -22,20 +22,17 @@ import javax.servlet.http.HttpSession;
 
 import static org.springframework.security.web.context.HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY;
 
-@Component @Scope(value = "singleton")
+@Component
+@Scope(value = "singleton")
 public class ControllerUtils {
 
     @Autowired
     private IUserService userService;
 
-    public User getActiveUser(Authentication auth) {
-        try {
-            if (auth != null)
-                return userService.loadUserByID(((User) auth.getPrincipal()).getId());
-            else return null;
-        } catch (UserDoesNotExistException e) {
-            return null;
-        }
+    public User getActiveUser(Authentication auth) throws UserDoesNotExistException {
+        if (auth != null)
+            return userService.loadUserByID(((User) auth.getPrincipal()).getId());
+        else return null;
     }
 
     public void authenticateUser(User user, HttpServletRequest req) {

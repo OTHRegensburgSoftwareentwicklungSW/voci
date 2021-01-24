@@ -48,12 +48,12 @@
                 <script th:inline="javascript">
                     let sendBtn = document.getElementById('send-btn');
                     let msgInput = document.getElementById('msg-input');
-                    sendBtn.addEventListener("click", function () {
-                        sendMessage([[${textChannel.id}]], msgInput, [[${user.id}]]);
-                    });
+                    sendBtn.onclick = function () {
+                        sendMessage([[${textChannel.id}]], msgInput);
+                    };
                     msgInput.addEventListener("keyup", function (event) {
                         if (event.key === 'Enter')
-                            sendMessage([[${textChannel.id}]], msgInput, [[${user.id}]]);
+                            sendMessage([[${textChannel.id}]], msgInput);
                     });
                 </script>
             </div>

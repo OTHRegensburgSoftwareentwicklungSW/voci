@@ -13,10 +13,10 @@ function subscribeToTextChannel(userID, textChannelID) {
     });
 }
 
-function sendMessage(textChannelID, msgInput, userID) {
+function sendMessage(textChannelID, msgInput) {
     let msg = msgInput.value.trim();
     if (msg !== "") {
-        stompClient.send('/ws/' + textChannelID + '/' + userID + '/sendMessage', {}, msg);
+        stompClient.send('/ws/' + textChannelID + '/sendMessage', {}, msg);
         msgInput.value = "";
         msgInput.style.overflow = 'hidden';
         msgInput.style.height = 0;
@@ -45,21 +45,21 @@ function addMessage(senderName, content_element, date, ownMessage) {
     msgOuterContainer.appendChild(msgInnerContainer);
     let name_par = document.createElement("p");
     name_par.classList.add('text-success', 'border-bottom', 'secondary-border', 'mb-1');
-    name_par.innerHTML = senderName;
+    name_par.innerText = senderName;
 
     msgInnerContainer.appendChild(name_par);
     msgInnerContainer.appendChild(content_element);
 
     let time_par = document.createElement("small");
     time_par.classList.add('pb-1', 'border-top', 'secondary-border', 'text-secondary');
-    time_par.innerHTML = date;
+    time_par.innerText = date;
     msgInnerContainer.appendChild(time_par);
 }
 
 function addTextMessage(message, userID) {
     let content_par = document.createElement("p");
     content_par.classList.add('mb-1');
-    content_par.innerHTML = message.content;
+    content_par.innerText = message.content;
     content_par.style.overflowWrap = 'break-word';
 
     addMessage(message.sender.userName, content_par, message.formatDate, message.sender.id === userID);
@@ -70,7 +70,7 @@ function addDropsiFileMessage(message, userID, textChannelID) {
     dropsiFileName = dropsiFileName.substr(dropsiFileName.lastIndexOf('/') + 1);
     let content_ref = document.createElement("a");
     content_ref.classList.add('mb-1');
-    content_ref.innerHTML = dropsiFileName.substr(dropsiFileName.lastIndexOf('/') + 1);
+    content_ref.innerText = dropsiFileName.substr(dropsiFileName.lastIndexOf('/') + 1);
     content_ref.style.overflowWrap = 'break-word';
     content_ref.href = "/download/" + textChannelID + '/'+ message.sender.id + '/' + message.dropsiFileId + '/' + dropsiFileName;
 

@@ -22,12 +22,12 @@
     <div class="col-md-2 col-sm-3 d-flex flex-column h-100">
         <header th:replace="fragments/mainFragments :: header"></header>
         <div class="border-top secondary-border flex-grow-1 overflow-auto">
-            <a th:replace="fragments/mainFragments :: navButtonInactive('HOME', '/main')"></a>
-            <a th:replace="fragments/mainFragments :: navButtonActive('CALL', '/call')"></a>
-            <a th:replace="fragments/mainFragments :: navButtonInactive('INFO', '/info')"></a>
+            <a onclick="disconnect()" th:replace="fragments/mainFragments :: navButtonInactive('HOME', '/main')"></a>
+            <a onclick="disconnect()" th:replace="fragments/mainFragments :: navButtonActive('CALL', '/call')"></a>
+            <a onclick="disconnect()" th:replace="fragments/mainFragments :: navButtonInactive('INFO', '/info')"></a>
         </div>
         <div class="text-center">
-            <a class="btn btn-outline-danger p-2 mb-4 mt-3" th:href="@{/logout}">LOGOUT</a>
+            <a onclick="disconnect()" class="btn btn-outline-danger p-2 mb-4 mt-3" th:href="@{/logout}">LOGOUT</a>
         </div>
 
     </div>
@@ -51,7 +51,7 @@
                             <div class="flex-column d-flex justify-content-center">
                                 <p class="m-0" th:text="${invited.username}"></p>
                             </div>
-                            <button class="justify-content-center btn text-light m-0 p-0 mt-1" type="submit"
+                            <button onclick="disconnect()" class="justify-content-center btn text-light m-0 p-0 mt-1" type="submit"
                                     data-toggle="tooltip" title="Remove contact from call"><i
                                     class="material-icons">person_remove</i>
                             </button>
@@ -69,7 +69,7 @@
                             <div class="flex-column d-flex justify-content-center">
                                 <p class="m-0" th:text="${contact.username}"></p>
                             </div>
-                            <button class="justify-content-center btn text-light m-0 p-0 mt-1" type="submit"
+                            <button onclick="disconnect()" class="justify-content-center btn text-light m-0 p-0 mt-1" type="submit"
                                     data-toggle="tooltip" title="Invite contact to call">
                                 <i class="material-icons">add_ic_call</i>
                             </button>
@@ -79,7 +79,7 @@
 
                 <form th:action="@{/call/start}" th:method="post" class="flex-row d-flex justify-content-center mr-3 ml-3 pt-3 border-top secondary-border">
 
-                    <button type="submit" class="btn btn-outline-success" id="start-call-btn">
+                    <button onclick="disconnect()" type="submit" class="btn btn-outline-success" id="start-call-btn">
                         START CALL
                     </button>
                 </form>
@@ -98,7 +98,7 @@
                 <div class="flex-column d-flex justify-content-center">
                     <p class="m-1 invitation_name" th:text="${invitation.initiator.username}"></p>
                 </div>
-                <a class="justify-content-center btn text-light m-0 p-0 mt-1"
+                <a onclick="disconnect()" class="justify-content-center btn text-light m-0 p-0 mt-1"
                         th:href="@{/invitation(accessToken=${invitation.accessToken})}"><i
                         class="material-icons">ring_volume</i>
                 </a>

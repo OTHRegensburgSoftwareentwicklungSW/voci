@@ -5,6 +5,7 @@ import de.majaf.voci.control.exceptions.call.InvalidCallStateException;
 import de.majaf.voci.control.exceptions.call.InvitationDoesNotExistException;
 import de.majaf.voci.control.exceptions.call.InvitationTokenDoesNotExistException;
 import de.majaf.voci.control.exceptions.user.InvalidUserException;
+import de.majaf.voci.control.exceptions.user.UserDoesNotExistException;
 import de.majaf.voci.control.service.ICallService;
 import de.majaf.voci.control.service.IUserService;
 import de.majaf.voci.entity.Call;
@@ -44,7 +45,7 @@ public class InvitationController {
 
     // TODO: Exception Handling
     @RequestMapping(value = "/invitation", method = RequestMethod.GET)
-    public String prepareInvitationPage(Model model, @RequestParam("accessToken") Optional<String> accessToken, HttpServletRequest req, Authentication auth) throws InvitationTokenDoesNotExistException, InvalidCallStateException, InvalidUserException, InvitationDoesNotExistException {
+    public String prepareInvitationPage(Model model, @RequestParam("accessToken") Optional<String> accessToken, HttpServletRequest req, Authentication auth) throws InvitationTokenDoesNotExistException, InvalidCallStateException, InvalidUserException, InvitationDoesNotExistException, UserDoesNotExistException {
         if (accessToken.isEmpty())
             return "invitation";
         else {
@@ -56,14 +57,14 @@ public class InvitationController {
     public String prepareInvitationAccess(@ModelAttribute("accessToken") String accessToken,
                                           Model model,
                                           HttpServletRequest req,
-                                          Authentication auth) throws InvitationTokenDoesNotExistException, InvitationDoesNotExistException, InvalidCallStateException, InvalidUserException {
+                                          Authentication auth) throws InvitationTokenDoesNotExistException, InvitationDoesNotExistException, InvalidCallStateException, InvalidUserException, UserDoesNotExistException {
         return joinCall(accessToken, model, req, auth);
     }
 
     private String joinCall(String accessToken,
                             Model model,
                             HttpServletRequest req,
-                            Authentication auth) throws InvitationTokenDoesNotExistException, InvitationDoesNotExistException, InvalidCallStateException, InvalidUserException {
+                            Authentication auth) throws InvitationTokenDoesNotExistException, InvitationDoesNotExistException, InvalidCallStateException, InvalidUserException, UserDoesNotExistException {
         User user;
         if (auth == null) {
             user = userService.createGuestUserAndJoinCall(accessToken, req);
@@ -92,17 +93,21 @@ public class InvitationController {
 
     @RequestMapping(value = "/call/ended", method = RequestMethod.GET)
     public String prepareCallEndedPage(Model model, HttpServletRequest req, Authentication auth) throws ServletException {
-        User user = controllerUtils.getActiveUser(auth);
-        if (user != null) {
-            if (user instanceof RegisteredUser) {
-                model.addAttribute("infoMsg", "Your call has ended. Either it was longer than an hour, or the initiator ended it.");
-                model.addAttribute("user", user);
-                return "prepareCall";
-            } else {
-                req.logout();
+        try {
+            User user = controllerUtils.getActiveUser(auth);
+            if (user != null) {
+                if (user instanceof RegisteredUser) {
+                    model.addAttribute("infoMsg", "Your call has ended. Either it was longer than an hour, or the initiator ended it.");
+                    model.addAttribute("user", user);
+                    return "prepareCall";
+                } else {
+                    req.logout();
+                }
             }
+            return "leftCall";
+        } catch (UserDoesNotExistException e) {
+            return "leftCall";
         }
-        return "leftCall";
     }
 
     @ExceptionHandler({InvitationTokenDoesNotExistException.class, InvitationDoesNotExistException.class, InvalidCallStateException.class})

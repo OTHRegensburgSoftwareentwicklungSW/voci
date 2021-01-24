@@ -1,16 +1,12 @@
 package de.majaf.voci.boundery.contoller.utils;
 
 import de.majaf.voci.control.service.ICallService;
-import de.majaf.voci.entity.Call;
-import de.majaf.voci.entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-import java.util.logging.Logger;
 
 @Component
 @Scope("singleton")

@@ -29,7 +29,7 @@ function addInvitation(invitation) {
     let names_par = document.getElementsByClassName('invitation_name');
 
     for (let i = 0; i < names_par.length; i++) {
-        if (names_par[i].innerHTML === username) {
+        if (names_par[i].innerText === username) {
             names_par[i].classList.add('m-0');
 
             let takeCallRef = document.createElement("a");
@@ -37,9 +37,12 @@ function addInvitation(invitation) {
 
             let takeCallIcon = document.createElement("i");
             takeCallIcon.classList.add('material-icons');
-            takeCallIcon.innerHTML = 'ring_volume';
+            takeCallIcon.innerText = 'ring_volume';
 
             takeCallRef.appendChild(takeCallIcon);
+            takeCallRef.onclick = function() {
+                disconnect();
+            };
             takeCallRef.href = "/invitation?accessToken=" + invitation.accessToken;
 
             names_par[i].parentNode.parentNode.appendChild(takeCallRef);
