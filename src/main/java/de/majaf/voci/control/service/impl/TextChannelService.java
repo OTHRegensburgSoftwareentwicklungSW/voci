@@ -18,7 +18,8 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 
-@Service @Scope(value = "singleton")
+@Service
+@Scope(value = "singleton")
 @Component("textChannelService")
 public class TextChannelService implements IChannelService {
 
@@ -92,6 +93,22 @@ public class TextChannelService implements IChannelService {
                 } else throw new InvalidNameException(channelName, "Channel-Name is empty");
             } else throw new InvalidChannelException(channel, "Channel is not in room.");
         } else throw new InvalidUserException(initiator, "User is not Owner");
+    }
+
+    @Override
+    public boolean userIsInChannel(long channelID, User user) {
+        Call call = user.getActiveCall();
+        if (call != null) {
+            if (call.getTextChannel().getId() == channelID)
+                return true;
+        }
+        if (user instanceof RegisteredUser)
+            for (Room room : ((RegisteredUser) user).getRooms()) {
+                for (TextChannel textChannel : room.getTextChannels())
+                    if (textChannel.getId() == channelID)
+                        return true;
+            }
+        return false;
     }
 
     @Override

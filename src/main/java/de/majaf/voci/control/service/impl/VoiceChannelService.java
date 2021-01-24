@@ -94,6 +94,11 @@ public class VoiceChannelService implements IChannelService {
     }
 
     @Override
+    public boolean userIsInChannel(long channelID, User user) {
+        return false;
+    }
+
+    @Override
     @Transactional
     public Message createTextMessage(String msg, long channelID, User user) throws ChannelDoesNotExistException {
         return null;

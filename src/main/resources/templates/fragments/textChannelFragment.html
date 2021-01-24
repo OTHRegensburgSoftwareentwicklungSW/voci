@@ -12,7 +12,7 @@
                    style="overflow-wrap: break-word;"></p>
                 <a th:unless="${message.isTextMessage()}" class="mb-1"
                    th:text="${message.dropsiFileName.substring(message.dropsiFileName.lastIndexOf('/') + 1 )}"
-                   th:href="@{/call/download/{senderID}/{dropsiFileId}/{dropsiFileName}(senderID = ${message.sender.id}, dropsiFileId = ${message.dropsiFileId}, dropsiFileName = ${message.dropsiFileName.substring(message.dropsiFileName.lastIndexOf('/') + 1 )})}"
+                   th:href="@{/download/{textChannelID}/{senderID}/{dropsiFileId}/{dropsiFileName}(textChannelID = ${textChannel.id}, senderID = ${message.sender.id}, dropsiFileId = ${message.dropsiFileId}, dropsiFileName = ${message.dropsiFileName.substring(message.dropsiFileName.lastIndexOf('/') + 1 )})}"
                    style="overflow-wrap: break-word;"></a>
                 <small class="pb-1 border-top secondary-border text-secondary text-right"
                        th:text="${message.getFormatDate()}"></small>
@@ -40,7 +40,8 @@
 
         <div class="d-flex flex-column justify-content-center ml-2">
             <div class="d-flex flex-row">
-                <button th:if="${fileList != null || dropsiErrorMsg != null}" class="btn btn-outline-success btn-sm pl-2 pr-2"
+                <button th:if="${fileList != null || dropsiErrorMsg != null}"
+                        class="btn btn-outline-success btn-sm pl-2 pr-2"
                         data-toggle="modal" data-target="#dropsifileOverview"><i class="material-icons">upload</i>
                 </button>
                 <button class="btn btn-success btn-sm ml-2 pl-4 pr-4" id="send-btn">SEND</button>

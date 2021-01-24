@@ -5,7 +5,7 @@ function subscribeToTextChannel(userID, textChannelID) {
             if(message.type === 'textMessage')
                 addTextMessage(message, userID);
             else {
-                addDropsiFileMessage(message, userID)
+                addDropsiFileMessage(message, userID, textChannelID)
             }
 
             scrollSmoothToBottom('msg-container');
@@ -72,14 +72,14 @@ function addTextMessage(message, userID) {
     addMessage(message.sender.userName, content_par, message.formatDate, message.sender.id === userID);
 }
 
-function addDropsiFileMessage(message, userID) {
+function addDropsiFileMessage(message, userID, textChannelID) {
     let dropsiFileName = message.dropsiFileName
     dropsiFileName = dropsiFileName.substr(dropsiFileName.lastIndexOf('/') + 1);
     let content_ref = document.createElement("a");
     content_ref.classList.add('mb-1');
     content_ref.innerHTML = dropsiFileName.substr(dropsiFileName.lastIndexOf('/') + 1);
     content_ref.style.overflowWrap = 'break-word';
-    content_ref.href = "/call/download/" + message.sender.id + '/' + message.dropsiFileId + '/' + dropsiFileName;
+    content_ref.href = "/download/" + textChannelID + '/'+ message.sender.id + '/' + message.dropsiFileId + '/' + dropsiFileName;
 
     addMessage(message.sender.userName, content_ref, message.formatDate, message.sender.id === userID);
 }

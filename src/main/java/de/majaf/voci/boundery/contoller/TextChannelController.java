@@ -2,6 +2,7 @@ package de.majaf.voci.boundery.contoller;
 
 import de.majaf.voci.boundery.contoller.utils.ControllerUtils;
 import de.majaf.voci.control.exceptions.call.DropsiException;
+import de.majaf.voci.control.exceptions.user.InvalidUserException;
 import de.majaf.voci.control.exceptions.user.UserDoesNotExistException;
 import de.majaf.voci.control.service.IChannelService;
 import de.majaf.voci.control.exceptions.channel.ChannelDoesNotExistException;
@@ -21,7 +22,6 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -60,24 +60,22 @@ public class TextChannelController {
         return channelService.createDropsiFileMessage(file, textChannelID, user);
     }
 
-    @RequestMapping("/call/download/")
-    public byte[] sendDropsiFileDownloadRequest(@ModelAttribute("message") DropsiFileMessage message) throws DropsiException, UserDoesNotExistException {
-        System.out.println(message.getDropsiFileId());
-        RegisteredUser sender = (RegisteredUser) userService.loadUserByID(message.getSender().getId());
-        return dropsiController.getFileFromID(message.getDropsiFileId(), sender.getDropsiToken());
-    }
-
-    @RequestMapping(value = "/call/download/{senderID}/{dropsiFileId}/{dropsiFileName}")
-    public void sendDropsiFileDownloadRequest(@PathVariable("senderID") long senderID,
+    @RequestMapping(value = "/download/{textChannelID}/{senderID}/{dropsiFileId}/{dropsiFileName}")
+    public void sendDropsiFileDownloadRequest(@PathVariable("textChannelID") long textChannelID,
+                                              @PathVariable("senderID") long senderID,
                                               @PathVariable("dropsiFileId") long dropsiFileId,
                                               @PathVariable("dropsiFileName") String dropsiFileName,
-                                              HttpServletResponse response) throws UserDoesNotExistException, DropsiException, IOException {
-        RegisteredUser sender = (RegisteredUser) userService.loadUserByID(senderID);
-        response.setContentType("application/octet-stream");
-        response.addHeader("Content-Disposition", "attachment; filename=" + dropsiFileName);
-        InputStream is = new ByteArrayInputStream(dropsiController.getFileFromID(dropsiFileId, sender.getDropsiToken()));
-        IOUtils.copy(is, response.getOutputStream());
-        response.getOutputStream().flush();
+                                              Authentication auth,
+                                              HttpServletResponse response) throws UserDoesNotExistException, DropsiException, IOException, InvalidUserException {
+        User user = controllerUtils.getActiveUser(auth);
+        if(user != null && channelService.userIsInChannel(textChannelID, user)) {
+            RegisteredUser sender = (RegisteredUser) userService.loadUserByID(senderID);
+            response.setContentType("application/octet-stream");
+            response.addHeader("Content-Disposition", "attachment; filename=" + dropsiFileName);
+            InputStream is = new ByteArrayInputStream(dropsiController.getFileFromID(dropsiFileId, sender.getDropsiToken()));
+            IOUtils.copy(is, response.getOutputStream());
+            response.getOutputStream().flush();
+        } else throw new InvalidUserException(user, "User is not logged in or has no access to download.");
     }
 
 }

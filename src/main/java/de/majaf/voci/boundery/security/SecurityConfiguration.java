@@ -34,7 +34,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             "/invitation/**",
             "/webjars/**", "/chat/**",
             "/test/**", "/api/**",
-            "/call/leave/**", "/call/ended"};
+            "/call/leave/**", "/call/ended",
+            "/download/**"};
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
