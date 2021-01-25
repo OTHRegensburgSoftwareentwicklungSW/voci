@@ -7,12 +7,10 @@ import de.majaf.voci.control.service.IChannelService;
 import de.majaf.voci.control.exceptions.channel.ChannelDoesNotExistException;
 import de.majaf.voci.control.service.IRoomService;
 import de.majaf.voci.entity.*;
-import de.majaf.voci.entity.repo.MessageRepository;
 import de.majaf.voci.entity.repo.TextChannelRepository;
 import de.mschoettle.entity.dto.FileDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
-import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
@@ -76,8 +74,8 @@ public class TextChannelService implements IChannelService {
             if (room.getTextChannels().size() > 1) {
                 TextChannel textChannel = loadChannelByID(channelID);
                 room.removeTextChannel(textChannel);
-                deleteChannel(textChannel);
-            } // TODO: else Exception schmeißen
+                roomService.saveRoom(room);
+            }
         } else throw new InvalidUserException(initiator, "User is not Owner");
     }
 

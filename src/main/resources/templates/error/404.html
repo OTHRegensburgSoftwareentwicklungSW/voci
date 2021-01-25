@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Join a call</title>
+    <title th:replace="fragments/bootstrap :: header"></title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body class="vh-100 main-bg text-light">
+<div class="container-fluid h-100 row m-0 p-0">
+    <div class="col-lg-2"></div>
+    <div class="col-lg-8 col-md-12 d-flex flex-column h-100 main-bg p-0 pt-4 text-center">
+        <div class="flex-column d-flex justify-content-center overflow-auto flex-grow-1 p-0 mt-2 ">
+            <div class="d-flex flex-row m-0 p-0 overflow-auto justify-content-center">
+                <div class="p-4 secondary-bg rounded text-left text-center" style="min-width: 50% !important;">
+                    <div th:replace="fragments/mainFragments :: heading('404 Not Found!', 'main-border')"></div>
+                    <div class="flex-column d-flex justify-content-center">
+                        <p class="main-border border-bottom m-0 pt-2 pb-2">The file or page you are looking for could not be found.</p>
+                        <p class="m-0 pt-2">No idea how you came here?</p>
+                        <a th:href="@{/main}" class="text-success">Back to Main-Page</a>
+                        <p class="m-0">or</p>
+                        <a th:href="@{/login}" class="text-success">Login here!</a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

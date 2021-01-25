@@ -18,7 +18,8 @@ import java.util.Date;
         property = "type")
 @JsonSubTypes({
         @JsonSubTypes.Type(value = TextMessage.class, name = "textMessage"),
-        @JsonSubTypes.Type(value = DropsiFileMessage.class, name = "dropsiFileMessage")})
+        @JsonSubTypes.Type(value = DropsiFileMessage.class, name = "dropsiFileMessage"),
+        @JsonSubTypes.Type(value = ErrorMessage.class, name = "errorMessage")})
 @Inheritance(strategy= InheritanceType.TABLE_PER_CLASS)
 public abstract class Message extends SingleIdEntity implements Comparable<Message>{
 
@@ -28,6 +29,7 @@ public abstract class Message extends SingleIdEntity implements Comparable<Messa
     private User sender;
 
     public Message() {
+        sentAt = new Date();
     }
 
     public Message(User sender) {

@@ -43,9 +43,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
                 .antMatchers(ALLOW_ACCESS_WITHOUT_AUTHENTICATION)
                 .permitAll()
-                .antMatchers("/**").hasRole("USER").anyRequest().authenticated()
-                .and()
-                .exceptionHandling().accessDeniedPage("/accessDenied");
+                .antMatchers("/**").hasRole("USER").anyRequest().authenticated();
         http
                 .formLogin().loginPage("/login").permitAll().defaultSuccessUrl("/main").failureUrl("/failedLogin")
                 .and()

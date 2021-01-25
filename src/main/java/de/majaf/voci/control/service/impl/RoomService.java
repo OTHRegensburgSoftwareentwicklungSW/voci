@@ -4,17 +4,16 @@ import de.majaf.voci.control.exceptions.user.InvalidUserException;
 import de.majaf.voci.control.exceptions.user.UserDoesNotExistException;
 import de.majaf.voci.control.service.IRoomService;
 import de.majaf.voci.control.service.IUserService;
-import de.majaf.voci.control.exceptions.room.RoomIDDoesNotExistException;
+import de.majaf.voci.control.exceptions.room.RoomDoesNotExistException;
 import de.majaf.voci.entity.*;
 import de.majaf.voci.entity.repo.RoomRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
-import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 
-@Service @Scope(value = "session", proxyMode = ScopedProxyMode.INTERFACES)
+@Service @Scope(value = "singleton")
 public class RoomService implements IRoomService {
 
     @Autowired
@@ -25,8 +24,8 @@ public class RoomService implements IRoomService {
 
     @Override
     @Transactional
-    public Room loadRoomByID(long id) throws RoomIDDoesNotExistException {
-        return roomRepo.findById(id).orElseThrow(() -> new RoomIDDoesNotExistException(id, "Invalid Room-ID"));
+    public Room loadRoomByID(long id) throws RoomDoesNotExistException {
+        return roomRepo.findById(id).orElseThrow(() -> new RoomDoesNotExistException(id, "Invalid Room-ID"));
     }
 
     @Override
@@ -78,7 +77,7 @@ public class RoomService implements IRoomService {
 
     @Override
     @Transactional
-    public void deleteRoom(long roomID, RegisteredUser initiator) throws RoomIDDoesNotExistException, InvalidUserException {
+    public void deleteRoom(long roomID, RegisteredUser initiator) throws RoomDoesNotExistException, InvalidUserException {
         Room room = loadRoomByID(roomID);
         if (initiator.equals(room.getOwner())) {
             roomRepo.delete(room);
@@ -87,7 +86,7 @@ public class RoomService implements IRoomService {
 
     @Override
     @Transactional
-    public void leaveRoom(long roomID, RegisteredUser member) throws RoomIDDoesNotExistException, InvalidUserException {
+    public void leaveRoom(long roomID, RegisteredUser member) throws RoomDoesNotExistException, InvalidUserException {
         Room room = loadRoomByID(roomID);
         if (!member.equals(room.getOwner())) {
             member.removeRoom(room);

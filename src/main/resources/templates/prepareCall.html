@@ -35,8 +35,8 @@
     <!-- mid column / main -->
     <div class="col-md-7 col-sm-6 d-flex flex-column h-100 secondary-bg p-4">
         <div th:replace="fragments/mainFragments :: heading('CREATE A CALL', 'main-border')"></div>
-        <p class="m-0 text-danger" th:if="${errorMsg}" th:text="${errorMsg}"></p>
-        <p class="m-0 text-warning" th:if="${infoMsg}" th:text="${infoMsg}"></p>
+        <p class="m-0 text-danger" th:text="${errorMsg}" id="error-msg"></p>
+        <p class="m-0 text-warning" th:text="${infoMsg}" id="info-msg"></p>
         <div class="flex-column d-flex justify-content-center overflow-auto flex-grow-1 p-0 mt-2 ">
             <div class="main-bg rounded p-3 ">
                 <div class="d-flex row m-0 overflow-auto">

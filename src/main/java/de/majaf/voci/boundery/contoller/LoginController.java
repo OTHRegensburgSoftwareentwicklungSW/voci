@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-@Controller @Scope("session")
+@Controller @Scope("singleton")
 public class LoginController {
 
     @Autowired
@@ -19,7 +19,6 @@ public class LoginController {
 
     @RequestMapping(value = {"/", "/login"}, method = RequestMethod.GET)
     public String prepareLoginPage(Model model) {
-        model.addAttribute("errorMsg", false);
         return "login";
     }
 
@@ -45,10 +44,5 @@ public class LoginController {
             model.addAttribute("errorMsg", "User already exists");
         }
         return "register";
-    }
-
-    @RequestMapping(value = {"accessDenied"}, method = RequestMethod.GET)
-    public String prepareAccessDeniedPage(Model model) {
-        return "accessDenied";
     }
 }

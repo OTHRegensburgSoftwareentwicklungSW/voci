@@ -1,22 +1,25 @@
 package de.majaf.voci.boundery.contoller;
 
 import de.majaf.voci.boundery.contoller.utils.ControllerUtils;
+import de.majaf.voci.control.exceptions.call.InvalidCallStateException;
 import de.majaf.voci.control.exceptions.call.InvitationTokenDoesNotExistException;
 import de.majaf.voci.control.exceptions.user.InvalidUserException;
 import de.majaf.voci.control.exceptions.user.UserTokenDoesNotExistException;
 import de.majaf.voci.control.service.IExternalCallService;
 import de.majaf.voci.control.service.IUserService;
+import de.majaf.voci.entity.Call;
 import de.majaf.voci.entity.Invitation;
 import de.majaf.voci.entity.RegisteredUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-@RestController @Scope("session")
+@RestController @Scope("singleton")
 public class CallRestController {
 
     @Autowired
@@ -26,7 +29,10 @@ public class CallRestController {
     private IUserService userService;
 
     @Autowired
-    ControllerUtils controllerUtils;
+    private ControllerUtils controllerUtils;
+
+    @Autowired
+    private SimpMessagingTemplate simpMessagingTemplate;
 
     @RequestMapping(value = "/api/startCall", method = RequestMethod.POST)
     public Invitation startCall(@RequestHeader String securityToken, HttpServletRequest req) throws UserTokenDoesNotExistException {
@@ -36,10 +42,18 @@ public class CallRestController {
     }
 
     @RequestMapping(value = "/api/endCall", method = RequestMethod.DELETE)
-    public void endCall(@RequestHeader String securityToken, @RequestParam String accessToken, HttpServletRequest req) throws UserTokenDoesNotExistException, InvitationTokenDoesNotExistException, InvalidUserException {
+    public void endCall(@RequestHeader String securityToken, @RequestParam String accessToken, HttpServletRequest req,
+                        HttpServletResponse response) throws UserTokenDoesNotExistException, InvitationTokenDoesNotExistException, InvalidCallStateException, IOException {
         RegisteredUser user = userService.loadUserBySecurityToken(securityToken);
         controllerUtils.authenticateUser(user, req);
-        callService.endCallByAccessToken(user, accessToken);
+        Call call = callService.loadCallByToken(accessToken);
+        try {
+            callService.endCallAuthenticated(call, user);
+            simpMessagingTemplate.convertAndSend("/broker/" + call.getId() + "/endedInvitation", true);
+            simpMessagingTemplate.convertAndSend("/broker/" + call.getId() + "/endedCall", false);
+        } catch(InvalidUserException e) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "User " + e.getUser().getUserName() + " is not initiator. Not allowed to end this call.");
+        }
     }
 
     @ExceptionHandler(UserTokenDoesNotExistException.class)
@@ -47,13 +61,13 @@ public class CallRestController {
         response.sendError(HttpServletResponse.SC_NOT_FOUND, "User with this Security-Token does not exist. Token: " + e.getUserToken());
     }
 
+    @ExceptionHandler(InvalidCallStateException.class)
+    public void handleInvalidCallStateException(HttpServletResponse response) throws IOException {
+        response.sendError(HttpServletResponse.SC_NOT_FOUND, "The call you are looking for is currently not active.");
+    }
+
     @ExceptionHandler(InvitationTokenDoesNotExistException.class)
     public void handleInvitationTokenDoesNotExistException(InvitationTokenDoesNotExistException e, HttpServletResponse response) throws IOException {
         response.sendError(HttpServletResponse.SC_NOT_FOUND, "A invitation with this Access-Token does not exist. Token: " + e.getAccessToken());
-    }
-
-    @ExceptionHandler(InvalidUserException.class)
-    public void handleInvalidUserException(InvalidUserException e, HttpServletResponse response) throws IOException {
-        response.sendError(HttpServletResponse.SC_FORBIDDEN, "User " + e.getUser().getUserName() + " is not initiator. Not allowed to end this call.");
     }
 }

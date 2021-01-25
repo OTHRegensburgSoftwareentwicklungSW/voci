@@ -12,12 +12,12 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
-@Controller @Scope("session")
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+
+@Controller @Scope("singleton")
 public class MainController {
 
     @Autowired
@@ -67,12 +67,6 @@ public class MainController {
         return "main";
     }
 
-    @RequestMapping(value = "/info", method = RequestMethod.GET)
-    public String prepareInfoPage(Authentication auth, Model model) throws UserDoesNotExistException {
-        model.addAttribute("user", (RegisteredUser) controllerUtils.getActiveUser(auth));
-        return "info";
-    }
-
     private void prepareRoomsList(Model model, RegisteredUser user) {
         model.addAttribute("roomsList", user.getRooms());
         model.addAttribute("ownedRoomsList", user.getOwnedRooms());
@@ -87,5 +81,9 @@ public class MainController {
         prepareContactsList(model, user);
     }
 
+    @ExceptionHandler(UserDoesNotExistException.class)
+    public void handleUserDoesNotExistException(HttpServletResponse response, UserDoesNotExistException e) throws IOException {
+        controllerUtils.handleUserDoesNotExistException(response, e);
+    }
 }
 

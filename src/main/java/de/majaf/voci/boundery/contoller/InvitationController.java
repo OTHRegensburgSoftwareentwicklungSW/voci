@@ -21,11 +21,13 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.Optional;
 
 
 @Controller
-@Scope("session")
+@Scope("singleton")
 public class InvitationController {
 
     @Autowired
@@ -45,7 +47,10 @@ public class InvitationController {
 
     // TODO: Exception Handling
     @RequestMapping(value = "/invitation", method = RequestMethod.GET)
-    public String prepareInvitationPage(Model model, @RequestParam("accessToken") Optional<String> accessToken, HttpServletRequest req, Authentication auth) throws InvitationTokenDoesNotExistException, InvalidCallStateException, InvalidUserException, InvitationDoesNotExistException, UserDoesNotExistException {
+    public String prepareInvitationPage(Model model,
+                                        @RequestParam("accessToken") Optional<String> accessToken,
+                                        HttpServletRequest req,
+                                        Authentication auth) throws InvitationTokenDoesNotExistException, InvalidCallStateException, InvalidUserException, InvitationDoesNotExistException, UserDoesNotExistException {
         if (accessToken.isEmpty())
             return "invitation";
         else {
@@ -120,5 +125,10 @@ public class InvitationController {
     public String handleInvalidUserException(InvalidUserException e, Model model) {
         model.addAttribute("errorMsg", "User " + e.getUser().getUserName() + " is not invited.");
         return "invitation";
+    }
+
+    @ExceptionHandler(UserDoesNotExistException.class)
+    public void handleUserDoesNotExistException(HttpServletResponse response, UserDoesNotExistException e) throws IOException {
+        controllerUtils.handleUserDoesNotExistException(response, e);
     }
 }

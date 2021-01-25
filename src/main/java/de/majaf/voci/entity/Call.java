@@ -33,11 +33,11 @@ public class Call extends SingleIdEntity {
     private List<GuestUser> guestUsers = new ArrayList<>();
 
     @JsonIgnore
-    @OneToOne(orphanRemoval = true)
+    @OneToOne(cascade = CascadeType.ALL)
     private VoiceChannel voiceChannel;
 
     @JsonIgnore
-    @OneToOne(orphanRemoval = true)
+    @OneToOne(cascade = CascadeType.ALL)
     private TextChannel textChannel;
 
     public Call() {

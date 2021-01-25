@@ -2,6 +2,7 @@ package de.majaf.voci.control.service.impl;
 
 import de.majaf.voci.control.service.IDropsiService;
 import de.majaf.voci.control.service.IUserService;
+import de.majaf.voci.entity.DropsiFileMessage;
 import de.majaf.voci.entity.RegisteredUser;
 import de.mschoettle.entity.dto.FileDTO;
 import de.mschoettle.entity.dto.FileSystemObjectDTO;
@@ -13,7 +14,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 
-@Service @Scope("session")
+@Service @Scope("singleton")
 public class DropsiService implements IDropsiService {
 
     @Autowired
@@ -31,6 +32,12 @@ public class DropsiService implements IDropsiService {
     @Override
     public List<FileDTO> getFilesFromRootFolder(FolderDTO rootFolder) {
         return getFilesFromFolder(rootFolder, "/root");
+    }
+
+    @Override
+    public DropsiFileMessage updateBinary(DropsiFileMessage msg, byte[] data) {
+        msg.setPayload(data);
+        return msg;
     }
 
     private List<FileDTO> getFilesFromFolder(FolderDTO folder, String path) {

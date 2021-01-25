@@ -18,16 +18,16 @@ import java.security.Principal;
 import java.util.HashMap;
 import java.util.Map;
 
-@Controller @Scope("session")
+@Controller @Scope("singleton")
 public class TestController {
 
     @Autowired
     private RestTemplate restServiceClient;
 
-    private final String url = "http://voci:8945/api/";
+    private final String url = "http://im-codd:8945/api/";
     @RequestMapping(value = "/test/start")
     public String test() {
-        String key = "be387e28-8ff2-4d62-8b25-ce6eb86364d7";
+        String key = "5f1498db-2f40-4824-a156-1a0e57719ff8";
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.set("securityToken", key);
@@ -40,8 +40,8 @@ public class TestController {
 
     @RequestMapping(value = "/test/end")
     public String test2() {
-        String key = "be387e28-8ff2-4d62-8b25-ce6eb86364d7";
-        String accessToken = "066dfd73-1e1e-49bd-9155-eb1d6847c467";
+        String key = "5f1498db-2f40-4824-a156-1a0e57719ff8";
+        String accessToken = "8a919694-ab60-4128-95fa-57a74817bef5";
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);

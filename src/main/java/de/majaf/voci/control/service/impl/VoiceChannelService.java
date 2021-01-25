@@ -11,13 +11,12 @@ import de.majaf.voci.entity.repo.VoiceChannelRepository;
 import de.mschoettle.entity.dto.FileDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
-import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 
-@Service @Scope(value = "session", proxyMode = ScopedProxyMode.INTERFACES)
+@Service @Scope(value = "singleton")
 @Component("voiceChannelService")
 public class VoiceChannelService implements IChannelService {
 
@@ -74,8 +73,8 @@ public class VoiceChannelService implements IChannelService {
             if (room.getVoiceChannels().size() > 1) {
                 VoiceChannel voiceChannel = loadChannelByID(channelID);
                 room.removeVoiceChannel(voiceChannel);
-                deleteChannel(voiceChannel);
-            } // TODO: else Exception schmeißen
+                roomService.saveRoom(room);
+            }
         } else throw new InvalidUserException(initiator, "User is not Owner");
     }
 

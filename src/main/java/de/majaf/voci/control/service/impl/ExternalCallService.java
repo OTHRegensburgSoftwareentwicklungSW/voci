@@ -19,7 +19,7 @@ import java.util.Date;
 import java.util.UUID;
 
 @Service
-@Scope("session")
+@Scope("singleton")
 public class ExternalCallService implements IExternalCallService {
 
     @Autowired
@@ -39,6 +39,16 @@ public class ExternalCallService implements IExternalCallService {
     @Transactional
     public Invitation loadInvitationByToken(String accessToken) throws InvitationTokenDoesNotExistException {
         return invitationRepo.findByAccessToken(accessToken).orElseThrow(() -> new InvitationTokenDoesNotExistException(accessToken, "Invalid Access-Token"));
+    }
+
+    @Override
+    @Transactional
+    public Call loadCallByToken(String accessToken) throws InvitationTokenDoesNotExistException, InvalidCallStateException {
+        Invitation invitation = loadInvitationByToken(accessToken);
+        Call call = invitation.getCall();
+        if (call != null)
+            return call;
+        else throw new InvalidCallStateException(call, "Call for this Token does not exist");
     }
 
     private String generateAccessToken() {
@@ -66,16 +76,6 @@ public class ExternalCallService implements IExternalCallService {
 
     @Override
     @Transactional
-    public void endCallByAccessToken(RegisteredUser user, String accessToken) throws InvalidUserException, InvitationTokenDoesNotExistException {
-        Invitation invitation = loadInvitationByToken(accessToken);
-        if (!user.equals(invitation.getInitiator()))
-            throw new InvalidUserException(user, "User must not end call. No Initiator");
-
-        endCall(invitation.getCall());
-    }
-
-    @Override
-    @Transactional
     public void endCall(Call call) {
         if (call != null) {
 
@@ -91,6 +91,15 @@ public class ExternalCallService implements IExternalCallService {
 
             callRepo.delete(call);
         }
+    }
+
+    @Override
+    public void endCallAuthenticated(Call call, User user) throws InvalidUserException {
+        if (call != null && call.getInvitation() != null)
+            if (user instanceof RegisteredUser &&
+                    call.getInvitation().equals(((RegisteredUser) user).getOwnedInvitation()))
+                endCall(call);
+            else throw new InvalidUserException(user, "User must not end call. No initiator.");
     }
 
     @Transactional

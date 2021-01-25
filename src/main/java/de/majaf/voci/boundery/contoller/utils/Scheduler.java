@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Scope("singleton")
-public class SchedulerService {
+public class Scheduler {
 
     @Autowired
     private ICallService callService;

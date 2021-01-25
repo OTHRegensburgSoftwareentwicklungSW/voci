@@ -2,18 +2,56 @@ function subscribeToTextChannel(userID, textChannelID) {
     stompClient.subscribe('/broker/' + textChannelID + '/receivedMessage', function (msg) {
         let message = JSON.parse(msg.body);
         if (message) {
-            if(message.type === 'textMessage')
+            if (message.type === 'textMessage')
                 addTextMessage(message, userID);
-            else {
+            else if(message.type === 'dropsiFileMessage'){
                 addDropsiFileMessage(message, userID, textChannelID)
+            } else if(message.type === 'errorMessage') {
+                showError(message.errorCode, message.message);
             }
 
             scrollSmoothToBottom('msg-container');
         }
     });
+    stompClient.subscribe('/broker/' + textChannelID + '/receivedDropsiMessage', function (msg) {
+        if (msg.body) {
+            let message = JSON.parse(msg.body);
+            if (message.type === "dropsiFileMessage") {
+                let data = base64ToArrayBuffer(message.payload);
+                let blob = new Blob([data], {type: "application/" + message.dropsiFileType});
+                let link = document.createElement('a');
+                link.href = window.URL.createObjectURL(blob);
+                link.download = message.dropsiFileName.substr(message.dropsiFileName.lastIndexOf('/') + 1);
+                link.click();
+            } else if (message.type === 'errorMessage') {
+                showError(message.errorCode, message.message)
+            }
+        }
+    });
+}
+
+function showError(errorCode, message) {
+    console.error(errorCode + ': ' + message);
+    document.getElementById("error-msg").innerText = message;
+}
+
+function clearError() {
+    document.getElementById("error-msg").innerText = "";
+}
+
+// src: https://stackoverflow.com/questions/35038884/download-file-from-bytes-in-javascript
+function base64ToArrayBuffer(base64) {
+    let binaryString = window.atob(base64);
+    let binaryLen = binaryString.length;
+    let bytes = new Uint8Array(binaryLen);
+    for (var i = 0; i < binaryLen; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+    }
+    return bytes;
 }
 
 function sendMessage(textChannelID, msgInput) {
+    clearError();
     let msg = msgInput.value.trim();
     if (msg !== "") {
         stompClient.send('/ws/' + textChannelID + '/sendMessage', {}, msg);
@@ -66,13 +104,12 @@ function addTextMessage(message, userID) {
 }
 
 function addDropsiFileMessage(message, userID, textChannelID) {
-    let dropsiFileName = message.dropsiFileName
-    dropsiFileName = dropsiFileName.substr(dropsiFileName.lastIndexOf('/') + 1);
     let content_ref = document.createElement("a");
-    content_ref.classList.add('mb-1');
-    content_ref.innerText = dropsiFileName.substr(dropsiFileName.lastIndexOf('/') + 1);
+    content_ref.classList.add('mb-1', 'btn', 'btn-link', 'p-0');
+    content_ref.innerText = message.dropsiFileName.substr(message.dropsiFileName.lastIndexOf('/') + 1);
     content_ref.style.overflowWrap = 'break-word';
-    content_ref.href = "/download/" + textChannelID + '/'+ message.sender.id + '/' + message.dropsiFileId + '/' + dropsiFileName;
-
+    content_ref.onclick = function () {
+        stompClient.send("/ws/download/" + textChannelID, {}, JSON.stringify(message));
+    }
     addMessage(message.sender.userName, content_ref, message.formatDate, message.sender.id === userID);
 }

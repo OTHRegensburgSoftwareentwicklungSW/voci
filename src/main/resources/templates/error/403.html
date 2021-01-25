@@ -9,13 +9,14 @@
 <body class="vh-100 main-bg text-light">
 <div class="container-fluid h-100 row m-0 p-0">
     <div class="col-lg-2"></div>
-    <div class="col-lg-8 col-md-12 d-flex flex-column h-100 secondary-bg p-0 pt-4 text-center">
+    <div class="col-lg-8 col-md-12 d-flex flex-column h-100 main-bg p-0 pt-4 text-center">
         <div class="flex-column d-flex justify-content-center overflow-auto flex-grow-1 p-0 mt-2 ">
             <div class="d-flex flex-row m-0 p-0 overflow-auto justify-content-center">
-                <div class="p-4 main-bg rounded text-left text-center" style="min-width: 50% !important;">
-                    <div th:replace="fragments/mainFragments :: heading('ACCESS DENIED!', 'secondary-border')"></div>
-                    <div class="flex-row d-flex pt-3 justify-content-center">
-                        <p>No idea how you came here? <br> <a th:href="@{/login}" class="text-success">Login here!</a></p>
+                <div class="p-4 secondary-bg rounded text-left text-center" style="min-width: 50% !important;">
+                    <div th:replace="fragments/mainFragments :: heading('ACCESS DENIED!', 'main-border')"></div>
+                    <div class="flex-column d-flex pt-3 justify-content-center">
+                        <p class="m-0">No idea how you came here?</p>
+                        <a th:href="@{/login}" class="text-success">Login here!</a>
                     </div>
                 </div>
             </div>

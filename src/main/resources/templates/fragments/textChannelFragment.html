@@ -10,19 +10,25 @@
                    th:text="${message.sender.userName}"></p>
                 <p th:if="${message.isTextMessage()}" class="mb-1" th:text="${message.content}"
                    style="overflow-wrap: break-word;"></p>
-                <a th:unless="${message.isTextMessage()}" class="mb-1"
+                <a th:unless="${message.isTextMessage()}" class="mb-1 p-0 btn btn-link"
                    th:text="${message.dropsiFileName.substring(message.dropsiFileName.lastIndexOf('/') + 1 )}"
-                   th:href="@{/download/{textChannelID}/{senderID}/{dropsiFileId}/{dropsiFileName}(textChannelID = ${textChannel.id}, senderID = ${message.sender.id}, dropsiFileId = ${message.dropsiFileId}, dropsiFileName = ${message.dropsiFileName.substring(message.dropsiFileName.lastIndexOf('/') + 1 )})}"
+                   th:id="${'dropsi-msg-'+ message.id}"
                    style="overflow-wrap: break-word;"></a>
+                <script th:inline="javascript">
+                    document.getElementById('dropsi-msg-' + [[${message.id}]]).onclick = function () {
+                        stompClient.send("/ws/download/" + [[${textChannel.id}]], {}, JSON.stringify([[${message}]]));
+                    };
+                </script>
                 <small class="pb-1 border-top secondary-border text-secondary text-right"
                        th:text="${message.getFormatDate()}"></small>
             </div>
         </div>
     </div>
-
-    <div class="flex-row d-flex p-2 pb-4 pt-3 border-top main-border">
-            <textarea class="form-control" rows="1" placeholder="Your message" id="msg-input"
-                      style="resize: none" maxlength="240"></textarea>
+    <div class="flex-row d-flex border-top main-border justify-content-center">
+        <p th:text="${errorMsg}" id="error-msg" class="text-danger m-0"></p></div>
+    <div class="flex-row d-flex p-2 pb-4 pt-3">
+        <textarea class="form-control" rows="1" placeholder="Your message" id="msg-input"
+                  style="resize: none" maxlength="240"></textarea>
         <script>
             // for automatically adjusting text-area to text height.
             // src: https://stackoverflow.com/questions/37629860/automatically-resizing-textarea-in-bootstrap
