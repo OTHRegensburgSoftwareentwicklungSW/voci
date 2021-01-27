@@ -1,6 +1,8 @@
 # Softwareentwicklung
 
-## Projekt "Voci - Chatsystem"
+## Project "Voci - Chatsystem"
 
-Voci ist ein System für Voicestreaming und Text-Messaging.
+Voci is a chat-system for sending messages in calls or chatrooms.
+
+ 
 

@@ -58,7 +58,7 @@ public abstract class Message extends SingleIdEntity implements Comparable<Messa
         return sender;
     }
 
-    // only for thymeleaf TODO
+    // only for thymeleaf
     @JsonIgnore
     public boolean isTextMessage() {
         return this instanceof TextMessage;

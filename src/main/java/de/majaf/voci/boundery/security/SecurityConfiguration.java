@@ -32,15 +32,14 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Autowired
     private CustomLogoutHandler customLogoutHandler;
 
-    // TODO adjust when guest users work properly
     private static final String[] ALLOW_ACCESS_WITHOUT_AUTHENTICATION = {
             "/", "/login", "/register",
             "/css/**", "/img/**", "/js/**",
             "/invitation/**",
             "/webjars/**", "/chat/**",
-            "/test/**", "/api/**",
+            "/test/**", "/api/**", // TODO remove test
             "/call/leave/**", "/call/ended",
-            "/download/**"};
+            "/download/**", "/favicon.ico"};
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
@@ -57,8 +56,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .deleteCookies("remember-me-voci").permitAll()
                 .and().rememberMe();
         http.
-                csrf().ignoringAntMatchers("/api/**")
-                .and().headers().frameOptions().sameOrigin();
+                csrf().ignoringAntMatchers("/api/**");
     }
 
     @Autowired

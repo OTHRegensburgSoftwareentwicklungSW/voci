@@ -43,6 +43,7 @@ public class VoiceChannelService implements IChannelService {
     }
 
     @Override
+    @Transactional
     public VoiceChannel loadChannelByID(long channelID) throws ChannelDoesNotExistException {
         return voiceChannelRepo.findById(channelID).orElseThrow(() -> new ChannelDoesNotExistException(channelID, "Voice-Channel does not exist"));
     }
@@ -60,7 +61,7 @@ public class VoiceChannelService implements IChannelService {
     @Transactional
     public void addChannelToRoom(Room room, String channelName, RegisteredUser initiator) throws InvalidUserException, InvalidNameException {
         if (initiator.equals(room.getOwner())) {
-            if (channelName != null && !channelName.equals("")) {
+            if (channelName != null && !channelName.equals("") && channelName.trim().length()<=20) {
                 VoiceChannel voiceChannel = new VoiceChannel(channelName);
                 room.addVoiceChannel(voiceChannel);
                 roomService.saveRoom(room);
@@ -78,7 +79,7 @@ public class VoiceChannelService implements IChannelService {
                 room.removeVoiceChannel(voiceChannel);
 
                 for(User member : voiceChannel.getActiveMembers())
-                    userService.leaveVoiceChannel(member);      // load because of UnmodifiableCollection
+                    userService.leaveVoiceChannel(member);
 
                 roomService.saveRoom(room);
             }

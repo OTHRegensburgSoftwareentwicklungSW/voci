@@ -1,5 +1,6 @@
 package de.majaf.voci.control.service.impl;
 
+import de.majaf.voci.control.exceptions.InvalidNameException;
 import de.majaf.voci.control.exceptions.call.InvalidCallStateException;
 import de.majaf.voci.control.exceptions.call.InvitationTokenDoesNotExistException;
 import de.majaf.voci.control.service.ICallService;
@@ -35,9 +36,15 @@ public class UserService implements IUserService {
     private ICallService callService;
 
     @Override
-    public void registerUser(RegisteredUser user) throws UserAlreadyExistsException {
-        String username = user.getUserName();
-        String email = user.getEmail();
+    public void registerUser(RegisteredUser user) throws UserAlreadyExistsException, InvalidNameException {
+        if(user.getUserName() == null) throw new InvalidNameException(null, "Username is empty");
+        if(user.getEmail() == null) throw new InvalidNameException(null, "Email is empty");
+
+        String username = user.getUserName().trim();
+        String email = user.getEmail().trim();
+
+        if(username.equals("") || username.length()>20) throw new InvalidNameException(username, "Invalid username");
+        if(email.equals("") || email.length()>40) throw new InvalidNameException(email, "Invalid email");
         if (userNameAlreadyExist(username))
             throw new UserAlreadyExistsException(user, "User with username " + username + " already exists");
         else if (emailAlreadyExist(email))
@@ -80,8 +87,10 @@ public class UserService implements IUserService {
 
     @Override
     @Transactional
-    public void addContact(RegisteredUser user, String usernameContact) throws UsernameDoesNotExistException, InvalidUserException {
-        RegisteredUser contact = (RegisteredUser) loadUserByUsername(usernameContact);
+    public void addContact(RegisteredUser user, String usernameContact) throws UsernameDoesNotExistException, InvalidUserException, InvalidNameException {
+        if(usernameContact == null || (usernameContact.trim()).equals("") || usernameContact.trim().length()>20)
+            throw new InvalidNameException(usernameContact, "Invalid Username");
+        RegisteredUser contact = (RegisteredUser) loadUserByUsername(usernameContact.trim());
         if (user.getContacts().contains(contact) || contact.getContacts().contains(user))
             throw new InvalidUserException(contact, contact.getUserName() + " is already in contacts!");
         if (user.equals(contact))
@@ -116,6 +125,15 @@ public class UserService implements IUserService {
     public UserDetails loadUserByUsername(String username) throws UsernameDoesNotExistException {
         return regUserRepo.findByUserName(username).orElseThrow(
                 () -> new UsernameDoesNotExistException(username, "User does not exist"));
+    }
+
+    @Override
+    public RegisteredUser updateDropsiToken(RegisteredUser user, String token) {
+        if (token == null || token.equals(""))
+            user.setDropsiToken(null);
+        else user.setDropsiToken(token);
+        userRepo.save(user);
+        return user;
     }
 
     @Override

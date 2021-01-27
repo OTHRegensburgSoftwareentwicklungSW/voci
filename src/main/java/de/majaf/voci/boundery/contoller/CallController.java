@@ -8,7 +8,6 @@ import de.majaf.voci.control.exceptions.user.UserDoesNotExistException;
 import de.majaf.voci.entity.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -18,7 +17,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.logging.Logger;
 
 @Controller
 @Scope("singleton")
@@ -33,25 +31,16 @@ public class CallController {
     @Autowired
     private DropsiController dropsiController;
 
-    @Autowired
-    private Logger logger;
-
-    @Autowired
-    private SimpMessagingTemplate simpMessagingTemplate;
-
     @RequestMapping(value = "/call", method = RequestMethod.GET)
     public String prepareCallCreationPage(Model model, Authentication auth) throws UserDoesNotExistException {
         RegisteredUser user = (RegisteredUser) controllerUtils.getActiveUser(auth);
         Call activeCall = user.getActiveCall();
 
+        model.addAttribute("user", user);
         if (activeCall != null) { // if the user is already in a call
             dropsiController.addDropsiFilesToModel(model, user);
-            model.addAttribute("call", activeCall);
-            model.addAttribute("textChannel", activeCall.getTextChannel());
-            model.addAttribute("user", user);
             return "call";
         } else {
-            model.addAttribute("user", user);
             return "prepareCall";
         }
 
@@ -92,17 +81,15 @@ public class CallController {
 
         Call oldCall = user.getOwnedInvitation().getCall();
         if (oldCall != null) { // uninvite contacts remaining in a "old" call. This call is not ended, but no new members can join.
-            simpMessagingTemplate.convertAndSend("/broker/" + oldCall.getId() + "/endedInvitation", true);
-            simpMessagingTemplate.convertAndSend("/broker/" + oldCall.getId() + "/initiatorLeft", user);
+            controllerUtils.sendSocketEndInvitationMessage(oldCall.getId());
+            controllerUtils.sendSocketInitiatorLeftMessage(oldCall.getId(), user);
         }
 
         Call call = callService.startCall(user);
         for (RegisteredUser invited : call.getInvitation().getInvitedUsers()) {
-            simpMessagingTemplate.convertAndSend("/broker/" + invited.getId() + "/invited", call);
+            controllerUtils.sendSocketAddInvitationMessage(invited.getId(), call);
         }
         dropsiController.addDropsiFilesToModel(model, user);
-        model.addAttribute("call", call);
-        model.addAttribute("textChannel", call.getTextChannel());
         model.addAttribute("user", user);
         return "call";
     }
@@ -114,14 +101,14 @@ public class CallController {
             Call activeCall = user.getActiveCall();
             if (activeCall != null) {
                 callService.endCallAuthenticated(activeCall, user);
-                simpMessagingTemplate.convertAndSend("/broker/" + activeCall.getId() + "/endedInvitation", true);
-                simpMessagingTemplate.convertAndSend("/broker/" + activeCall.getId() + "/endedCall", false);
+                controllerUtils.sendSocketEndInvitationMessage(activeCall.getId());
+                controllerUtils.sendSocketEndCallMessage(activeCall.getId(), false);
             }
             model.addAttribute("user", user);
             return "prepareCall";
         } catch (InvalidUserException e) {
             response.sendError(HttpServletResponse.SC_NOT_FOUND, "User : " + e.getUser().getUserName() + " has no right to end this call. No initiator");
-            return "/error/404";
+            return "/error/403";
         }
     }
 
@@ -135,7 +122,7 @@ public class CallController {
             Call call = callService.leaveCall(user);
             controllerUtils.sendSocketLeaveCallMessages(user, call, callID);
             if (user instanceof GuestUser) {
-                simpMessagingTemplate.convertAndSend("/broker/" + callID + "/removedCallMember", user);
+                controllerUtils.sendSocketMemberLeftMessage(callID, user);
                 req.logout();
                 return "leftCall";
             } else {

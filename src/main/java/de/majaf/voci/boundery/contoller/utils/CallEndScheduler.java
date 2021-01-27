@@ -10,19 +10,19 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Scope("singleton")
-public class Scheduler {
+public class CallEndScheduler {
 
     @Autowired
     private ICallService callService;
 
     @Autowired
-    private SimpMessagingTemplate simpMessagingTemplate;
+    private ControllerUtils controllerUtils;
 
     @Scheduled(cron = "0 */10 * * * *")
     public void checkForActiveCalls() {
         for(long callID : callService.checkCallsForTimeoutOrEnd(10)) {
-            simpMessagingTemplate.convertAndSend("/broker/" + callID + "/endedInvitation", true);
-            simpMessagingTemplate.convertAndSend("/broker/" + callID + "/endedCall", true);
+            controllerUtils.sendSocketEndInvitationMessage(callID);
+            controllerUtils.sendSocketEndCallMessage(callID, true);
         }
     }
 }

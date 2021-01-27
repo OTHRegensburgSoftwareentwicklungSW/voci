@@ -4,16 +4,16 @@ function subscribeToTextChannel(userID, textChannelID) {
         if (message) {
             if (message.type === 'textMessage')
                 addTextMessage(message, userID);
-            else if(message.type === 'dropsiFileMessage'){
+            else if (message.type === 'dropsiFileMessage') {
                 addDropsiFileMessage(message, userID, textChannelID)
-            } else if(message.type === 'errorMessage') {
+            } else if (message.type === 'errorMessage') {
                 showError(message.errorCode, message.message);
             }
 
             scrollSmoothToBottom('msg-container');
         }
     });
-    stompClient.subscribe('/broker/' + textChannelID + '/receivedDropsiMessage', function (msg) {
+    stompClient.subscribe('/broker/' + textChannelID + '/' + userID + '/downloadDropsiFile', function (msg) {
         if (msg.body) {
             let message = JSON.parse(msg.body);
             if (message.type === "dropsiFileMessage") {

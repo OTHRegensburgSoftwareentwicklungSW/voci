@@ -1,5 +1,6 @@
 package de.majaf.voci.control.service.impl;
 
+import de.majaf.voci.control.exceptions.InvalidNameException;
 import de.majaf.voci.control.exceptions.call.InvalidCallStateException;
 import de.majaf.voci.control.exceptions.channel.ChannelDoesNotExistException;
 import de.majaf.voci.control.exceptions.channel.InvalidChannelException;
@@ -45,10 +46,11 @@ public class RoomService implements IRoomService {
 
     @Override
     @Transactional
-    public void createRoom(String roomName, RegisteredUser owner) { // TODO: Input validation
+    public void createRoom(String roomName, RegisteredUser owner) throws InvalidNameException {
+        if(roomName == null || (roomName.trim().equals("")) || roomName.trim().length()>20) throw new InvalidNameException(roomName, "Invalid room-name");
         TextChannel textChannel = new TextChannel("general");
         VoiceChannel voiceChannel = new VoiceChannel("general");
-        Room room = new Room(roomName, owner, textChannel, voiceChannel);
+        Room room = new Room(roomName.trim(), owner, textChannel, voiceChannel);
         owner.addOwnedRoom(room);
         owner.addRoom(room);
         room.setOwner(owner);
@@ -82,7 +84,7 @@ public class RoomService implements IRoomService {
     @Override
     @Transactional
     public void removeMemberFromRoom(Room room, long memberID, RegisteredUser initiator) throws InvalidUserException, UserDoesNotExistException {
-        if (roomHasAsMember(room, initiator)) {
+        if (room.getOwner().equals(initiator)) {
             RegisteredUser member = (RegisteredUser) userService.loadUserByID(memberID);
             member.removeRoom(room);
             room.removeMember(member);
@@ -94,7 +96,7 @@ public class RoomService implements IRoomService {
                     }
 
             roomRepo.save(room);
-        } else throw new InvalidUserException(initiator, "Initiator is no member of this room.");
+        } else throw new InvalidUserException(initiator, "Initiator is not owner of this room.");
     }
 
     @Override

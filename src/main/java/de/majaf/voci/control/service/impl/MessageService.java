@@ -37,4 +37,10 @@ public class MessageService implements IMessageService {
         textChannelService.saveChannel(textChannel);
         return message;
     }
+
+    @Override
+    public DropsiFileMessage updateBinary(DropsiFileMessage msg, byte[] data) {
+        msg.setPayload(data);
+        return msg;
+    }
 }

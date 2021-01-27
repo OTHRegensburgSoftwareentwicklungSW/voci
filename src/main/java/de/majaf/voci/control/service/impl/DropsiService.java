@@ -17,27 +17,9 @@ import java.util.List;
 @Service @Scope("singleton")
 public class DropsiService implements IDropsiService {
 
-    @Autowired
-    private IUserService userService;
-
-    @Override
-    public RegisteredUser updateDropsiToken(RegisteredUser user, String token) {
-        if (token == null || token.equals(""))
-            user.setDropsiToken(null);
-        else user.setDropsiToken(token);
-        userService.saveUser(user);
-        return user;
-    }
-
     @Override
     public List<FileDTO> getFilesFromRootFolder(FolderDTO rootFolder) {
         return getFilesFromFolder(rootFolder, "/root");
-    }
-
-    @Override
-    public DropsiFileMessage updateBinary(DropsiFileMessage msg, byte[] data) {
-        msg.setPayload(data);
-        return msg;
     }
 
     private List<FileDTO> getFilesFromFolder(FolderDTO folder, String path) {

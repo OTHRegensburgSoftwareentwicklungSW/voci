@@ -1,6 +1,7 @@
 package de.majaf.voci.boundery.contoller;
 
 import de.majaf.voci.boundery.contoller.utils.ControllerUtils;
+import de.majaf.voci.control.exceptions.InvalidNameException;
 import de.majaf.voci.control.service.IRoomService;
 import de.majaf.voci.control.service.IUserService;
 import de.majaf.voci.control.exceptions.user.InvalidUserException;
@@ -38,7 +39,11 @@ public class MainController {
 
     @RequestMapping(value = "/main/addRoom", method = RequestMethod.POST)
     public String createRoom(Model model, Authentication auth, @ModelAttribute("roomName") String roomName) throws UserDoesNotExistException {
-        roomService.createRoom(roomName, (RegisteredUser) controllerUtils.getActiveUser(auth));
+        try {
+            roomService.createRoom(roomName, (RegisteredUser) controllerUtils.getActiveUser(auth));
+        } catch (InvalidNameException e)  {
+            model.addAttribute("roomErrorMsg", "Invalid room-name. " + e.getName());
+        }
         showUpdate(model, (RegisteredUser) controllerUtils.getActiveUser(auth));
         return "main";
     }
@@ -48,9 +53,11 @@ public class MainController {
         try {
             userService.addContact((RegisteredUser) controllerUtils.getActiveUser(auth), contactName);
         } catch (InvalidUserException iue) {
-            model.addAttribute("errorMsg", "Can not add " + iue.getUser().getUserName() + " as contact!");
+            model.addAttribute("contactErrorMsg", "Can not add " + iue.getUser().getUserName() + " as contact!");
         } catch (UsernameDoesNotExistException unee) {
-            model.addAttribute("errorMsg", "User with name " + unee.getUsername() + " does not exist!");
+            model.addAttribute("contactErrorMsg", "User with name " + unee.getUsername() + " does not exist!");
+        } catch (InvalidNameException ine) {
+            model.addAttribute("contactErrorMsg", "Invalid username: " + ine.getName());
         }
         showUpdate(model, (RegisteredUser) controllerUtils.getActiveUser(auth));
         return "main";

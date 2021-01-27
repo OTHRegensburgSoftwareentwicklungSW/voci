@@ -65,7 +65,7 @@
                             <input type="text" name="dropsiToken" th:if="${user.dropsiToken == null}"
                                    class="m-0 form-control"
                                    placeholder="XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
-                                   required pattern="[a-z A-Z 0-9]{8}(-[a-z A-Z 0-9]{4}){3}-[a-z A-Z 0-9]{12}">
+                                   required pattern="[a-f A-F 0-9]{8}(-[a-f A-F 0-9]{4}){3}-[a-f A-F 0-9]{12}">
                             <button type="submit" class="btn btn-success ml-2">UPDATE</button>
                         </form>
                     </div>

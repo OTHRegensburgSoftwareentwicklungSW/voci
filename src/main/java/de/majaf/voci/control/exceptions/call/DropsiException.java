@@ -2,9 +2,6 @@ package de.majaf.voci.control.exceptions.call;
 
 public class DropsiException extends Exception{
 
-    public DropsiException() {
-    }
-
     public DropsiException(String message) {
         super(message);
     }

@@ -12,7 +12,6 @@ import de.majaf.voci.entity.Invitation;
 import de.majaf.voci.entity.RegisteredUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -32,9 +31,6 @@ public class CallRestController {
     @Autowired
     private ControllerUtils controllerUtils;
 
-    @Autowired
-    private SimpMessagingTemplate simpMessagingTemplate;
-
     @RequestMapping(value = "/startCall", method = RequestMethod.POST)
     public Invitation startCall(@RequestHeader String securityToken, HttpServletRequest req) throws UserTokenDoesNotExistException {
         RegisteredUser user = userService.loadUserBySecurityToken(securityToken);
@@ -50,8 +46,8 @@ public class CallRestController {
         Call call = callService.loadCallByToken(accessToken);
         try {
             callService.endCallAuthenticated(call, user);
-            simpMessagingTemplate.convertAndSend("/broker/" + call.getId() + "/endedInvitation", true);
-            simpMessagingTemplate.convertAndSend("/broker/" + call.getId() + "/endedCall", false);
+            controllerUtils.sendSocketEndInvitationMessage(call.getId());
+            controllerUtils.sendSocketEndCallMessage(call.getId(), false);
         } catch(InvalidUserException e) {
             response.sendError(HttpServletResponse.SC_FORBIDDEN, "User " + e.getUser().getUserName() + " is not initiator. Not allowed to end this call.");
         }

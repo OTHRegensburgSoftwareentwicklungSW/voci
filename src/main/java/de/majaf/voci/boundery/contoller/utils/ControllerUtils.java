@@ -1,10 +1,9 @@
 package de.majaf.voci.boundery.contoller.utils;
 
-import de.majaf.voci.control.exceptions.call.InvalidCallStateException;
 import de.majaf.voci.control.exceptions.user.UserDoesNotExistException;
 import de.majaf.voci.control.service.IUserService;
 import de.majaf.voci.entity.Call;
-import de.majaf.voci.entity.GuestUser;
+import de.majaf.voci.entity.Message;
 import de.majaf.voci.entity.RegisteredUser;
 import de.majaf.voci.entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +15,6 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -26,6 +24,9 @@ import java.io.IOException;
 
 import static org.springframework.security.web.context.HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY;
 
+/**
+ * Some utils for communicating with frontend. The methods in this Component are needed by more than one Controller.
+ */
 @Component
 @Scope(value = "singleton")
 public class ControllerUtils {
@@ -50,16 +51,44 @@ public class ControllerUtils {
         session.setAttribute(SPRING_SECURITY_CONTEXT_KEY, sc);
     }
 
+    public void sendSocketEndInvitationMessage(long callID) {
+        simpMessagingTemplate.convertAndSend("/broker/" + callID + "/endedInvitation", true);
+    }
+
+    public void sendSocketAddInvitationMessage(long invitedID, Call call) {
+        simpMessagingTemplate.convertAndSend("/broker/" + invitedID + "/invited", call);
+    }
+
+    public void sendSocketEndCallMessage(long callID, boolean endedByTimeout) {
+        simpMessagingTemplate.convertAndSend("/broker/" + callID + "/endedCall", endedByTimeout);
+    }
+
+    public void sendSocketInitiatorLeftMessage(long callID, User user) {
+        simpMessagingTemplate.convertAndSend("/broker/" + callID + "/initiatorLeft", user);
+    }
+
+    public void sendSocketMemberLeftMessage(long callID, User user) {
+        simpMessagingTemplate.convertAndSend("/broker/" + callID + "/removedCallMember", user);
+    }
+
+    public void sendSocketMemberJoinedMessage(long callID, User user) {
+        simpMessagingTemplate.convertAndSend("/broker/" + callID + "/addedCallMember", user);
+    }
+
+    public void sendSocketDownloadMessage(long textChannelID, long userID, Message message) {
+        simpMessagingTemplate.convertAndSend("/broker/" + textChannelID + "/" + userID + "/downloadDropsiFile", message);
+    }
+
     public void sendSocketLeaveCallMessages(User user, Call call, long callID) {
         if (call == null) {
-            simpMessagingTemplate.convertAndSend("/broker/" + callID + "/endedInvitation", true);
+            sendSocketEndInvitationMessage(callID);
         } else {
             if (user instanceof RegisteredUser)
                 if (call.getInvitation() != null && call.getInvitation().equals(((RegisteredUser) user).getOwnedInvitation())) {
-                    simpMessagingTemplate.convertAndSend("/broker/" + callID + "/initiatorLeft", user);
-                    simpMessagingTemplate.convertAndSend("/broker/" + callID + "/endedInvitation", true);
+                    sendSocketInitiatorLeftMessage(callID, user);
+                    sendSocketEndInvitationMessage(callID);
                 } else {
-                    simpMessagingTemplate.convertAndSend("/broker/" + callID + "/removedCallMember", user);
+                    sendSocketMemberLeftMessage(callID, user);
                 }
         }
     }

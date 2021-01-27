@@ -14,12 +14,12 @@
                    th:text="${message.dropsiFileName.substring(message.dropsiFileName.lastIndexOf('/') + 1 )}"
                    th:id="${'dropsi-msg-'+ message.id}"
                    style="overflow-wrap: break-word;">
-                    <script th:inline="javascript">
-                        document.getElementById('dropsi-msg-' + [[${message.id}]]).onclick = function () {
-                            stompClient.send("/ws/download/" + [[${textChannel.id}]], {}, JSON.stringify([[${message}]]));
-                        };
-                    </script>
                 </a>
+                <script th:unless="${message.isTextMessage()}" th:inline="javascript">
+                    document.getElementById('dropsi-msg-' + [[${message.id}]]).onclick = function () {
+                        stompClient.send("/ws/download/" + [[${textChannel.id}]], {}, JSON.stringify([[${message}]]));
+                    };
+                </script>
                 <small class="pb-1 border-top secondary-border text-secondary text-right"
                        th:text="${message.getFormatDate()}"></small>
             </div>

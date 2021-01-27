@@ -37,11 +37,13 @@ public class CallService extends ExternalCallService implements ICallService {
     private IUserService userService;
 
     @Autowired
-    @Qualifier("voiceChannelService")
-    private IChannelService voiceChannelService;
-
-    @Autowired
     private Logger logger;
+
+    @Override
+    @Transactional
+    public List<Call> getAllCalls() {
+        return (List<Call>) callRepo.findAll();
+    }
 
     @Override
     @Transactional
@@ -50,24 +52,6 @@ public class CallService extends ExternalCallService implements ICallService {
         initiator.setOwnedInvitation(invitation);
         invitationRepo.save(invitation);
         return invitation;
-    }
-
-    @Override
-    @Transactional
-    public Invitation loadInvitationByID(long id) throws InvitationDoesNotExistException {
-        return invitationRepo.findById(id).orElseThrow(() -> new InvitationDoesNotExistException(id, "Invalid Invitation-ID"));
-    }
-
-    @Override
-    @Transactional
-    public Iterable<Call> getAllCalls() {
-        return callRepo.findAll();
-    }
-
-    @Override
-    @Transactional
-    public Invitation saveInvitation(Invitation invitation) {
-        return invitationRepo.save(invitation);
     }
 
     @Override
@@ -156,7 +140,7 @@ public class CallService extends ExternalCallService implements ICallService {
                     endCall(call);
                 else if (user instanceof RegisteredUser) {
                     Invitation invitation = call.getInvitation();
-                    if (invitation.equals(((RegisteredUser) user).getOwnedInvitation()))
+                    if (invitation != null && invitation.equals(((RegisteredUser) user).getOwnedInvitation()))
                         endInvitation(invitation);
                     userService.saveUser(user);
                 }
@@ -168,7 +152,7 @@ public class CallService extends ExternalCallService implements ICallService {
     @Override
     @Transactional
     public List<Long> checkCallsForTimeoutOrEnd(long timediff) {
-        List<Call> calls = (List<Call>) getAllCalls();
+        List<Call> calls = getAllCalls();
 
         // this is the workaround for informing the frontend which calls have ended
         List<Long> endedCallIDs = new ArrayList<>();

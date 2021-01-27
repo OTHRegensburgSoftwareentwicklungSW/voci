@@ -14,7 +14,6 @@ import de.majaf.voci.entity.RegisteredUser;
 import de.majaf.voci.entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -42,9 +41,6 @@ public class InvitationController {
 
     @Autowired
     private DropsiController dropsiController;
-
-    @Autowired
-    private SimpMessagingTemplate simpMessagingTemplate;
 
     @RequestMapping(value = "/invitation", method = RequestMethod.GET)
     public String prepareInvitationPage(Model model,
@@ -89,7 +85,7 @@ public class InvitationController {
                 callService.joinCallByAccessToken(user, accessToken);
         }
         Call call = user.getActiveCall();
-        simpMessagingTemplate.convertAndSend("/broker/" + call.getId() + "/addedCallMember", user);
+        controllerUtils.sendSocketMemberJoinedMessage(call.getId(), user);
 
         if (user instanceof RegisteredUser)
             dropsiController.addDropsiFilesToModel(model, (RegisteredUser) user);

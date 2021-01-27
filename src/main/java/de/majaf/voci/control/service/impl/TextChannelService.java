@@ -51,7 +51,7 @@ public class TextChannelService implements IChannelService {
     @Transactional
     public void addChannelToRoom(Room room, String channelName, RegisteredUser initiator) throws InvalidUserException, InvalidNameException {
         if (initiator.equals(room.getOwner())) {
-            if (channelName != null && !(channelName.trim()).equals("")) {
+            if (channelName != null && !(channelName.trim()).equals("") && channelName.trim().length()<=20) {
                 TextChannel textChannel = new TextChannel(channelName.trim());
                 room.addTextChannel(textChannel);
                 roomService.saveRoom(room);

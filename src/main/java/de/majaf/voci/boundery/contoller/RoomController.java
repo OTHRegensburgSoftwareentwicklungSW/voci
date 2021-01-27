@@ -86,9 +86,11 @@ public class RoomController {
             controllerUtils.sendSocketLeaveCallMessages(user, user.getActiveCall(), user.getActiveCall().getId());
         }
 
-        if(user.getActiveVoiceChannel() != null) {
-            // TODO: send Messages. VoiceChannel is left in Function joinVoiceChannel.
-        }
+        // if voice streaming were working, send message to theoretically subscribed clients.
+        // I left this out because voice-streaming does not work anyway. So it is not that important to inform
+        // clients for joining/leaving users in voice-channels
+        // if(user.getActiveVoiceChannel() != null) { // send messages here. Voice channel is left in joinVoiceChannel.}
+
         roomService.joinVoiceChannelInRoom(voiceChannelID, room, user);
         addAttributesToModel(null, user, room, model);
         return "room";

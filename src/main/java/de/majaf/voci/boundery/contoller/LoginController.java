@@ -1,5 +1,6 @@
 package de.majaf.voci.boundery.contoller;
 
+import de.majaf.voci.control.exceptions.InvalidNameException;
 import de.majaf.voci.control.service.IUserService;
 import de.majaf.voci.control.exceptions.user.UserAlreadyExistsException;
 import de.majaf.voci.entity.RegisteredUser;
@@ -41,7 +42,9 @@ public class LoginController {
             model.addAttribute("successMsg", "User " + registeredUser.getUserName() + " was created!");
             return "login";
         } catch (UserAlreadyExistsException uaee) {
-            model.addAttribute("errorMsg", "User already exists");
+            model.addAttribute("errorMsg", "User with this name or email already exists");
+        } catch (InvalidNameException ine) {
+            model.addAttribute("errorMsg", "Invalid name or email: " + ine.getName());
         }
         return "register";
     }

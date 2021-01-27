@@ -4,6 +4,7 @@ import de.majaf.voci.boundery.contoller.utils.ControllerUtils;
 import de.majaf.voci.control.exceptions.call.DropsiException;
 import de.majaf.voci.control.exceptions.user.UserDoesNotExistException;
 import de.majaf.voci.control.service.IDropsiService;
+import de.majaf.voci.control.service.IUserService;
 import de.majaf.voci.entity.RegisteredUser;
 import de.mschoettle.entity.dto.FolderDTO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +34,7 @@ public class InfoController {
     private DropsiController dropsiController;
 
     @Autowired
-    private IDropsiService dropsiService;
+    private IUserService userService;
 
     private Date sessionStart = new Date();
 
@@ -53,12 +54,12 @@ public class InfoController {
                 FolderDTO rootFolder = dropsiController.getRootFolder(dropsiToken);
 
                 if (rootFolder != null)
-                    user = dropsiService.updateDropsiToken(user, dropsiToken);
+                    user = userService.updateDropsiToken(user, dropsiToken);
 
             } catch(DropsiException e) {
                 model.addAttribute("errorMsg", "No connection or no valid Dropsi-Security-Token");
             }
-        } else user = dropsiService.updateDropsiToken(user, null);
+        } else user = userService.updateDropsiToken(user, null);
         addInfoAttributesToModel(model, user);
         return "info";
     }
