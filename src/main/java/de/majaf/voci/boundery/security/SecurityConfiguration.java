@@ -13,6 +13,8 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.web.authentication.logout.LogoutHandler;
+import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @Configuration
@@ -26,6 +28,9 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     @Autowired
     private SecurityUtilities securityUtilities;
+
+    @Autowired
+    private CustomLogoutHandler customLogoutHandler;
 
     // TODO adjust when guest users work properly
     private static final String[] ALLOW_ACCESS_WITHOUT_AUTHENTICATION = {
@@ -48,7 +53,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .formLogin().loginPage("/login").permitAll().defaultSuccessUrl("/main").failureUrl("/failedLogin")
                 .and()
                 .logout().logoutRequestMatcher(new AntPathRequestMatcher("/logout")).logoutSuccessUrl("/login")
-                .deleteCookies("remember-me").permitAll()
+                .addLogoutHandler(customLogoutHandler)
+                .deleteCookies("remember-me-voci").permitAll()
                 .and().rememberMe();
         http.
                 csrf().ignoringAntMatchers("/api/**")

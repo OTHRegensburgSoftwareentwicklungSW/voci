@@ -24,7 +24,7 @@ public class TestController {
     @Autowired
     private RestTemplate restServiceClient;
 
-    private final String url = "http://im-codd:8945/api/";
+    private final String url = "https://im-codd:8945/api/";
     @RequestMapping(value = "/test/start")
     public String test() {
         String key = "5f1498db-2f40-4824-a156-1a0e57719ff8";

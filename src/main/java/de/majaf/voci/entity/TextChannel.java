@@ -8,7 +8,7 @@ import java.util.List;
 @Entity
 public class TextChannel extends Channel {
 
-    @OneToMany(cascade = {CascadeType.ALL}, orphanRemoval = true)
+    @OneToMany(cascade = {CascadeType.ALL})
     private List<Message> messages = new ArrayList<>();
 
     public TextChannel() {

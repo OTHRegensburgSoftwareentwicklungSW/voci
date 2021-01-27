@@ -4,8 +4,10 @@ import de.majaf.voci.control.exceptions.InvalidNameException;
 import de.majaf.voci.control.exceptions.channel.ChannelDoesNotExistException;
 import de.majaf.voci.control.exceptions.channel.InvalidChannelException;
 import de.majaf.voci.control.exceptions.user.InvalidUserException;
+import de.majaf.voci.control.exceptions.user.UserDoesNotExistException;
 import de.majaf.voci.control.service.IChannelService;
 import de.majaf.voci.control.service.IRoomService;
+import de.majaf.voci.control.service.IUserService;
 import de.majaf.voci.entity.*;
 import de.majaf.voci.entity.repo.VoiceChannelRepository;
 import de.mschoettle.entity.dto.FileDTO;
@@ -15,6 +17,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.util.Iterator;
+import java.util.logging.Logger;
 
 @Service @Scope(value = "singleton")
 @Component("voiceChannelService")
@@ -26,12 +30,16 @@ public class VoiceChannelService implements IChannelService {
     @Autowired
     private IRoomService roomService;
 
+    @Autowired
+    private IUserService userService;
+
+    @Autowired
+    private Logger logger;
+
     @Override
     @Transactional
-    public VoiceChannel createChannel() {
-        VoiceChannel voiceChannel = new VoiceChannel();
-        voiceChannelRepo.save(voiceChannel);
-        return voiceChannel;
+    public Channel saveChannel(Channel channel) {
+        return voiceChannelRepo.save((VoiceChannel) channel);
     }
 
     @Override
@@ -50,18 +58,13 @@ public class VoiceChannelService implements IChannelService {
 
     @Override
     @Transactional
-    public void deleteChannel(Channel channel) {
-        voiceChannelRepo.delete((VoiceChannel) channel);
-    }
-
-    @Override
-    @Transactional
     public void addChannelToRoom(Room room, String channelName, RegisteredUser initiator) throws InvalidUserException, InvalidNameException {
         if (initiator.equals(room.getOwner())) {
             if (channelName != null && !channelName.equals("")) {
                 VoiceChannel voiceChannel = new VoiceChannel(channelName);
                 room.addVoiceChannel(voiceChannel);
                 roomService.saveRoom(room);
+                logger.info("Added room with name: " + channelName + " to room: " + room.getRoomName());
             } else throw new InvalidNameException(channelName, "Channel-Name is empty");
         } else throw new InvalidUserException(initiator, "User is not Owner");
     }
@@ -73,6 +76,10 @@ public class VoiceChannelService implements IChannelService {
             if (room.getVoiceChannels().size() > 1) {
                 VoiceChannel voiceChannel = loadChannelByID(channelID);
                 room.removeVoiceChannel(voiceChannel);
+
+                for(User member : voiceChannel.getActiveMembers())
+                    userService.leaveVoiceChannel(member);      // load because of UnmodifiableCollection
+
                 roomService.saveRoom(room);
             }
         } else throw new InvalidUserException(initiator, "User is not Owner");
@@ -94,17 +101,9 @@ public class VoiceChannelService implements IChannelService {
 
     @Override
     public boolean userIsInChannel(long channelID, User user) {
+        if(user.getActiveVoiceChannel() != null) {
+            return user.getActiveVoiceChannel().getId() == channelID;
+        }
         return false;
-    }
-
-    @Override
-    @Transactional
-    public Message createTextMessage(String msg, long channelID, User user) throws ChannelDoesNotExistException {
-        return null;
-    }
-
-    @Override
-    public Message createDropsiFileMessage(FileDTO file, long textChannelID, User sender) throws ChannelDoesNotExistException {
-        return null;
     }
 }

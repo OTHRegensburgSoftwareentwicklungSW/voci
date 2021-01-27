@@ -19,8 +19,8 @@ public class Scheduler {
     private SimpMessagingTemplate simpMessagingTemplate;
 
     @Scheduled(cron = "0 */10 * * * *")
-    public void checkForTimeout() {
-        for(long callID : callService.updateTimeout(10)) {
+    public void checkForActiveCalls() {
+        for(long callID : callService.checkCallsForTimeoutOrEnd(10)) {
             simpMessagingTemplate.convertAndSend("/broker/" + callID + "/endedInvitation", true);
             simpMessagingTemplate.convertAndSend("/broker/" + callID + "/endedCall", true);
         }

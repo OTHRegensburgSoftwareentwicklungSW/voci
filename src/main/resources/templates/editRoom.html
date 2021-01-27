@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+    <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
@@ -67,6 +67,11 @@
                         </div>
                         <button class="btn btn-sm btn-success mt-3" data-toggle="modal" data-target="#addVoiceChannelModal">ADD VOICE-CHANNEL</button>
                     </div>
+                </div>
+                <div class="flex-row d-flex justify-content-center mr-3 ml-3 pt-3">
+
+                    <p th:if="${errorMsg}" th:text="${errorMsg}" class="m-0 text-danger">
+                    </p>
                 </div>
                 <div class="flex-row d-flex justify-content-center mr-3 ml-3 pt-3">
 

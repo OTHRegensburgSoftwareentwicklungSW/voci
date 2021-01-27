@@ -19,6 +19,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+@RequestMapping("/api")
 @RestController @Scope("singleton")
 public class CallRestController {
 
@@ -34,14 +35,14 @@ public class CallRestController {
     @Autowired
     private SimpMessagingTemplate simpMessagingTemplate;
 
-    @RequestMapping(value = "/api/startCall", method = RequestMethod.POST)
+    @RequestMapping(value = "/startCall", method = RequestMethod.POST)
     public Invitation startCall(@RequestHeader String securityToken, HttpServletRequest req) throws UserTokenDoesNotExistException {
         RegisteredUser user = userService.loadUserBySecurityToken(securityToken);
         controllerUtils.authenticateUser(user, req);
         return callService.startCall(user).getInvitation();
     }
 
-    @RequestMapping(value = "/api/endCall", method = RequestMethod.DELETE)
+    @RequestMapping(value = "/endCall", method = RequestMethod.DELETE)
     public void endCall(@RequestHeader String securityToken, @RequestParam String accessToken, HttpServletRequest req,
                         HttpServletResponse response) throws UserTokenDoesNotExistException, InvitationTokenDoesNotExistException, InvalidCallStateException, IOException {
         RegisteredUser user = userService.loadUserBySecurityToken(securityToken);

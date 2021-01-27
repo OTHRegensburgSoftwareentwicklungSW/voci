@@ -2,6 +2,7 @@ package de.majaf.voci.control.service.impl;
 
 import de.majaf.voci.control.exceptions.call.InvitationTokenDoesNotExistException;
 import de.majaf.voci.control.service.ICallService;
+import de.majaf.voci.control.service.IChannelService;
 import de.majaf.voci.control.service.IUserService;
 import de.majaf.voci.control.exceptions.call.InvalidCallStateException;
 import de.majaf.voci.control.exceptions.call.InvitationDoesNotExistException;
@@ -11,12 +12,14 @@ import de.majaf.voci.entity.*;
 import de.majaf.voci.entity.repo.CallRepository;
 import de.majaf.voci.entity.repo.InvitationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -34,7 +37,11 @@ public class CallService extends ExternalCallService implements ICallService {
     private IUserService userService;
 
     @Autowired
-    Logger logger;
+    @Qualifier("voiceChannelService")
+    private IChannelService voiceChannelService;
+
+    @Autowired
+    private Logger logger;
 
     @Override
     @Transactional
@@ -91,12 +98,6 @@ public class CallService extends ExternalCallService implements ICallService {
 
     @Transactional
     @Override
-    public void joinCallByInvitationID(User user, long invitationID) throws InvalidUserException, InvalidCallStateException, InvitationDoesNotExistException {
-        joinCall(user, loadInvitationByID(invitationID));
-    }
-
-    @Transactional
-    @Override
     public void joinCallByAccessToken(User user, String accessToken) throws InvalidUserException, InvalidCallStateException, InvitationTokenDoesNotExistException {
         joinCall(user, loadInvitationByToken(accessToken));
     }
@@ -114,6 +115,7 @@ public class CallService extends ExternalCallService implements ICallService {
         Call userCall = user.getActiveCall();
         if (userCall != null) {         // check if user is active in other call
             if (!userCall.equals(call)) { // nothing happens if the user is already in the right call
+                if(user instanceof GuestUser) throw new InvalidUserException(user, "Guest can not join an other call.");
                 leaveCall(user);
                 joinCall(call, user);
             }
@@ -123,6 +125,10 @@ public class CallService extends ExternalCallService implements ICallService {
     }
 
     private void joinCall(Call call, User user) {
+        VoiceChannel voiceChannel = call.getVoiceChannel();
+        voiceChannel.addActiveMember(user);
+        user.setActiveVoiceChannel(voiceChannel);
+
         user.setActiveCall(call);
         call.addParticipant(user);
         userService.saveUser(user);
@@ -134,38 +140,52 @@ public class CallService extends ExternalCallService implements ICallService {
         Call call = user.getActiveCall();
         if (call != null) {
 
-            call.removeParticipant(user);
-            user.setActiveCall(null);
+            // Call is reloaded, because of lazy-initialization
+            Optional<Call> c = callRepo.findById(call.getId());
+            if (c.isPresent()) {
+                call = c.get();
 
-            if (call.getParticipants().isEmpty())
-                endCall(call);
-            else if (user instanceof RegisteredUser) {
-                Invitation invitation = call.getInvitation();
-                if (invitation.equals(((RegisteredUser) user).getOwnedInvitation()))
-                    endInvitation(invitation);
-                userService.saveUser(user);
-            }
-            return call;
+                call.removeParticipant(user);
+                user.setActiveCall(null);
+
+                VoiceChannel voiceChannel = call.getVoiceChannel();
+                voiceChannel.removeActiveMember(user);
+                user.setActiveVoiceChannel(null);
+
+                if (call.getParticipants().isEmpty())
+                    endCall(call);
+                else if (user instanceof RegisteredUser) {
+                    Invitation invitation = call.getInvitation();
+                    if (invitation.equals(((RegisteredUser) user).getOwnedInvitation()))
+                        endInvitation(invitation);
+                    userService.saveUser(user);
+                }
+                return call;
+            } else return null;
         } else throw new InvalidCallStateException(call, "User has no active Call");
     }
 
     @Override
     @Transactional
-    public List<Long> updateTimeout(long timediff) {
+    public List<Long> checkCallsForTimeoutOrEnd(long timediff) {
         List<Call> calls = (List<Call>) getAllCalls();
 
         // this is the workaround for informing the frontend which calls have ended
         List<Long> endedCallIDs = new ArrayList<>();
 
         for (Call call : calls) {
-            if (call.getTimeout() <= 0) {
-                endedCallIDs.add(call.getId());
+            if (call.getParticipants().size() == 0)
                 endCall(call);
-            } else {
-                call.setTimeout(call.getTimeout() - timediff);
+            else {
+                if (call.getTimeout() <= 0) {
+                    endedCallIDs.add(call.getId());
+                    endCall(call);
+                } else {
+                    call.setTimeout(call.getTimeout() - timediff);
+                }
             }
         }
-        logger.info("Currently open calls: " + (calls.size()-endedCallIDs.size()));
+        logger.info("Currently open calls: " + (calls.size() - endedCallIDs.size()));
         return endedCallIDs;
     }
 }

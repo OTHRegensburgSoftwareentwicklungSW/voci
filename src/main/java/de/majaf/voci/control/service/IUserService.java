@@ -20,6 +20,7 @@ public interface IUserService extends UserDetailsService {
     void addContact(RegisteredUser user, String usernameContact) throws UsernameDoesNotExistException, InvalidUserException;
     void removeContact(RegisteredUser user, long contactID) throws UserDoesNotExistException;
 
-    GuestUser createGuestUserAndJoinCall(String accessToken, HttpServletRequest req) throws InvitationTokenDoesNotExistException, InvalidCallStateException, InvalidUserException;
-    void removeAllGuests(Call call);
+    GuestUser createGuestUserAndJoinCall(String accessToken) throws InvitationTokenDoesNotExistException, InvalidCallStateException, InvalidUserException;
+
+    void leaveVoiceChannel(User user);
 }

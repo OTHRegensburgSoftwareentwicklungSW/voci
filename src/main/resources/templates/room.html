@@ -27,17 +27,28 @@
                 <a class="btn btn-block text-light justify-content-center rounded p-1 mb-2"
                    th:each="channel : ${room.textChannels}"
                    th:classappend="${channel.equals(textChannel) ? 'bg-success' : 'secondary-bg'}"
-                   th:href="@{/room/{roomID}(roomID=${roomID}, textChannelID=${channel.id})}"
+                   th:href="@{/room/{roomID}(roomID=${room.id}, textChannelID=${channel.id})}"
                    onclick="disconnect()">
                     <p class="m-0" th:text="${channel.channelName}"></p>
                 </a>
             </div>
             <p class="text-secondary border-top border-bottom secondary-border mb-2 mt-4">voice-channels</p>
             <div class="pl-2 pr-2">
-                <a class="btn btn-block text-light justify-content-center secondary-bg rounded p-1 mb-2"
-                   th:each="channel : ${room.voiceChannels}">
-                    <p class="m-0" th:text="${channel.channelName}"></p>
-                </a>
+                <div th:each="channel : ${room.voiceChannels}">
+                    <a class="btn btn-block text-light justify-content-center rounded p-1 mt-2"
+                       th:classappend="${(user.activeVoiceChannel != null) && (channel.equals(user.activeVoiceChannel)) ? 'bg-success' : 'secondary-bg'}"
+                       th:href="@{/room/{roomID}/{voiceChannelID}(roomID=${room.id}, voiceChannelID=${channel.id})}"
+                       onclick="disconnect()">
+                        <p class="m-0" th:text="${channel.channelName}"></p>
+                    </a>
+                    <div th:each="member : ${channel.activeMembers}" class="rounded flex-column flex-row ml-2 mr-2 mb-1">
+                        <p th:text="${member.userName}" class="m-0 secondary-border border-top border-bottom"></p>
+                    </div>
+                </div>
+            </div>
+            <div th:if="${(user.activeVoiceChannel != null)}" class="pb-4 pt-3 pl-4 pr-4">
+                <a class="btn btn-sm btn-outline-danger"
+                   th:href="@{/room/{roomID}/leaveVC(roomID=${room.id})}" onclick="disconnect()">LEAVE VOICE-CHANNEL</a>
             </div>
             <div th:if="${user.equals(room.owner)}" class="pb-4 pt-3 pl-4 pr-4">
                 <a class="btn btn-block btn-outline-success"

@@ -1,4 +1,4 @@
-let stompClient = null; // TODO maybe recycle old
+let stompClient = null;
 
 function connectSocket(connect_function) {
     let socket = new SockJS('/chat');

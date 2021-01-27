@@ -50,9 +50,6 @@ public class DropsiController {
     @Autowired
     private RestTemplate restService;
 
-    @Autowired
-    private SimpMessagingTemplate simpMessagingTemplate;
-
     private final String dropsiURL = "http://im-codd:8922/";
 
     @MessageMapping(value = "/download/{textChannelID}")

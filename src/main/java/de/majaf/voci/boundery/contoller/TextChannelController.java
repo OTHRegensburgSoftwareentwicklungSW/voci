@@ -8,6 +8,7 @@ import de.majaf.voci.control.exceptions.user.UserDoesNotExistException;
 import de.majaf.voci.control.service.IChannelService;
 import de.majaf.voci.control.exceptions.channel.ChannelDoesNotExistException;
 import de.majaf.voci.control.service.IDropsiService;
+import de.majaf.voci.control.service.IMessageService;
 import de.majaf.voci.control.service.IUserService;
 import de.majaf.voci.entity.*;
 import de.mschoettle.entity.dto.FileDTO;
@@ -38,8 +39,7 @@ import java.io.InputStream;
 public class TextChannelController {
 
     @Autowired
-    @Qualifier("textChannelService")
-    private IChannelService channelService;
+    private IMessageService messageService;
 
     @Autowired
     private ControllerUtils controllerUtils;
@@ -51,7 +51,7 @@ public class TextChannelController {
                                Authentication auth) {
         try {
             User user = controllerUtils.getActiveUser(auth);
-            return channelService.createTextMessage(message, textChannelID, user);
+            return messageService.createTextMessage(message, textChannelID, user);
         } catch (ChannelDoesNotExistException cdnee) {
             return new ErrorMessage("Channel with id: " + cdnee.getChannelID() + " could not be found", HttpServletResponse.SC_NOT_FOUND);
         } catch (UserDoesNotExistException udnee) {
@@ -64,7 +64,7 @@ public class TextChannelController {
     public Message sendDropsiFile(@DestinationVariable long textChannelID, FileDTO file, Authentication auth) {
         try {
             RegisteredUser user = (RegisteredUser) controllerUtils.getActiveUser(auth);
-            return channelService.createDropsiFileMessage(file, textChannelID, user);
+            return messageService.createDropsiFileMessage(file, textChannelID, user);
         } catch (ChannelDoesNotExistException cdnee) {
             return new ErrorMessage("Channel with id: " + cdnee.getChannelID() + " could not be found", HttpServletResponse.SC_NOT_FOUND);
         } catch (UserDoesNotExistException udnee) {

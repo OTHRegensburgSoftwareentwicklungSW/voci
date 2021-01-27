@@ -2,6 +2,7 @@ package de.majaf.voci.boundery.contoller;
 
 import de.majaf.voci.boundery.contoller.utils.ControllerUtils;
 import de.majaf.voci.control.exceptions.InvalidNameException;
+import de.majaf.voci.control.exceptions.call.InvalidCallStateException;
 import de.majaf.voci.control.exceptions.channel.ChannelDoesNotExistException;
 import de.majaf.voci.control.exceptions.channel.InvalidChannelException;
 import de.majaf.voci.control.exceptions.user.InvalidUserException;
@@ -9,10 +10,8 @@ import de.majaf.voci.control.exceptions.user.UserDoesNotExistException;
 import de.majaf.voci.control.service.IChannelService;
 import de.majaf.voci.control.service.IRoomService;
 import de.majaf.voci.control.exceptions.room.RoomDoesNotExistException;
-import de.majaf.voci.entity.Channel;
-import de.majaf.voci.entity.RegisteredUser;
-import de.majaf.voci.entity.Room;
-import de.majaf.voci.entity.TextChannel;
+import de.majaf.voci.control.service.IUserService;
+import de.majaf.voci.entity.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Scope;
@@ -26,7 +25,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Optional;
 
-@Controller @Scope("singleton")
+@Controller
+@Scope("session")
 public class RoomController {
 
     @Autowired
@@ -41,6 +41,9 @@ public class RoomController {
     private IChannelService voiceChannelService;
 
     @Autowired
+    private IUserService userService;
+
+    @Autowired
     ControllerUtils controllerUtils;
 
     @Autowired
@@ -49,6 +52,8 @@ public class RoomController {
     @Autowired
     private DropsiController dropsiController;
 
+    private long activeTextChannelID = 0;
+
     @RequestMapping(value = "/room/{roomID}", method = RequestMethod.GET)
     public String prepareRoomPageAndTextChannel(@PathVariable("roomID") long roomID,
                                                 @RequestParam("textChannelID") Optional<Long> textChannelID, Model model,
@@ -56,22 +61,49 @@ public class RoomController {
         RegisteredUser user = (RegisteredUser) controllerUtils.getActiveUser(auth);
         Room room = roomService.loadRoomByID(roomID);
         if (roomService.roomHasAsMember(room, user)) {
-            TextChannel textChannel;
+            TextChannel textChannel = null;
             if (textChannelID.isPresent()) {
                 textChannel = (TextChannel) textChannelService.loadChannelByIDInRoom(textChannelID.get(), room);
             } else {
-                textChannel = room.getTextChannels().get(0);
+                activeTextChannelID = 0;
             }
             dropsiController.addDropsiFilesToModel(model, user);
-            model.addAttribute("textChannel", textChannel);
-            model.addAttribute("user", user);
-            model.addAttribute("room", room);
+            addAttributesToModel(textChannel, user, room, model);
             return "room";
         } else throw new InvalidUserException(user, "User is no member");
 
     }
 
-    // TODO: Exception Handling
+    @RequestMapping(value = "/room/{roomID}/{voiceChannelID}", method = RequestMethod.GET)
+    public String joinVoiceChannel(@PathVariable("roomID") long roomID,
+                                   @PathVariable("voiceChannelID") long voiceChannelID, Model model,
+                                   Authentication auth) throws UserDoesNotExistException, RoomDoesNotExistException, InvalidChannelException, InvalidUserException, ChannelDoesNotExistException, InvalidCallStateException {
+        RegisteredUser user = (RegisteredUser) controllerUtils.getActiveUser(auth);
+        Room room = roomService.loadRoomByID(roomID);
+
+        if (user.getActiveCall() != null) {
+            // send Messages. Call is left in Function joinVoiceChannel.
+            controllerUtils.sendSocketLeaveCallMessages(user, user.getActiveCall(), user.getActiveCall().getId());
+        }
+
+        if(user.getActiveVoiceChannel() != null) {
+            // TODO: send Messages. VoiceChannel is left in Function joinVoiceChannel.
+        }
+        roomService.joinVoiceChannelInRoom(voiceChannelID, room, user);
+        addAttributesToModel(null, user, room, model);
+        return "room";
+    }
+
+    @RequestMapping(value = "/room/{roomID}/leaveVC", method = RequestMethod.GET)
+    public String leaveVoiceChannel(@PathVariable("roomID") long roomID,
+                                            Model model, Authentication auth) throws RoomDoesNotExistException, UserDoesNotExistException {
+        RegisteredUser user = (RegisteredUser) controllerUtils.getActiveUser(auth);
+        Room room = roomService.loadRoomByID(roomID);
+        userService.leaveVoiceChannel(user);
+        addAttributesToModel(null, user, room, model);
+        return "room";
+    }
+
     @RequestMapping(value = "/room/{roomID}/invite", method = RequestMethod.GET)
     public String prepareRoomInvitationPage(@PathVariable("roomID") long roomID,
                                             Model model, Authentication auth) throws RoomDoesNotExistException, UserDoesNotExistException {
@@ -82,7 +114,6 @@ public class RoomController {
         return "roomInvite";
     }
 
-    // TODO Exceptions
     @RequestMapping(value = "/room/{roomID}/inviteContact", method = RequestMethod.POST)
     public String inviteContact(@PathVariable("roomID") long roomID, Model model, Authentication auth,
                                 @RequestParam("contactID") long contactID) throws RoomDoesNotExistException, UserDoesNotExistException, InvalidUserException {
@@ -90,13 +121,10 @@ public class RoomController {
         Room room = roomService.loadRoomByID(roomID);
         roomService.addMemberToRoom(room, contactID, user);
         dropsiController.addDropsiFilesToModel(model, user);
-        model.addAttribute("textChannel", room.getTextChannels().get(0));
-        model.addAttribute("user", user);
-        model.addAttribute("room", room);
+        addAttributesToModel(null, user, room, model);
         return "room";
     }
 
-    // TODO Exceptions
     @RequestMapping(value = "/room/{roomID}/removeMember", method = RequestMethod.DELETE)
     public String removeMember(@PathVariable("roomID") long roomID, Model model, Authentication auth, @RequestParam("memberID") long memberID) throws RoomDoesNotExistException, UserDoesNotExistException, InvalidUserException {
         RegisteredUser user = (RegisteredUser) controllerUtils.getActiveUser(auth);
@@ -109,7 +137,6 @@ public class RoomController {
         return "room";
     }
 
-    // TODO Exceptions
     @RequestMapping(value = "/room/{roomID}/delete", method = RequestMethod.DELETE)
     public String deleteRoom(@PathVariable("roomID") long roomID, Model model, Authentication auth) throws RoomDoesNotExistException, InvalidUserException, UserDoesNotExistException {
         RegisteredUser user = (RegisteredUser) controllerUtils.getActiveUser(auth);
@@ -118,7 +145,6 @@ public class RoomController {
         return "main";
     }
 
-    // TODO Exceptions
     @RequestMapping(value = "/room/{roomID}/leave", method = RequestMethod.DELETE)
     public String leaveRoom(@PathVariable("roomID") long roomID, Model model, Authentication auth,
                             HttpServletResponse response) throws RoomDoesNotExistException, UserDoesNotExistException, IOException {
@@ -132,7 +158,6 @@ public class RoomController {
         return "main";
     }
 
-    // TODO Exceptions
     @RequestMapping(value = "/room/{roomID}/edit", method = RequestMethod.GET)
     public String prepareEditRoomPage(@PathVariable("roomID") long roomID, Model model, Authentication auth) throws RoomDoesNotExistException, UserDoesNotExistException {
         RegisteredUser user = (RegisteredUser) controllerUtils.getActiveUser(auth);
@@ -145,19 +170,26 @@ public class RoomController {
 
 
     @RequestMapping(value = "/room/{roomID}/edit/addChannel", method = RequestMethod.POST)
-    public String createVoiceChannel(@PathVariable("roomID") long roomID, @ModelAttribute("channelName") String channelName, @RequestParam("isTC") boolean isTC, Model model, Authentication auth) throws RoomDoesNotExistException, InvalidUserException, InvalidNameException, UserDoesNotExistException {
+    public String createChannel(@PathVariable("roomID") long roomID, @ModelAttribute("channelName") String channelName, @RequestParam("isTC") boolean isTC, Model model, Authentication auth) throws RoomDoesNotExistException, InvalidUserException, UserDoesNotExistException {
         RegisteredUser user = (RegisteredUser) controllerUtils.getActiveUser(auth);
         Room room = roomService.loadRoomByID(roomID);
-        if (isTC)
-            textChannelService.addChannelToRoom(room, channelName, user);
-        else
-            voiceChannelService.addChannelToRoom(room, channelName, user);
+        try {
+            if (isTC)
+                textChannelService.addChannelToRoom(room, channelName, user);
+            else
+                voiceChannelService.addChannelToRoom(room, channelName, user);
+        } catch (InvalidNameException e) {
+            model.addAttribute("errorMsg", "Invalid channel name. " + e.getName());
+        }
         model.addAttribute("room", room);
         return "editRoom";
     }
 
     @RequestMapping(value = "/room/{roomID}/edit/deleteChannel", method = RequestMethod.DELETE)
-    public String deleteVoiceChannel(@PathVariable("roomID") long roomID, @RequestParam("channelID") long channelID, @RequestParam("isTC") boolean isTC, Model model, Authentication auth) throws RoomDoesNotExistException, ChannelDoesNotExistException, InvalidUserException, UserDoesNotExistException {
+    public String deleteChannel(@PathVariable("roomID") long roomID,
+                                @RequestParam("channelID") long channelID,
+                                @RequestParam("isTC") boolean isTC, Model model,
+                                Authentication auth) throws RoomDoesNotExistException, ChannelDoesNotExistException, InvalidUserException, UserDoesNotExistException {
         RegisteredUser user = (RegisteredUser) controllerUtils.getActiveUser(auth);
         Room room = roomService.loadRoomByID(roomID);
         if (isTC)
@@ -169,7 +201,10 @@ public class RoomController {
     }
 
     @RequestMapping(value = "/room/{roomID}/edit/rename", method = RequestMethod.GET)
-    public String prepareChannelRenamePage(@PathVariable("roomID") long roomID, @RequestParam("channelID") long channelID, @RequestParam("isTC") boolean isTC, Model model, Authentication auth) throws ChannelDoesNotExistException, RoomDoesNotExistException, InvalidChannelException, InvalidUserException, UserDoesNotExistException {
+    public String prepareChannelRenamePage(@PathVariable("roomID") long roomID,
+                                           @RequestParam("channelID") long channelID,
+                                           @RequestParam("isTC") boolean isTC, Model model,
+                                           Authentication auth) throws ChannelDoesNotExistException, RoomDoesNotExistException, InvalidChannelException, InvalidUserException, UserDoesNotExistException {
         RegisteredUser user = (RegisteredUser) controllerUtils.getActiveUser(auth);
         Room room = roomService.loadRoomByID(roomID);
         if (user.equals(room.getOwner())) {
@@ -186,19 +221,41 @@ public class RoomController {
     }
 
     @RequestMapping(value = "/room/{roomID}/edit/rename", method = RequestMethod.POST)
-    public String RenameChannel(@PathVariable("roomID") long roomID, @RequestParam("channelID") long channelID,
+    public String renameChannel(@PathVariable("roomID") long roomID, @RequestParam("channelID") long channelID,
                                 @ModelAttribute("channelName") String channelName,
                                 @RequestParam("isTC") boolean isTC,
-                                Model model, Authentication auth) throws ChannelDoesNotExistException, RoomDoesNotExistException, InvalidUserException, InvalidNameException, UserDoesNotExistException, InvalidChannelException {
+                                Model model, Authentication auth) throws ChannelDoesNotExistException, RoomDoesNotExistException, InvalidUserException, UserDoesNotExistException, InvalidChannelException {
         RegisteredUser user = (RegisteredUser) controllerUtils.getActiveUser(auth);
         Room room = roomService.loadRoomByID(roomID);
-        if (isTC) {
-            textChannelService.renameChannel(channelID, room, channelName, user);
-        } else {
-            voiceChannelService.renameChannel(channelID, room, channelName, user);
+        try {
+            if (isTC) {
+                textChannelService.renameChannel(channelID, room, channelName, user);
+            } else {
+                voiceChannelService.renameChannel(channelID, room, channelName, user);
+            }
+        } catch (InvalidNameException e) {
+            model.addAttribute("errorMsg", "Invalid channel name. " + e.getName());
         }
         model.addAttribute("room", room);
         return "editRoom";
+    }
+
+    private void addAttributesToModel(TextChannel textChannel, RegisteredUser user, Room room, Model model) {
+        if(textChannel != null) {
+            activeTextChannelID = textChannel.getId();
+        } else if(activeTextChannelID != 0) {
+            try {
+                textChannel = (TextChannel) textChannelService.loadChannelByID(activeTextChannelID);
+            } catch (ChannelDoesNotExistException e) {
+                // this Exception is possible, because Channels can be removed.
+                textChannel = room.getTextChannels().get(0);
+            }
+        } else {
+            textChannel = room.getTextChannels().get(0);
+        }
+        model.addAttribute("textChannel", textChannel);
+        model.addAttribute("user", user);
+        model.addAttribute("room", room);
     }
 
     @ExceptionHandler(UserDoesNotExistException.class)
@@ -218,11 +275,16 @@ public class RoomController {
 
     @ExceptionHandler(InvalidChannelException.class)
     public void handleInvalidChannelException(HttpServletResponse response, InvalidChannelException e) throws IOException {
-        response.sendError(HttpServletResponse.SC_FORBIDDEN, "Channel with ID: "+ e.getChannel().getChannelName() +" is not in room.");
+        response.sendError(HttpServletResponse.SC_FORBIDDEN, "Channel with ID: " + e.getChannel().getChannelName() + " is not in room.");
     }
 
     @ExceptionHandler(InvalidUserException.class)
     public void handleInvalidUserException(HttpServletResponse response, InvalidUserException e) throws IOException {
-        response.sendError(HttpServletResponse.SC_FORBIDDEN, "User with ID: "+ e.getUser().getUserName() +" is not allowed to access this room.");
+        response.sendError(HttpServletResponse.SC_FORBIDDEN, "User with ID: " + e.getUser().getUserName() + " is not allowed to access this room.");
+    }
+
+    @ExceptionHandler(InvalidCallStateException.class)
+    public void handleInvalidCallStateException(HttpServletResponse response, InvalidCallStateException e) throws IOException {
+        response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Call does not exist. Leaving failed"); // Can actually not happen.
     }
 }

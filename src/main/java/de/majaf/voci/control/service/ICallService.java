@@ -22,12 +22,11 @@ public interface ICallService extends IExternalCallService{
     void uninviteUser(Invitation invitation, RegisteredUser invited);
     void uninviteUserByID(Invitation invitation, long invitedContactID) throws UserDoesNotExistException;
 
-    void joinCallByInvitationID(User user, long invitationID) throws InvalidUserException, InvalidCallStateException, InvitationDoesNotExistException;
     void joinCallByAccessToken(User user, String accessToken) throws InvalidUserException, InvalidCallStateException, InvitationDoesNotExistException, InvitationTokenDoesNotExistException;
     void joinCall(User user, Invitation invitation) throws InvalidUserException, InvalidCallStateException;
 
     // returns the call after leaving
     Call leaveCall(User user) throws InvalidCallStateException;
 
-    List<Long> updateTimeout(long timediff);
+    List<Long> checkCallsForTimeoutOrEnd(long timediff);
 }

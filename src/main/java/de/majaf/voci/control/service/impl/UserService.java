@@ -51,7 +51,7 @@ public class UserService implements IUserService {
     }
 
     @Override
-    public GuestUser createGuestUserAndJoinCall(String accessToken, HttpServletRequest req) throws InvitationTokenDoesNotExistException, InvalidCallStateException, InvalidUserException {
+    public GuestUser createGuestUserAndJoinCall(String accessToken) throws InvitationTokenDoesNotExistException, InvalidCallStateException, InvalidUserException {
         Invitation invitation = callService.loadInvitationByToken(accessToken);
         Call call = invitation.getCall();
         if (call != null) {
@@ -60,13 +60,6 @@ public class UserService implements IUserService {
             callService.joinCall(guestUser, invitation);
             return guestUser;
         } else throw new InvitationTokenDoesNotExistException(accessToken, "No call belongs to this token");
-    }
-
-    @Override
-    @Transactional
-    public void removeAllGuests(Call call) {
-        for (GuestUser user : call.getGuestUsers())
-            userRepo.delete(user);
     }
 
     @Override
@@ -119,8 +112,16 @@ public class UserService implements IUserService {
     }
 
     @Override
+    @Transactional
     public UserDetails loadUserByUsername(String username) throws UsernameDoesNotExistException {
         return regUserRepo.findByUserName(username).orElseThrow(
                 () -> new UsernameDoesNotExistException(username, "User does not exist"));
+    }
+
+    @Override
+    @Transactional
+    public void leaveVoiceChannel(User user) {
+        user.setActiveVoiceChannel(null);
+        userRepo.save(user);
     }
 }

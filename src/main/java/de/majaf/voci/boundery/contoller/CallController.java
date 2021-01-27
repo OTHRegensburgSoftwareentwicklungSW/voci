@@ -90,6 +90,12 @@ public class CallController {
     public String startCall(Model model, Authentication auth) throws UserDoesNotExistException {
         RegisteredUser user = (RegisteredUser) controllerUtils.getActiveUser(auth);
 
+        Call oldCall = user.getOwnedInvitation().getCall();
+        if (oldCall != null) { // uninvite contacts remaining in a "old" call. This call is not ended, but no new members can join.
+            simpMessagingTemplate.convertAndSend("/broker/" + oldCall.getId() + "/endedInvitation", true);
+            simpMessagingTemplate.convertAndSend("/broker/" + oldCall.getId() + "/initiatorLeft", user);
+        }
+
         Call call = callService.startCall(user);
         for (RegisteredUser invited : call.getInvitation().getInvitedUsers()) {
             simpMessagingTemplate.convertAndSend("/broker/" + invited.getId() + "/invited", call);
@@ -98,7 +104,6 @@ public class CallController {
         model.addAttribute("call", call);
         model.addAttribute("textChannel", call.getTextChannel());
         model.addAttribute("user", user);
-        logger.info("User " + user.getUserName() + " started a call.");
         return "call";
     }
 
@@ -128,18 +133,7 @@ public class CallController {
         try {
             User user = controllerUtils.getActiveUser(auth);
             Call call = callService.leaveCall(user);
-
-            if (call == null) {
-                simpMessagingTemplate.convertAndSend("/broker/" + callID + "/endedInvitation", true);
-            } else {
-                if (user instanceof RegisteredUser)
-                    if (call.getInvitation() != null && call.getInvitation().equals(((RegisteredUser) user).getOwnedInvitation())) {
-                        simpMessagingTemplate.convertAndSend("/broker/" + callID + "/initiatorLeft", user);
-                        simpMessagingTemplate.convertAndSend("/broker/" + callID + "/endedInvitation", true);
-                    } else {
-                        simpMessagingTemplate.convertAndSend("/broker/" + callID + "/removedCallMember", user);
-                    }
-            }
+            controllerUtils.sendSocketLeaveCallMessages(user, call, callID);
             if (user instanceof GuestUser) {
                 simpMessagingTemplate.convertAndSend("/broker/" + callID + "/removedCallMember", user);
                 req.logout();
@@ -148,7 +142,6 @@ public class CallController {
                 model.addAttribute("user", user);
                 return "prepareCall";
             }
-
         } catch (InvalidCallStateException e) {
             response.sendError(HttpServletResponse.SC_FORBIDDEN, "User is in no call.");
         } catch (UserDoesNotExistException userDoesNotExistException) {

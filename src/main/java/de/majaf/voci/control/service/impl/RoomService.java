@@ -1,19 +1,27 @@
 package de.majaf.voci.control.service.impl;
 
+import de.majaf.voci.control.exceptions.call.InvalidCallStateException;
+import de.majaf.voci.control.exceptions.channel.ChannelDoesNotExistException;
+import de.majaf.voci.control.exceptions.channel.InvalidChannelException;
 import de.majaf.voci.control.exceptions.user.InvalidUserException;
 import de.majaf.voci.control.exceptions.user.UserDoesNotExistException;
+import de.majaf.voci.control.service.ICallService;
+import de.majaf.voci.control.service.IChannelService;
 import de.majaf.voci.control.service.IRoomService;
 import de.majaf.voci.control.service.IUserService;
 import de.majaf.voci.control.exceptions.room.RoomDoesNotExistException;
 import de.majaf.voci.entity.*;
 import de.majaf.voci.entity.repo.RoomRepository;
+import de.majaf.voci.entity.repo.VoiceChannelRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 
-@Service @Scope(value = "singleton")
+@Service
+@Scope(value = "singleton")
 public class RoomService implements IRoomService {
 
     @Autowired
@@ -21,6 +29,13 @@ public class RoomService implements IRoomService {
 
     @Autowired
     private RoomRepository roomRepo;
+
+    @Autowired
+    @Qualifier("voiceChannelService")
+    private IChannelService voiceChannelService;
+
+    @Autowired
+    private ICallService callService;
 
     @Override
     @Transactional
@@ -71,6 +86,13 @@ public class RoomService implements IRoomService {
             RegisteredUser member = (RegisteredUser) userService.loadUserByID(memberID);
             member.removeRoom(room);
             room.removeMember(member);
+            if (member.getActiveVoiceChannel() != null)
+                for (VoiceChannel vc : room.getVoiceChannels())
+                    if (vc.equals(member.getActiveVoiceChannel())) {
+                        userService.leaveVoiceChannel(member);
+                        break;
+                    }
+
             roomRepo.save(room);
         } else throw new InvalidUserException(initiator, "Initiator is no member of this room.");
     }
@@ -80,6 +102,13 @@ public class RoomService implements IRoomService {
     public void deleteRoom(long roomID, RegisteredUser initiator) throws RoomDoesNotExistException, InvalidUserException {
         Room room = loadRoomByID(roomID);
         if (initiator.equals(room.getOwner())) {
+            for (User member : room.getMembers())
+                if (member.getActiveVoiceChannel() != null)
+                    for (VoiceChannel vc : room.getVoiceChannels())
+                        if (vc.equals(member.getActiveVoiceChannel())) {
+                            userService.leaveVoiceChannel(member);
+                            break;
+                        }
             roomRepo.delete(room);
         } else throw new InvalidUserException(initiator, "User is not owner of this room.");
     }
@@ -89,9 +118,34 @@ public class RoomService implements IRoomService {
     public void leaveRoom(long roomID, RegisteredUser member) throws RoomDoesNotExistException, InvalidUserException {
         Room room = loadRoomByID(roomID);
         if (!member.equals(room.getOwner())) {
+            if (member.getActiveVoiceChannel() != null)
+                for (VoiceChannel vc : room.getVoiceChannels())
+                    if (vc.equals(member.getActiveVoiceChannel())) {
+                        userService.leaveVoiceChannel(member);
+                        break;
+                    }
             member.removeRoom(room);
             room.removeMember(member);
             roomRepo.save(room);
         } else throw new InvalidUserException(member, "User cannot leave. He is owner.");
+    }
+
+    @Override
+    @Transactional
+    public void joinVoiceChannelInRoom(long voiceChannelID, Room room, RegisteredUser user) throws InvalidChannelException, InvalidUserException, ChannelDoesNotExistException, InvalidCallStateException {
+        if (roomHasAsMember(room, user)) {
+            if (user.getActiveCall() != null) {
+                callService.leaveCall(user);
+            }
+
+            if (user.getActiveVoiceChannel() != null) {
+                userService.leaveVoiceChannel(user);
+            }
+
+            VoiceChannel voiceChannel = (VoiceChannel) voiceChannelService.loadChannelByIDInRoom(voiceChannelID, room);
+            voiceChannel.addActiveMember(user);
+            user.setActiveVoiceChannel(voiceChannel);
+            userService.saveUser(user);
+        } else throw new InvalidUserException(user, "Invitor is no member of this room.");
     }
 }

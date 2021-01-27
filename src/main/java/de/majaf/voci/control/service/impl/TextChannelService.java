@@ -29,6 +29,12 @@ public class TextChannelService implements IChannelService {
 
     @Override
     @Transactional
+    public Channel saveChannel(Channel channel) {
+        return textChannelRepo.save((TextChannel) channel);
+    }
+
+    @Override
+    @Transactional
     public TextChannel loadChannelByID(long textChannelID) throws ChannelDoesNotExistException {
         return textChannelRepo.findById(textChannelID).orElseThrow(() -> new ChannelDoesNotExistException(textChannelID, "Text Channel does not exist"));
     }
@@ -43,24 +49,10 @@ public class TextChannelService implements IChannelService {
 
     @Override
     @Transactional
-    public TextChannel createChannel() {
-        TextChannel textChannel = new TextChannel();
-        textChannelRepo.save(textChannel);
-        return textChannel;
-    }
-
-    @Override
-    @Transactional
-    public void deleteChannel(Channel channel) {
-        textChannelRepo.delete((TextChannel) channel);
-    }
-
-    @Override
-    @Transactional
     public void addChannelToRoom(Room room, String channelName, RegisteredUser initiator) throws InvalidUserException, InvalidNameException {
         if (initiator.equals(room.getOwner())) {
-            if (channelName != null && !channelName.equals("")) {
-                TextChannel textChannel = new TextChannel(channelName);
+            if (channelName != null && !(channelName.trim()).equals("")) {
+                TextChannel textChannel = new TextChannel(channelName.trim());
                 room.addTextChannel(textChannel);
                 roomService.saveRoom(room);
             } else throw new InvalidNameException(channelName, "Channel-Name is empty");
@@ -108,25 +100,4 @@ public class TextChannelService implements IChannelService {
             }
         return false;
     }
-
-    @Override
-    @Transactional
-    public Message createTextMessage(String msg, long textChannelID, User sender) throws ChannelDoesNotExistException {
-        TextChannel textChannel = loadChannelByID(textChannelID);
-        Message message = new TextMessage(msg, sender);
-        textChannel.addMessage(message);
-        textChannelRepo.save(textChannel);
-        return message;
-    }
-
-    @Override
-    @Transactional
-    public Message createDropsiFileMessage(FileDTO file, long textChannelID, User sender) throws ChannelDoesNotExistException {
-        TextChannel textChannel = loadChannelByID(textChannelID);
-        Message message = new DropsiFileMessage(file, sender);
-        textChannel.addMessage(message);
-        textChannelRepo.save(textChannel);
-        return message;
-    }
-
 }

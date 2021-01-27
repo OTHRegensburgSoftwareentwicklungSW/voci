@@ -7,7 +7,7 @@
     <title th:replace="fragments/sockets :: header"></title>
     <link rel="stylesheet" th:href="@{/css/main.css}">
     <script th:src="@{/js/call_app.js}"></script>
-    <script th:src="@{/js/audio_app.js}"></script>
+    <script th:src="@{/js/voice_streaming/signaling_app.js}"></script>
 
     <script th:inline="javascript">
         window.onload = function () {
@@ -55,8 +55,9 @@
                 </div>
             </div>
         </div>
-
-        <div th:if="${call.invitation}" class="flex-row d-flex border-top secondary-border" id="invitation_token_container">
+        
+        <div th:if="${call.invitation}" class="flex-row d-flex border-top secondary-border"
+             id="invitation_token_container">
             <div class="col p-0">
                 <div class="flex-row d-flex">
                     <p class="m-0 pt-2">Invite Guests? Let them join with this Access-Token: </p>
@@ -80,7 +81,8 @@
                 </button>
             </form>
 
-            <form class="text-center" th:if="${call.invitation != null && user.equals(call.invitation.initiator)}" th:action="@{/call/end}"
+            <form class="text-center" th:if="${call.invitation != null && user.equals(call.invitation.initiator)}"
+                  th:action="@{/call/end}"
                   th:method="delete">
                 <button class="btn btn-outline-danger m-2 p-2" id="end-call-btn">
                     END CALL

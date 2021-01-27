@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import javax.transaction.Transactional;
 import java.util.Date;
 import java.util.UUID;
+import java.util.logging.Logger;
 
 @Service
 @Scope("singleton")
@@ -30,10 +31,17 @@ public class ExternalCallService implements IExternalCallService {
 
     @Autowired
     @Qualifier("textChannelService")
-    private IChannelService channelService;
+    private IChannelService textChannelService;
+
+    @Autowired
+    @Qualifier("voiceChannelService")
+    private IChannelService voiceChannelService;
 
     @Autowired
     private IUserService userService;
+
+    @Autowired
+    private Logger logger;
 
     @Override
     @Transactional
@@ -57,20 +65,31 @@ public class ExternalCallService implements IExternalCallService {
 
     @Override
     @Transactional
-    public Call startCall(RegisteredUser user) {
-        Invitation invitation = user.getOwnedInvitation();
+    public Call startCall(RegisteredUser initiator) {
+        Invitation invitation = initiator.getOwnedInvitation();
 
         Call call = new Call();
         call.setCreationDate(new Date());
+
         call.setInvitation(invitation);
         invitation.setCall(call);
-        call.setTextChannel((TextChannel) channelService.createChannel());
-        call.addParticipant(invitation.getInitiator());
-        invitation.getInitiator().setActiveCall(call);
+
+        call.setTextChannel(new TextChannel());
+
+        VoiceChannel voiceChannel = new VoiceChannel();
+        voiceChannel.addActiveMember(initiator);
+        initiator.setActiveVoiceChannel(voiceChannel);
+        call.setVoiceChannel(voiceChannel);
+
+        call.addParticipant(initiator);
+        initiator.setActiveCall(call);
+
         call = callRepo.save(call);
 
         invitation.setAccessToken(generateAccessToken());
         invitationRepo.save(invitation);
+
+        logger.info("User " + initiator.getUserName() + " started a call.");
         return call;
     }
 
@@ -78,17 +97,24 @@ public class ExternalCallService implements IExternalCallService {
     @Transactional
     public void endCall(Call call) {
         if (call != null) {
+            logger.info("Ending call with id: " + call.getId() + ". Remaining participants: " + call.getParticipants().size());
 
-            for (User participant : call.getParticipants())
+            for (User participant : call.getParticipants()) {
                 participant.setActiveCall(null);
+                participant.setActiveVoiceChannel(null);
+                userService.saveUser(participant);
+            }
 
             Invitation invitation = call.getInvitation();
 
-            if (invitation != null)
+            if (invitation != null) {
                 endInvitation(invitation);
+            }
 
-            userService.removeAllGuests(call);
-
+            call.setVoiceChannel(null); // Through orphan-removal the voice-channel reference is also deleted in User-object
+                                        // (without orphan-removal the call.setVoiceChannel(null) would not be needed,
+                                        // because call is deleted anyway when call is deleted (cascadeType.ALL),
+                                        // but user.setVoiceChannel(null) would be needed for each participant)
             callRepo.delete(call);
         }
     }
@@ -111,5 +137,6 @@ public class ExternalCallService implements IExternalCallService {
             invited.removeActiveInvitation(invitation);
         invitation.removeAllInvitedUsers();
         invitationRepo.save(invitation);
+        logger.info("Invitation from " + invitation.getInitiator().getUserName() + " ended.");
     }
 }

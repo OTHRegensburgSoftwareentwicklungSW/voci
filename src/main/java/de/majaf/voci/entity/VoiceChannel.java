@@ -26,13 +26,13 @@ public class VoiceChannel extends Channel{
         return Collections.unmodifiableList(activeMembers);
     }
 
-    public void setActiveMembers(List<User> activeMembers) {
-        this.activeMembers = activeMembers;
-    }
-
     public void addActiveMember(User member) {
         if(!activeMembers.contains(member))
             activeMembers.add(member);
+    }
+
+    public void removeActiveMember(User member) {
+        activeMembers.remove(member);
     }
 
     @Override

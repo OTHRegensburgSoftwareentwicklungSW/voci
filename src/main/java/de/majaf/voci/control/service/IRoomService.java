@@ -1,12 +1,12 @@
 package de.majaf.voci.control.service;
 
+import de.majaf.voci.control.exceptions.call.InvalidCallStateException;
 import de.majaf.voci.control.exceptions.channel.ChannelDoesNotExistException;
+import de.majaf.voci.control.exceptions.channel.InvalidChannelException;
 import de.majaf.voci.control.exceptions.room.RoomDoesNotExistException;
 import de.majaf.voci.control.exceptions.user.InvalidUserException;
 import de.majaf.voci.control.exceptions.user.UserDoesNotExistException;
-import de.majaf.voci.entity.RegisteredUser;
-import de.majaf.voci.entity.Room;
-import de.majaf.voci.entity.TextChannel;
+import de.majaf.voci.entity.*;
 
 import javax.transaction.Transactional;
 
@@ -25,4 +25,5 @@ public interface IRoomService {
 
     boolean roomHasAsMember(Room room, RegisteredUser user);
 
+    void joinVoiceChannelInRoom(long voiceChannelID, Room room, RegisteredUser user) throws InvalidChannelException, InvalidUserException, ChannelDoesNotExistException, InvalidCallStateException;
 }

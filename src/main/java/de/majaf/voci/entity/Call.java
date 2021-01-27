@@ -28,12 +28,12 @@ public class Call extends SingleIdEntity {
     @OneToOne(mappedBy = "call")
     private Invitation invitation;
 
-    @OneToMany(orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.REMOVE)
     @JoinColumn(name = "call_id")
     private List<GuestUser> guestUsers = new ArrayList<>();
 
     @JsonIgnore
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     private VoiceChannel voiceChannel;
 
     @JsonIgnore

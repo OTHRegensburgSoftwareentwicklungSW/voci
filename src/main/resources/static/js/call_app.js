@@ -29,6 +29,8 @@ function connectCallSocket(call, user, textChannel) {
                 });
             }
             subscribeToTextChannel(user.id, textChannel.id);
+
+            // subscribeToSignalMessages(voiceChannel.id, user.id, call) // would be called if voice-streaming was working
         }
     )
     ;

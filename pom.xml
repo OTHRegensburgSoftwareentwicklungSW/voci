@@ -181,6 +181,7 @@
                                 <include>**/entity/GuestUser.class</include>
                                 <include>**/entity/Message.class</include>
                                 <include>**/entity/TextMessage.class</include>
+                                <include>**/entity/ErrorMessage.class</include>
                                 <include>**/entity/DropsiFileMessage.class</include>
                                 <include>**/entity/Room.class</include>
                                 <include>**/entity/SingleIdEntity.class</include>
