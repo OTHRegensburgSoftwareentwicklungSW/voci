@@ -11,15 +11,17 @@ import de.majaf.voci.control.service.IChannelService;
 import de.majaf.voci.control.service.IRoomService;
 import de.majaf.voci.control.service.IUserService;
 import de.majaf.voci.control.exceptions.room.RoomDoesNotExistException;
+import de.majaf.voci.control.service.utils.ServiceUtils;
 import de.majaf.voci.entity.*;
 import de.majaf.voci.entity.repo.RoomRepository;
-import de.majaf.voci.entity.repo.VoiceChannelRepository;
+import java.util.logging.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+
 
 @Service
 @Scope(value = "singleton")
@@ -38,6 +40,12 @@ public class RoomService implements IRoomService {
     @Autowired
     private ICallService callService;
 
+    @Autowired
+    private Logger logger;
+
+    @Autowired
+    private ServiceUtils serviceUtils;
+
     @Override
     @Transactional
     public Room loadRoomByID(long id) throws RoomDoesNotExistException {
@@ -47,7 +55,7 @@ public class RoomService implements IRoomService {
     @Override
     @Transactional
     public void createRoom(String roomName, RegisteredUser owner) throws InvalidNameException {
-        if(roomName == null || (roomName.trim().equals("")) || roomName.trim().length()>20) throw new InvalidNameException(roomName, "Invalid room-name");
+        if(!serviceUtils.checkName(roomName)) throw new InvalidNameException(roomName, "Invalid room-name");
         TextChannel textChannel = new TextChannel("general");
         VoiceChannel voiceChannel = new VoiceChannel("general");
         Room room = new Room(roomName.trim(), owner, textChannel, voiceChannel);
@@ -55,6 +63,7 @@ public class RoomService implements IRoomService {
         owner.addRoom(room);
         room.setOwner(owner);
         room.addMember(owner);
+        logger.info(owner.getUserName() + " created a room: " + room.getRoomName());
         roomRepo.save(room);
     }
 
@@ -76,6 +85,7 @@ public class RoomService implements IRoomService {
             if (initiator.getContacts().contains(member)) {
                 member.addRoom(room);
                 room.addMember(member);
+                logger.info(initiator.getUserName() + " added " + member.getUserName() + " to room: " + room.getRoomName());
                 roomRepo.save(room);
             } else throw new InvalidUserException(member, "Invited user is not in contacts");
         } else throw new InvalidUserException(initiator, "Invitor is no member of this room.");
@@ -95,6 +105,7 @@ public class RoomService implements IRoomService {
                         break;
                     }
 
+            logger.info(initiator.getUserName() + " removed " + member.getUserName() + " from his/her room: " + room.getRoomName());
             roomRepo.save(room);
         } else throw new InvalidUserException(initiator, "Initiator is not owner of this room.");
     }
@@ -111,6 +122,7 @@ public class RoomService implements IRoomService {
                             userService.leaveVoiceChannel(member);
                             break;
                         }
+            logger.info(initiator.getUserName() + " deleted his/her room: " + room.getRoomName());
             roomRepo.delete(room);
         } else throw new InvalidUserException(initiator, "User is not owner of this room.");
     }
@@ -129,7 +141,8 @@ public class RoomService implements IRoomService {
             member.removeRoom(room);
             room.removeMember(member);
             roomRepo.save(room);
-        } else throw new InvalidUserException(member, "User cannot leave. He is owner.");
+            logger.info(member.getUserName() + " left room: " + room.getRoomName());}
+        else throw new InvalidUserException(member, "User cannot leave. He is owner.");
     }
 
     @Override
@@ -148,6 +161,7 @@ public class RoomService implements IRoomService {
             voiceChannel.addActiveMember(user);
             user.setActiveVoiceChannel(voiceChannel);
             userService.saveUser(user);
+            logger.info(user.getUserName() + " is now active in " + voiceChannel.getChannelName() + ", in room: " + room.getRoomName());
         } else throw new InvalidUserException(user, "Invitor is no member of this room.");
     }
 }

@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.logging.Logger;
 
 /**
  * Logout-Handler for cleaning up active {@link User} when he logs out.
@@ -30,6 +31,9 @@ public class CustomLogoutHandler implements LogoutHandler {
 
     @Autowired
     private IUserService userService;
+
+    @Autowired
+    private Logger logger;
 
     /**
      * Leaves {@link Call} or {@link de.majaf.voci.entity.VoiceChannel} if {@link User} is still active in one
@@ -49,6 +53,7 @@ public class CustomLogoutHandler implements LogoutHandler {
                     userService.leaveVoiceChannel(user);
                 }
             }
+            logger.info("Logged out: " + user.getUserName());
         } catch (UserDoesNotExistException userDoesNotExistException) {
             // can be ignored, because User should be logged out anyway.
         } catch (InvalidCallStateException e) {

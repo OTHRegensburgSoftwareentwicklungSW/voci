@@ -16,7 +16,11 @@ import de.mschoettle.entity.dto.FileDTO;
  * because the key-functionality of the both channels is different. (Voice-Streaming vs Text-Messaging.) Also attributes differ.
  * Key functionality is mainly handled in {@link IMessageService} for TextChannel.
  *
- * If Voice-Streaming would be added some time it would also be easier to add the functionality with a new Voice-Streaming-Service.
+ * If Voice-Streaming would be added some time it would also be easier to add the functionality with a new Voice-Streaming-Service.#
+ *
+ * I must admit, that some code in the interface implementations are duplicated. But I can fulfill the requirement of decision making for injection of multiple Bean-types.
+ * If this requirement did not exist, I would probably handled this differently
+ *
  */
 public interface IChannelService {
 

@@ -1,4 +1,4 @@
-package de.majaf.voci.control;
+package de.majaf.voci.control.service.utils;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;

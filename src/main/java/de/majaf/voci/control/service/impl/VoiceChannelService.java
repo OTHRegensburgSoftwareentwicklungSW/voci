@@ -8,6 +8,7 @@ import de.majaf.voci.control.exceptions.user.UserDoesNotExistException;
 import de.majaf.voci.control.service.IChannelService;
 import de.majaf.voci.control.service.IRoomService;
 import de.majaf.voci.control.service.IUserService;
+import de.majaf.voci.control.service.utils.ServiceUtils;
 import de.majaf.voci.entity.*;
 import de.majaf.voci.entity.repo.VoiceChannelRepository;
 import de.mschoettle.entity.dto.FileDTO;
@@ -36,6 +37,9 @@ public class VoiceChannelService implements IChannelService {
     @Autowired
     private Logger logger;
 
+    @Autowired
+    private ServiceUtils serviceUtils;
+
     @Override
     @Transactional
     public Channel saveChannel(Channel channel) {
@@ -61,12 +65,12 @@ public class VoiceChannelService implements IChannelService {
     @Transactional
     public void addChannelToRoom(Room room, String channelName, RegisteredUser initiator) throws InvalidUserException, InvalidNameException {
         if (initiator.equals(room.getOwner())) {
-            if (channelName != null && !channelName.equals("") && channelName.trim().length()<=20) {
-                VoiceChannel voiceChannel = new VoiceChannel(channelName);
+            if (!serviceUtils.checkName(channelName)) {
+                VoiceChannel voiceChannel = new VoiceChannel(channelName.trim());
                 room.addVoiceChannel(voiceChannel);
                 roomService.saveRoom(room);
-                logger.info("Added room with name: " + channelName + " to room: " + room.getRoomName());
-            } else throw new InvalidNameException(channelName, "Channel-Name is empty");
+                logger.info(initiator.getUserName() + " added a new Voice-Channel," + voiceChannel.getChannelName() + ", to room: " + room.getRoomName());
+            } else throw new InvalidNameException(channelName, "Channel-Name is not valid");
         } else throw new InvalidUserException(initiator, "User is not Owner");
     }
 
@@ -82,6 +86,7 @@ public class VoiceChannelService implements IChannelService {
                     userService.leaveVoiceChannel(member);
 
                 roomService.saveRoom(room);
+                logger.info(initiator.getUserName() + " ´deleted Voice-Channel," + voiceChannel.getChannelName() + ", from room: " + room.getRoomName());
             }
         } else throw new InvalidUserException(initiator, "User is not Owner");
     }
@@ -92,10 +97,12 @@ public class VoiceChannelService implements IChannelService {
         if (initiator.equals(room.getOwner())) {
             VoiceChannel channel = loadChannelByID(channelID);
             if (room.getVoiceChannels().contains(channel)) {
-                if (channelName != null && !channelName.equals("")) {
-                    channel.setChannelName(channelName);
+                if (!serviceUtils.checkName(channelName)) {
+                    String oldName = channel.getChannelName();
+                    channel.setChannelName(channelName.trim());
                     voiceChannelRepo.save(channel);
-                } else throw new InvalidNameException(channelName, "Channel-Name is empty");
+                    logger.info(initiator.getUserName() + " changed Voice-Channel-name from" + oldName +"to" + channel.getChannelName() + "in room: " + room.getRoomName());
+                } else throw new InvalidNameException(channelName, "Channel-Name is not valid");
             } else throw new InvalidChannelException(channel, "Channel is not in room.");
         } else throw new InvalidUserException(initiator, "User is not Owner");
     }

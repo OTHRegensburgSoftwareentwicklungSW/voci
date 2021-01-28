@@ -37,7 +37,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             "/css/**", "/img/**", "/js/**",
             "/invitation/**",
             "/webjars/**", "/chat/**",
-            "/test/**", "/api/**", // TODO remove test
+            "/api/**",
             "/call/leave/**", "/call/ended",
             "/download/**", "/favicon.ico"};
 

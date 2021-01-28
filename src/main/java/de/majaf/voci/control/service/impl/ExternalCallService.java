@@ -30,14 +30,6 @@ public class ExternalCallService implements IExternalCallService {
     private CallRepository callRepo;
 
     @Autowired
-    @Qualifier("textChannelService")
-    private IChannelService textChannelService;
-
-    @Autowired
-    @Qualifier("voiceChannelService")
-    private IChannelService voiceChannelService;
-
-    @Autowired
     private IUserService userService;
 
     @Autowired
@@ -123,8 +115,10 @@ public class ExternalCallService implements IExternalCallService {
     public void endCallAuthenticated(Call call, User user) throws InvalidUserException {
         if (call != null && call.getInvitation() != null)
             if (user instanceof RegisteredUser &&
-                    call.getInvitation().equals(((RegisteredUser) user).getOwnedInvitation()))
+                    call.getInvitation().equals(((RegisteredUser) user).getOwnedInvitation())) {
                 endCall(call);
+                logger.info(user.getUserName() + " ended his/her call.");
+            }
             else throw new InvalidUserException(user, "User must not end call. No initiator.");
     }
 

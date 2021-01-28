@@ -6,6 +6,7 @@ import de.majaf.voci.control.exceptions.call.InvitationTokenDoesNotExistExceptio
 import de.majaf.voci.control.service.ICallService;
 import de.majaf.voci.control.service.IUserService;
 import de.majaf.voci.control.exceptions.user.*;
+import de.majaf.voci.control.service.utils.ServiceUtils;
 import de.majaf.voci.entity.*;
 import de.majaf.voci.entity.repo.UserRepository;
 import de.majaf.voci.entity.repo.RegisteredUserRepository;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Service;
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 import java.util.UUID;
+import java.util.logging.Logger;
 
 @Service
 @Scope(value = "singleton")
@@ -35,16 +37,20 @@ public class UserService implements IUserService {
     @Autowired
     private ICallService callService;
 
+    @Autowired
+    private ServiceUtils serviceUtils;
+
+    @Autowired
+    private Logger logger;
+
     @Override
     public void registerUser(RegisteredUser user) throws UserAlreadyExistsException, InvalidNameException {
-        if(user.getUserName() == null) throw new InvalidNameException(null, "Username is empty");
-        if(user.getEmail() == null) throw new InvalidNameException(null, "Email is empty");
+        if(!serviceUtils.checkName(user.getUserName())) throw new InvalidNameException(user.getUserName(), "Username is not valid");
+        if(!serviceUtils.checkName(user.getEmail())) throw new InvalidNameException(user.getEmail(), "Email is not valid");
 
         String username = user.getUserName().trim();
         String email = user.getEmail().trim();
 
-        if(username.equals("") || username.length()>20) throw new InvalidNameException(username, "Invalid username");
-        if(email.equals("") || email.length()>40) throw new InvalidNameException(email, "Invalid email");
         if (userNameAlreadyExist(username))
             throw new UserAlreadyExistsException(user, "User with username " + username + " already exists");
         else if (emailAlreadyExist(email))
@@ -55,6 +61,7 @@ public class UserService implements IUserService {
             regUserRepo.save(user);
             callService.createInvitation(user);
         }
+        logger.info("Created a new user: " + user.getUserName());
     }
 
     @Override
@@ -65,6 +72,7 @@ public class UserService implements IUserService {
             GuestUser guestUser = new GuestUser("guest" + (call.getGuestUsers().size() + 1));
             call.addGuestUser(guestUser);
             callService.joinCall(guestUser, invitation);
+            logger.info("Created a new guest-user " + guestUser.getUserName() + ", invted by " + invitation.getInitiator().getUserName());
             return guestUser;
         } else throw new InvitationTokenDoesNotExistException(accessToken, "No call belongs to this token");
     }
@@ -88,7 +96,7 @@ public class UserService implements IUserService {
     @Override
     @Transactional
     public void addContact(RegisteredUser user, String usernameContact) throws UsernameDoesNotExistException, InvalidUserException, InvalidNameException {
-        if(usernameContact == null || (usernameContact.trim()).equals("") || usernameContact.trim().length()>20)
+        if(!serviceUtils.checkName(usernameContact))
             throw new InvalidNameException(usernameContact, "Invalid Username");
         RegisteredUser contact = (RegisteredUser) loadUserByUsername(usernameContact.trim());
         if (user.getContacts().contains(contact) || contact.getContacts().contains(user))
@@ -99,6 +107,7 @@ public class UserService implements IUserService {
         user.addContact(contact);
         regUserRepo.save(contact);
         regUserRepo.save(user);
+        logger.info(user.getUserName() + " added " + contact.getUserName() + " as a new contact.");
     }
 
     @Override
@@ -110,6 +119,7 @@ public class UserService implements IUserService {
         callService.uninviteUser(user.getOwnedInvitation(), contact);
         regUserRepo.save(contact);
         regUserRepo.save(user);
+        logger.info(user.getUserName()  + " removed " + contact.getUserName() + " from contact list.");
     }
 
     private boolean userNameAlreadyExist(String username) {
@@ -133,6 +143,7 @@ public class UserService implements IUserService {
             user.setDropsiToken(null);
         else user.setDropsiToken(token);
         userRepo.save(user);
+        logger.info(user.getUserName() + " updated his/her Dropsi-token");
         return user;
     }
 
@@ -140,6 +151,7 @@ public class UserService implements IUserService {
     @Transactional
     public void leaveVoiceChannel(User user) {
         user.setActiveVoiceChannel(null);
+        logger.info(user.getUserName() + " left a voice-channel (if he/she was in one).");
         userRepo.save(user);
     }
 }

@@ -16,10 +16,10 @@
                     <div th:replace="fragments/mainFragments :: heading('404 Not Found!', 'main-border')"></div>
                     <div class="flex-column d-flex justify-content-center">
                         <p class="main-border border-bottom m-0 pt-2 pb-2">The file or page you are looking for could not be found.</p>
-                        <p class="m-0 pt-2">No idea how you came here?</p>
-                        <a th:href="@{/main}" class="text-success">Back to Main-Page</a>
-                        <p class="m-0">or</p>
-                        <a th:href="@{/login}" class="text-success">Login here!</a>
+                        <p class="m-0 pt-2 pb-2">No idea how you came here?</p>
+                        <div class="flex-row d-flex justify-content-center"><a th:href="@{/main}" class="btn btn-sm btn-success">Back to Main-Page</a>
+                        <p class="m-0 ml-1 mr-2">or</p>
+                        <a th:href="@{/login}" class="btn btn-sm btn-success">Login here!</a></div>
                     </div>
                 </div>
             </div>

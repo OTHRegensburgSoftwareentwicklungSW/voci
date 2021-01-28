@@ -8,6 +8,26 @@
 </head>
 <body class="vh-100 main-bg text-light">
 <div class="container-fluid h-100 row m-0 p-0">
+    <div class="col-lg-2"></div>
+    <div class="col-lg-8 col-md-12 d-flex flex-column h-100 main-bg p-0 pt-4 text-center">
+        <div class="flex-column d-flex justify-content-center overflow-auto flex-grow-1 p-0 mt-2 ">
+            <div class="d-flex flex-row m-0 p-0 overflow-auto justify-content-center">
+                <div class="p-4 secondary-bg rounded text-left text-center" style="min-width: 50% !important;">
+                    <div th:replace="fragments/mainFragments :: heading('YOU LEFT A CALL OR IT ENDED!', 'main-border')"></div>
+                    <div class="flex-column d-flex justify-content-center">
+                        <p class="m-0 pb-2 pt-2">Thank you for participating.</p>
+                        <p class="main-border border-bottom m-0 pb-2">If you just want to go back to what you were doing before, just
+                            <span class="text-success">close this tab</span>.</p>
+                        <p class="m-0 pt-2 pb-2">Do you like VOCI?</p>
+                        <div class="flex-row d-flex justify-content-center"><a th:href="@{/register}" class="btn btn-sm btn-success">Register here</a>
+                        <p class="m-0 ml-1 mr-1">or</p>
+                        <a th:href="@{/login}" class="btn btn-sm btn-success">Login</a></div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
 </div>
 </body>
 </html>

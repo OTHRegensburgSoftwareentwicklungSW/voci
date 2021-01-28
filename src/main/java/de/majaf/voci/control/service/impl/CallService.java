@@ -51,6 +51,7 @@ public class CallService extends ExternalCallService implements ICallService {
         Invitation invitation = new Invitation(initiator);
         initiator.setOwnedInvitation(invitation);
         invitationRepo.save(invitation);
+        logger.info("Invitation was created for " + initiator.getUserName());
         return invitation;
     }
 
@@ -63,6 +64,7 @@ public class CallService extends ExternalCallService implements ICallService {
 
         invited.addActiveInvitation(invitation);
         invitation.addInvitedUser(invited);
+        logger.info(invitation.getInitiator().getUserName() + " invited " + invited.getUserName() + " to a call.");
         invitationRepo.save(invitation);
     }
 
@@ -78,6 +80,7 @@ public class CallService extends ExternalCallService implements ICallService {
         invited.removeActiveInvitation(invitation);
         invitation.removeInvitedUser(invited);
         invitationRepo.save(invitation);
+        logger.info(invitation.getInitiator().getUserName() + " uninvited " + invited.getUserName() + " from call.");
     }
 
     @Transactional
@@ -99,13 +102,15 @@ public class CallService extends ExternalCallService implements ICallService {
         Call userCall = user.getActiveCall();
         if (userCall != null) {         // check if user is active in other call
             if (!userCall.equals(call)) { // nothing happens if the user is already in the right call
-                if(user instanceof GuestUser) throw new InvalidUserException(user, "Guest can not join an other call.");
+                if (user instanceof GuestUser)
+                    throw new InvalidUserException(user, "Guest can not join an other call.");
                 leaveCall(user);
                 joinCall(call, user);
             }
         } else {
             joinCall(call, user);
         }
+        logger.info(user.getUserName() + " joined call from " + invitation.getInitiator().getUserName());
     }
 
     private void joinCall(Call call, User user) {
@@ -136,14 +141,17 @@ public class CallService extends ExternalCallService implements ICallService {
                 voiceChannel.removeActiveMember(user);
                 user.setActiveVoiceChannel(null);
 
-                if (call.getParticipants().isEmpty())
+                if (call.getParticipants().isEmpty()) {
                     endCall(call);
+                    logger.info(user.getUserName() + " was the last participant in a call. Call ended");
+                }
                 else if (user instanceof RegisteredUser) {
                     Invitation invitation = call.getInvitation();
                     if (invitation != null && invitation.equals(((RegisteredUser) user).getOwnedInvitation()))
                         endInvitation(invitation);
                     userService.saveUser(user);
                 }
+                logger.info(user.getUserName() + " left a call.");
                 return call;
             } else return null;
         } else throw new InvalidCallStateException(call, "User has no active Call");
@@ -158,18 +166,17 @@ public class CallService extends ExternalCallService implements ICallService {
         List<Long> endedCallIDs = new ArrayList<>();
 
         for (Call call : calls) {
-            if (call.getParticipants().size() == 0)
+
+            if (call.getTimeout() <= 0) {
+                endedCallIDs.add(call.getId());
                 endCall(call);
-            else {
-                if (call.getTimeout() <= 0) {
-                    endedCallIDs.add(call.getId());
-                    endCall(call);
-                } else {
-                    call.setTimeout(call.getTimeout() - timediff);
-                }
+            } else {
+                call.setTimeout(call.getTimeout() - timediff);
             }
+
         }
         logger.info("Currently open calls: " + (calls.size() - endedCallIDs.size()));
+        logger.info("Timed-out calls: " + endedCallIDs.size());
         return endedCallIDs;
     }
 }

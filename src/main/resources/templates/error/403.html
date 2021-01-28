@@ -15,8 +15,8 @@
                 <div class="p-4 secondary-bg rounded text-left text-center" style="min-width: 50% !important;">
                     <div th:replace="fragments/mainFragments :: heading('ACCESS DENIED!', 'main-border')"></div>
                     <div class="flex-column d-flex pt-3 justify-content-center">
-                        <p class="m-0">No idea how you came here?</p>
-                        <a th:href="@{/login}" class="text-success">Login here!</a>
+                        <p class="m-0 pb-2">No idea how you came here?</p>
+                        <div><a th:href="@{/login}" class="btn btn-sm btn-success">Login here!</a></div>
                     </div>
                 </div>
             </div>
