@@ -65,7 +65,7 @@ public class VoiceChannelService implements IChannelService {
     @Transactional
     public void addChannelToRoom(Room room, String channelName, RegisteredUser initiator) throws InvalidUserException, InvalidNameException {
         if (initiator.equals(room.getOwner())) {
-            if (!serviceUtils.checkName(channelName)) {
+            if (serviceUtils.checkName(channelName)) {
                 VoiceChannel voiceChannel = new VoiceChannel(channelName.trim());
                 room.addVoiceChannel(voiceChannel);
                 roomService.saveRoom(room);
@@ -86,7 +86,7 @@ public class VoiceChannelService implements IChannelService {
                     userService.leaveVoiceChannel(member);
 
                 roomService.saveRoom(room);
-                logger.info(initiator.getUserName() + " ´deleted Voice-Channel," + voiceChannel.getChannelName() + ", from room: " + room.getRoomName());
+                logger.info(initiator.getUserName() + " deleted Voice-Channel," + voiceChannel.getChannelName() + ", from room: " + room.getRoomName());
             }
         } else throw new InvalidUserException(initiator, "User is not Owner");
     }
@@ -97,7 +97,7 @@ public class VoiceChannelService implements IChannelService {
         if (initiator.equals(room.getOwner())) {
             VoiceChannel channel = loadChannelByID(channelID);
             if (room.getVoiceChannels().contains(channel)) {
-                if (!serviceUtils.checkName(channelName)) {
+                if (serviceUtils.checkName(channelName)) {
                     String oldName = channel.getChannelName();
                     channel.setChannelName(channelName.trim());
                     voiceChannelRepo.save(channel);

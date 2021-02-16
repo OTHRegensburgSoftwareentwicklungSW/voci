@@ -59,7 +59,7 @@ public class TextChannelService implements IChannelService {
     @Transactional
     public void addChannelToRoom(Room room, String channelName, RegisteredUser initiator) throws InvalidUserException, InvalidNameException {
         if (initiator.equals(room.getOwner())) {
-            if (!serviceUtils.checkName(channelName)) {
+            if (serviceUtils.checkName(channelName)) {
                 TextChannel textChannel = new TextChannel(channelName.trim());
                 room.addTextChannel(textChannel);
                 roomService.saveRoom(room);
@@ -87,7 +87,7 @@ public class TextChannelService implements IChannelService {
         if (initiator.equals(room.getOwner())) {
             TextChannel channel = loadChannelByID(channelID);
             if (room.getTextChannels().contains(channel)) {
-                if (!serviceUtils.checkName(channelName)) {
+                if (serviceUtils.checkName(channelName)) {
                     String oldName = channel.getChannelName();
                     channel.setChannelName(channelName.trim());
                     textChannelRepo.save(channel);
