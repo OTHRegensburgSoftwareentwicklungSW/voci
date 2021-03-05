@@ -7,16 +7,6 @@ This project is the result of the software-development course at the OTH-Regensb
 Voci is a chat-system for sending messages in calls or chatrooms.
 Unfortunately voice-streaming is not supported, as first planned. 
 
-#### Deployment
-
-As I work with environment variables for the database I wrote a bash script, which starts my program.
-
-````
-    ps -aux | grep voci-0.0.1.jar
-    kill <pid> # kill old project
-    ./start.sh    
-````
-
 #### REST-API
 
 I imported swagger-ui in my project to visualize my REST-API. It is available at: http://<host>:8945/swagger-ui.
