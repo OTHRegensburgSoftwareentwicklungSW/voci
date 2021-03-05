@@ -9,7 +9,7 @@ Unfortunately voice-streaming is not supported, as first planned.
 
 #### Deployment
 
-As I work with environment variables for the database I wrote a bash script, which starts my program. Execute these commands on im-codd in my home-direcory:
+As I work with environment variables for the database I wrote a bash script, which starts my program.
 
 ````
     ps -aux | grep voci-0.0.1.jar
